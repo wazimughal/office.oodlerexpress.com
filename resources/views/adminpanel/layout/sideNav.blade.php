@@ -50,18 +50,7 @@
                   <p>Dashboard </p>
                 </a>
               </li>
-              {{-- <li class="nav-item">
-                <a href="{{url('admin/dashboard/2')}}" class="nav-link">
-                  <i class="far fa-circle nav-icon"></i>
-                  <p>Dashboard v2</p>
-                </a>
-              </li>
-              <li class="nav-item">
-                <a href="{{url('admin/dashboard/3')}}" class="nav-link">
-                  <i class="far fa-circle nav-icon"></i>
-                  <p>Dashboard v3</p>
-                </a>
-              </li> --}}
+             
             </ul>
           </li>
           <li class="nav-item">
@@ -108,30 +97,6 @@
           </li>
           <li class="nav-item">
             <a href="#" class="nav-link">
-              <i class="nav-icon far fa-hospital"></i>
-              <p>
-                Venue Group
-                <i class="right fas fa-angle-left"></i>
-              </p>
-            </a>
-            <ul class="nav nav-treeview">
-              
-              <li class="nav-item">
-                <a href="{{url('admin/venuegroups')}}" class="nav-link">
-                  <i class="far fa-hospital"></i>
-                  <p> Venue Group List</p>
-                </a>
-              </li>
-              <li class="nav-item">
-                <a href="{{url('admin/venuegroups/add')}}" class="nav-link">
-                  <i class="fa fa-plus"></i>
-                  <p>Add Venue Group</p>
-                </a>
-              </li>
-            </ul>
-          </li>
-          <li class="nav-item">
-            <a href="#" class="nav-link">
               <i class="nav-icon fa fa-users"></i>
               <p>
                 Customers
@@ -158,22 +123,22 @@
             <a href="#" class="nav-link">
               <i class="nav-icon fa fa-images"></i>
               <p>
-                Photographer
+                Drivers
                 <i class="right fas fa-angle-left"></i>
               </p>
             </a>
             <ul class="nav nav-treeview">
               
               <li class="nav-item">
-                <a href="{{url('admin/photographers')}}" class="nav-link">
+                <a href="{{url('admin/drivers')}}" class="nav-link">
                   <i class="fa fa-images"></i>
-                  <p> Photographer List</p>
+                  <p> Drivers List</p>
                 </a>
               </li>
               <li class="nav-item">
-                <a href="{{url('admin/photographers/add')}}" class="nav-link">
+                <a href="{{url('admin/drivers/add')}}" class="nav-link">
                   <i class="fa fa-plus"></i>
-                  <p>Add Photographer</p>
+                  <p>Add Drivers</p>
                 </a>
               </li>
             </ul>

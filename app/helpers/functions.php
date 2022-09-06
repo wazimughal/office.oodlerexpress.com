@@ -23,26 +23,7 @@ if(!function_exists('get_session_value')){
         return $userData[$key];
     }
 }
-if(!function_exists('getLeadWithVenuebyID')){
-    function getLeadWithVenuebyID($id=NULL){
-            if($id>0){
-                $leadsData=App\Models\adminpanel\Users::with('getVenueGroup')
-                //->where('group_id', '=', config('constants.groups.subscriber'))
-                ->where('id', '=', $id)->get();
-                
-                
-            }else{
-               return array();
-            }
-            
 
-            $data=($leadsData->toArray());
-            $data=$data[0];
-            $venueGroupData=getVenueGrpupById($data['get_venue_group']['venue_group_id']);
-            $data['get_venue_group_detail']=$venueGroupData[0];
-            return $data;
-    }
-}
 if(!function_exists('phpslug')){
     function phpslug($string)
     {

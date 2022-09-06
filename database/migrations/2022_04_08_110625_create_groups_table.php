@@ -31,22 +31,16 @@ return new class extends Migration
                     'description' => 'This is the super admin role',
                     ],
                     [
-                        'title' => 'Venue Group Head',
-                        'role' => 'hod',
-                        'slug' => phpslug('hod'),
-                        'description' => 'Venue Group Head',
-                    ],
-                    [
                         'title' => 'Customer',
                         'role' => 'customer',
                         'slug' => phpslug('customer'),
                         'description' => 'This is the customer role',
                     ],
                     [
-                        'title' => 'photographer',
-                        'role' => 'photographer',
-                        'slug' => phpslug('photographer'),
-                        'description' => 'This is the photographer role',
+                        'title' => 'driver',
+                        'role' => 'driver',
+                        'slug' => phpslug('driver'),
+                        'description' => 'This is the driver role',
                     ],
                     [
                         'title' => 'Staff',

@@ -1,7 +1,7 @@
 @extends('adminpanel.admintemplate')
 @push('title')
     <title>
-        photographers| {{ config('constants.app_name') }}</title>
+        drivers| {{ config('constants.app_name') }}</title>
 @endpush
 @section('main-section')
     <!-- Content Wrapper. Contains page content -->
@@ -11,10 +11,10 @@
             <div class="container-fluid">
                 <div class="row mb-2">
                     <div class="col-sm-3">
-                        <h1>View Photographers </h1>
+                        <h1>View drivers </h1>
 
                     </div>
-                    <div class="col-sm-2"><a style="width:60%" href="{{ url('/admin/photographers/add') }}"
+                    <div class="col-sm-2"><a style="width:60%" href="{{ url('/admin/drivers/add') }}"
                             class="btn btn-block btn-success btn-lg">Add New <i class="fa fa-plus"></i></a></div>
                     <div class="col-sm-1">&nbsp;</div>
                     <div class="col-sm-6">
@@ -36,7 +36,7 @@
 
                         <div class="card card-success">
                             <div class="card-header">
-                                <h3 class="card-title">photographers</h3>
+                                <h3 class="card-title">drivers</h3>
                             </div>
                             <!-- /.card-header -->
                             <div class="card-body">
@@ -46,7 +46,7 @@
                                             <th>Name</th>
                                             <th>Email</th>
                                             <th>Mobile Number</th>
-                                            <th>Unit Number</th>
+                                            <th>License no</th>
                                             <th>Address</th>
                                             <th>Zip Code</th>
                                             <th>City</th>
@@ -57,7 +57,7 @@
                                         <?php 
                                             $counter = 1;
                                            
-                                            foreach ($photographersData as $data){
+                                            foreach ($driversData as $data){
                                      
                                            
                                             ?>
@@ -67,10 +67,10 @@
                                             <td id="email_{{ $data['id'] }}">{{ $data['email'] }}</td>
                                             <td id="mobileno_{{ $data['id'] }}">
                                                 {{ $data['mobileno'] }}</td>
-                                            <td id="unitnumber_{{ $data['id'] }}">
-                                                {{ $data['unitnumber'] }} </td>
-                                                 <td id="homeaddress_{{ $data['id'] }}">
-                                                    {{ $data['homeaddress'] }}</td>
+                                            <td id="license_no_{{ $data['id'] }}">
+                                                {{ $data['license_no'] }} </td>
+                                                 <td id="address_{{ $data['id'] }}">
+                                                    {{ $data['address'] }}</td>
                                                     <td id="zipcode_{{ $data['id'] }}">
                                                         {{ $data['ZipCode']['code'] }}</td>
                                                     <td id="city_{{ $data['id'] }}">
@@ -79,7 +79,7 @@
                                             
                                             <td>
 
-                                                <button onClick="editphotographerForm({{ $data['id'] }},{{ $counter }})"
+                                                <button onClick="editdriverForm({{ $data['id'] }},{{ $counter }})"
                                                     class="btn btn-info btn-block btn-sm"><i class="fas fa-edit"></i>
                                                     Edit</button>
                                                 <button onClick="viewLeadData({{ $data['id'] }},{{ $counter }})"
@@ -120,7 +120,7 @@
                                             <th>Name</th>
                                             <th>Email</th>
                                             <th>Mobile Number</th>
-                                            <th>Unit Number</th>
+                                            <th>Lisence Number</th>
                                             <th>Address</th>
                                             <th>Zip Code</th>
                                             <th>City</th>
@@ -128,7 +128,7 @@
                                         </tr>
                                         <tr>
                                             <td colspan="8">
-                                                <div class="text-right"> {{ $photographersData->links() }}</div>
+                                                <div class="text-right"> {{ $driversData->links() }}</div>
                                             </td>
                                         </tr>
                                     </tfoot>
@@ -156,7 +156,7 @@
             <div class="modal-content">
                 <div class="card card-success">
                     <div class="card-header">
-                        <h3 class="card-title"> photographers Panel</h3>
+                        <h3 class="card-title"> drivers Panel</h3>
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>
@@ -226,7 +226,7 @@
                 id: id
             };
             $.ajax({
-                url: "{{ url('/admin/photographers/ajaxcall') }}/" + id,
+                url: "{{ url('/admin/drivers/ajaxcall') }}/" + id,
                 data: sendInfo,
                 contentType: 'application/json',
                 error: function() {
@@ -255,7 +255,7 @@
                 id: id
             };
             $.ajax({
-                url: "{{ url('/admin/photographers/ajaxcall') }}/" + id,
+                url: "{{ url('/admin/drivers/ajaxcall') }}/" + id,
                 data: sendInfo,
                 contentType: 'application/json',
                 error: function() {
@@ -282,7 +282,7 @@
             var formData = ($('#EditLeadForm').formToJson());
             // console.log(formData);
             $.ajax({
-                url: "{{ url('/admin/photographers/ajaxcall') }}/" + id,
+                url: "{{ url('/admin/drivers/ajaxcall') }}/" + id,
                 data: formData,
                 contentType: 'application/json',
                 error: function() {
@@ -324,17 +324,17 @@
             return false;
         }
 
-        // add Lead to photographer 
-        function editphotographerForm(id, counter_id = 1) {
+        // add Lead to driver 
+        function editdriverForm(id, counter_id = 1) {
 
             var sendInfo = {
-                action: 'editphotographerForm',
+                action: 'editdriverForm',
                 counter: counter_id,
                 status: status,
                 id: id
             };
             $.ajax({
-                url: "{{ url('/admin/photographers/ajaxcall') }}/" + id,
+                url: "{{ url('/admin/drivers/ajaxcall') }}/" + id,
                 data: sendInfo,
                 contentType: 'application/json',
                 error: function() {
@@ -357,11 +357,11 @@
             return false;
         }
         // Ajax to Update Lead Data
-        function updatephotographer(id, counter_id = 1) {
-            var formData = ($('#EditphotographerForm').formToJson());
+        function updatedriver(id, counter_id = 1) {
+            var formData = ($('#EditdriverForm').formToJson());
             // console.log(formData);
             $.ajax({
-                url: "{{ url('/admin/photographers/ajaxcall') }}/" + id,
+                url: "{{ url('/admin/drivers/ajaxcall') }}/" + id,
                 data: formData,
                 contentType: 'application/json',
                 error: function() {
@@ -375,8 +375,8 @@
                         
                         $('#name_' + data.id).html(data.name);
                         $('#mobileno_' + data.id).html(data.mobileno_);
-                        $('#unitnumber_' + data.id).html(data.unitnumber);
-                        $('#homeaddress_' + data.id).html(data.homeaddress);
+                        $('#license_no_' + data.id).html(data.license_no);
+                        $('#address_' + data.id).html(data.address);
                         $('#zipcode_' + data.id).html(data.zipcode);
                         $('#city_' + data.id).html(data.city);
 
@@ -459,7 +459,7 @@
                     };
 
                     $.ajax({
-                        url: "{{ url('/admin/photographers/ajaxcall/') }}/" + id,
+                        url: "{{ url('/admin/drivers/ajaxcall/') }}/" + id,
                         data: sendInfo,
                         contentType: 'application/json',
                         error: function() {
@@ -516,7 +516,7 @@
                 };
 
                 $.ajax({
-                    url: "{{ url('/admin/photographers/ajaxcall/') }}/" + id,
+                    url: "{{ url('/admin/drivers/ajaxcall/') }}/" + id,
                     data: sendInfo,
                     contentType: 'application/json',
                     error: function() {

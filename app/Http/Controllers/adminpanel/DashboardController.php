@@ -7,8 +7,6 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Http\Request;
 use App\Models\adminpanel\Users;
 use App\Models\adminpanel\Groups;
-use App\Models\adminpanel\Venue_groups;
-use App\Models\adminpanel\venue_users;
 
 use Illuminate\Support\Facades\Auth;
 
@@ -18,8 +16,6 @@ class DashboardController extends Controller
         
         $this->users= new Users;
         $this->groups= new Groups;
-        $this->venueGroup= new Venue_groups;
-        $this->venue_users= new venue_users;
       }
 
     public function index($id=NULL){

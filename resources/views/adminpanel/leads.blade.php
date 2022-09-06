@@ -45,9 +45,9 @@
                                         <tr>
                                             <th>Name</th>
                                             <th>Email</th>
-                                            <th>Venue Group</th>
-                                            <th>Venue Group Address</th>
-                                            <th>Type</th>
+                                            <th>Mobile</th>
+                                            <th>Subject</th>
+                                            <th>Message</th>
                                             <th>Status</th>
                                             <th>Change</th>
                                             <th>Action</th>
@@ -57,23 +57,17 @@
                                         <?php 
                                             $counter = 1;
                                             foreach ($leadsData as $data){
-                                            $venueGroupData=getVenueGrpupById(($data['getVenueGroup']['venue_group_id']));
-                                            $data['get_venue_group']=$venueGroupData[0];
-                                                
                                             ?>
                                         <tr id="row_{{ $data['id'] }}">
                                             <td><strong id="name_{{ $data['id'] }}">{{ $data['name'] }}</strong>
                                             </td>
                                             <td id="email_{{ $data['id'] }}">{{ $data['email'] }}</td>
-                                            <td id="venue_group_name_{{ $data['id'] }}">
-                                                {{ $data['get_venue_group']['name'] }}</td>
-                                            <td id="venue_group_address_{{ $data['id'] }}">
-                                                {{ $data['get_venue_group']['address'] }}</td>
-                                            <td id="lead_type_title_{{ $data['id'] }}">
-                                                @php
-                                                    $leadType = config('constants.lead_types.' . $data['lead_type']);
-                                                    echo $leadType['title'];
-                                                @endphp
+                                            <td id="mobileno_{{ $data['id'] }}">
+                                                {{ $data['mobileno'] }}</td>
+                                            <td id="subject_{{ $data['id'] }}">
+                                                {{ $data['subject'] }}</td>
+                                            <td id="message_{{ $data['id'] }}">
+                                               {{$data['message']}}
                                             </td>
                                             <td id="status{{ $data['id'] }}">
                                                 @if ($data['status'] == config('constants.lead_status.pending'))
@@ -91,11 +85,7 @@
                                                 @endif
                                             </td>
                                             <td id="is_active_{{ $data['id'] }}">
-                                                {{-- @if ($data['is_active'] == 1)
-                                                    <a @disabled(true) class="btn btn-success btn-flat btn-sm"><i class="fas fa-chart-line"></i> Active</a>
-                                                    @else
-                                                    <a @disabled(true) class="btn bg-gradient-secondary btn-flat btn-sm"><i class="fas fa-chart-line"></i> In-Active</a>
-                                                    @endif --}}
+                                               
                                                 <select datacounter="{{ $counter }}" dataid="{{ $data['id'] }}"
                                                     class="form-control select2bs4 current_status" style="width: 100%;">
                                                     <option datacounter="{{ $counter }}" dataid="{{ $data['id'] }}"
@@ -333,16 +323,12 @@
                 dataType: 'json',
                 success: function(data) {
                     if (data.error == 'No') {
-                        console.log(data);
                         $('#name_' + data.id).html(data.name);
-                        $('#venue_group_name_' + data.id).html(data.venue_group_name);
-                        $('#lead_type_title_' + data.id).html(data.lead_type_tile);
-                        // $('#row_' + data.id).removeClass('odd');
-                        // $('#row_' + data.id).removeClass('even');
-                        // $('#row_' + data.id).addClass('alert-info');
+                        $('#mobile_' + data.id).html(data.mobileno);
+                        $('#subject_' + data.id).html(data.subject);
+                        $('#message_' + data.id).html(data.message);
                         // // Close modal and success Message
                         $('#modal-xl-lead').modal('toggle')
-
 
                         $(document).Toasts('create', {
                             class: 'bg-success',
@@ -415,11 +401,9 @@
                         console.log(data);
                         
                         $('#name_' + data.id).html(data.name);
-                        $('#venue_group_name_' + data.id).html(data.venue_group_name);
-                        $('#lead_type_title_' + data.id).html(data.lead_type_tile);
-                        // $('#row_' + data.id).removeClass('odd');
-                        // $('#row_' + data.id).removeClass('even');
-                        // $('#row_' + data.id).addClass('alert-info');
+                        $('#mobile_' + data.id).html(data.mobileno);
+                        $('#subject_' + data.id).html(data.subject);
+                        $('#message_' + data.id).html(data.message);
                         // // Close modal and success Message
                         if(data.actionType=='move_to_customer')
                         $('#row_' + data.id).html('');

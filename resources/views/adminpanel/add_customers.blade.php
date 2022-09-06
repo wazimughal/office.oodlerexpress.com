@@ -52,35 +52,6 @@
                                     <div class="row form-group">
                                         <div class="col-3">&nbsp;</div>
                                         <div class="col-6">
-                                            <div class="input-group mb-3 ">
-                                              <select name="leads_type"
-                                              class="form-control select2bs4" placeholder="Select Customers Type">
-                                              @php
-                                                 $selectedID=old('leads_type'); 
-                                                //  if($selectedID==$key)
-                                                   
-                                                  foreach ($leadsTypes as $key=>$data) 
-                                                
-                                                      echo '<option selected value="' . $key . '">' . $data['title'] .'</option>';
-                                              @endphp
-                                          </select>
-                                          <div class="input-group-append">
-                                            <div class="input-group-text">
-                                                <span class="fas fa-building"></span>
-                                            </div>
-                                        </div>
-                                                @error('Customers_type')
-                                                    <div class="invalid-feedback">
-                                                        {{ $message }}
-                                                    </div>
-                                                @enderror
-                                            </div>
-                                        </div>
-                                        <div class="col-3">&nbsp;</div>
-                                    </div>
-                                    <div class="row form-group">
-                                        <div class="col-3">&nbsp;</div>
-                                        <div class="col-6">
                                           <div class="input-group mb-3">
                                             <input type="text" name="firstname" class="form-control @error('firstname') is-invalid @enderror"
                                                 placeholder="First name" value="{{ old('firstname') }}">
@@ -180,6 +151,86 @@
                                         </div>
                                         <div class="col-3">&nbsp;</div>
                                     </div>
+                                    <div class="row form-group">
+                                        <div class="col-3">&nbsp;</div>
+                                        <div class="col-6">
+                                        <div class="input-group mb-3">
+                                          <input type="text" name="business_name" class="form-control @error('business_name') is-invalid @enderror"
+                                              placeholder="Business Name" value="{{ old('business_name') }}">
+                                          <div class="input-group-append">
+                                              <div class="input-group-text">
+                                                  <span class="fa fa-truck"></span>
+                                              </div>
+                                          </div>
+                                          @error('business_name')
+                                              <div class="invalid-feedback">
+                                                  {{ $message }}
+                                              </div>
+                                          @enderror
+                                      </div>
+                                        </div>
+                                        <div class="col-3">&nbsp;</div>
+                                    </div>
+                                    <div class="row form-group">
+                                        <div class="col-3">&nbsp;</div>
+                                        <div class="col-6">
+                                        <div class="input-group mb-3">
+                                          <input type="text" name="business_address" class="form-control @error('business_address') is-invalid @enderror"
+                                              placeholder="Business Address" value="{{ old('business_address') }}">
+                                          <div class="input-group-append">
+                                              <div class="input-group-text">
+                                                  <span class="fas fa-address-card"></span>
+                                              </div>
+                                          </div>
+                                          @error('business_address')
+                                              <div class="invalid-feedback">
+                                                  {{ $message }}
+                                              </div>
+                                          @enderror
+                                      </div>
+                                        </div>
+                                        <div class="col-3">&nbsp;</div>
+                                    </div>
+                                    <div class="row form-group">
+                                        <div class="col-3">&nbsp;</div>
+                                        <div class="col-6">
+                                        <div class="input-group mb-3">
+                                          <input type="text" name="business_mobile" class="form-control @error('business_mobile') is-invalid @enderror"
+                                              placeholder="Business Mobile No." value="{{ old('business_mobile') }}">
+                                          <div class="input-group-append">
+                                              <div class="input-group-text">
+                                                  <span class="fas fa-address-card"></span>
+                                              </div>
+                                          </div>
+                                          @error('business_mobile')
+                                              <div class="invalid-feedback">
+                                                  {{ $message }}
+                                              </div>
+                                          @enderror
+                                      </div>
+                                        </div>
+                                        <div class="col-3">&nbsp;</div>
+                                    </div>
+                                    <div class="row form-group">
+                                        <div class="col-3">&nbsp;</div>
+                                        <div class="col-6">
+                                        <div class="input-group mb-3">
+                                          <input type="text" name="business_phone" class="form-control @error('business_phone') is-invalid @enderror"
+                                              placeholder="Business Phone" value="{{ old('business_phone') }}">
+                                          <div class="input-group-append">
+                                              <div class="input-group-text">
+                                                  <span class="fas fa-phone"></span>
+                                              </div>
+                                          </div>
+                                          @error('business_phone')
+                                              <div class="invalid-feedback">
+                                                  {{ $message }}
+                                              </div>
+                                          @enderror
+                                      </div>
+                                        </div>
+                                        <div class="col-3">&nbsp;</div>
+                                    </div>
                                     
                                     <div class="row form-group">
                                         <div class="col-3">&nbsp;</div>
@@ -192,30 +243,44 @@
                                     </div>
                                     <div id="othercity"></div>
                                     <div class="row form-group">
-                                      <div class="col-3">&nbsp;</div>
-                                      <div class="col-6">
-                                          <div class="input-group mb-3">
-                                            <select name="venue_group_id" class="form-control select2bs4" placeholder="Select Venue Group">
-                                            @php
-                                               
-                                                foreach ($VenueGroupData as $data) 
-                                                    echo '<option  value="' . $data['id'] . '">' . $data['name'] . '</option>';
-                                            @endphp
-                                        </select>
-                                        <div class="input-group-append">
-                                          <div class="input-group-text">
-                                              <span class="fas fa-building"></span>
+                                        <div class="col-3">&nbsp;</div>
+                                        <div class="col-6">
+                                        <div class="input-group mb-3">
+                                          <input type="text" name="subject" class="form-control @error('subject') is-invalid @enderror"
+                                              placeholder="Subject" value="{{ old('subject') }}">
+                                          <div class="input-group-append">
+                                              <div class="input-group-text">
+                                                  <span class="fas fa-phone"></span>
+                                              </div>
                                           </div>
+                                          @error('subject')
+                                              <div class="invalid-feedback">
+                                                  {{ $message }}
+                                              </div>
+                                          @enderror
                                       </div>
-                                              @error('venue_group_id')
-                                                  <div class="invalid-feedback">
-                                                      {{ $message }}
-                                                  </div>
-                                              @enderror
+                                        </div>
+                                        <div class="col-3">&nbsp;</div>
+                                    </div><div class="row form-group">
+                                        <div class="col-3">&nbsp;</div>
+                                        <div class="col-6">
+                                        <div class="input-group mb-3">
+                                          <textarea rows="10" type="text" name="message" class="form-control @error('message') is-invalid @enderror"
+                                              placeholder="write message here..">{{ old('message') }}</textarea>
+                                          <div class="input-group-append">
+                                              <div class="input-group-text">
+                                                  <span class="fas fa-address-card"></span>
+                                              </div>
                                           </div>
+                                          @error('message')
+                                              <div class="invalid-feedback">
+                                                  {{ $message }}
+                                              </div>
+                                          @enderror
                                       </div>
-                                      <div class="col-3">&nbsp;</div>
-                                  </div>
+                                        </div>
+                                        <div class="col-3">&nbsp;</div>
+                                    </div>
                                     
                                     {{-- New Row Button --}}
                                     <div class="row form-group">

@@ -23,9 +23,15 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('cnic')->nullable()->unique();
             $table->string('phone')->nullable();
+            $table->string('address')->nullable();
+            $table->string('subject')->nullable();
+            $table->string('message')->nullable();
             $table->string('mobileno')->nullable()->unique();
-            $table->string('homeaddress')->nullable();
-            $table->string('unitnumber')->unique()->nullable();
+            $table->string('business_name')->nullable();
+            $table->string('business_address')->nullable();
+            $table->string('business_mobile')->nullable();
+            $table->string('business_phone')->nullable();
+            $table->string('license_no')->nullable();
             $table->string('country')->default('USA');
             $table->unsignedBigInteger('state_id')->nullable();
             $table->foreign('state_id')->references('id')->on('states');
@@ -37,12 +43,9 @@ return new class extends Migration
             $table->string('profile_pic')->nullable();
             $table->tinyInteger('is_active')->default(0 );
             $table->tinyInteger('status')->default(0 );
-            $table->tinyInteger('lead_type')->default(0 );
             $table->unsignedBigInteger('group_id');
             $table->foreign('group_id')->references('id')->on('groups');
-            $table->unsignedInteger('venue_users_id')->nullable();
             
-  
             $table->rememberToken();
             $table->timestamps();
         });
@@ -58,6 +61,8 @@ return new class extends Migration
                 'cnic' => '3660327946615',
                 'phone' => '03007731712',
                 'password' => Hash::make('1234'),
+                'zipcode_id' => 1,
+                'city_id' => 1,
                 'is_active' => 1,
                 'group_id' => 1,
                 ],
@@ -69,6 +74,8 @@ return new class extends Migration
                 'cnic' => '123',
                 'phone' => '',
                 'password' => Hash::make('1234'),
+                'zipcode_id' => 1,
+                'city_id' => 1,
                 'is_active' => 1,
                 'group_id' => 2,
                 ],
@@ -80,6 +87,8 @@ return new class extends Migration
                 'cnic' => '456',
                 'phone' => '',
                 'password' => Hash::make('1234'),
+                'zipcode_id' => 1,
+                'city_id' => 1,
                 'is_active' => 1,
                 'group_id' => 2,
                 ],
@@ -91,6 +100,8 @@ return new class extends Migration
                 'cnic' => '789',
                 'phone' => '',
                 'password' => Hash::make('1234'),
+                'zipcode_id' => 1,
+                'city_id' => 1,
                 'is_active' => 1,
                 'group_id' => 2,
                 ],
@@ -102,6 +113,8 @@ return new class extends Migration
                 'cnic' => '3660327946616',
                 'phone' => '03007731713',
                 'password' => Hash::make('1234'),
+                'zipcode_id' => 1,
+                'city_id' => 1,
                 'is_active' => 1,
                 'group_id' => 3,
                 ],
@@ -113,6 +126,8 @@ return new class extends Migration
                 'cnic' => '3660327946617',
                 'phone' => '03007731717',
                 'password' => Hash::make('1234'),
+                'zipcode_id' => 1,
+                'city_id' => 1,
                 'is_active' => 1,
                 'group_id' => 4,
                 ],

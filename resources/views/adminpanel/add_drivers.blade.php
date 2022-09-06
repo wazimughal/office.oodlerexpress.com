@@ -1,6 +1,6 @@
 @extends('adminpanel.admintemplate')
 @push('title')
-    <title>Add Photographers | {{ config('constants.app_name') }}</title>
+    <title>Add drivers | {{ config('constants.app_name') }}</title>
 @endpush
 @section('main-section')
     <!-- Content Wrapper. Contains page content -->
@@ -10,12 +10,12 @@
             <div class="container-fluid">
                 <div class="row mb-2">
                     <div class="col-sm-6">
-                        <h1>Add New Photographers</h1>
+                        <h1>Add New drivers</h1>
                     </div>
                     <div class="col-sm-6">
                         <ol class="breadcrumb float-sm-right">
                             <li class="breadcrumb-item"><a href="#">Home</a></li>
-                            <li class="breadcrumb-item active">Add New Photographer</li>
+                            <li class="breadcrumb-item active">Add New driver</li>
                         </ol>
                     </div>
                 </div>
@@ -29,7 +29,7 @@
                     <div class="col-12">
                         <div class="card card-success">
                             <div class="card-header">
-                                <h3 class="card-title">Add New photographers</h3>
+                                <h3 class="card-title">Add New drivers</h3>
                             </div>
                             <div class="card-body">
                               <div class="row">
@@ -47,7 +47,7 @@
                                 </div>
                                 <div class="col-3">&nbsp;</div>
                               </div>
-                                <form method="POST" action="{{ url('/admin/photographers/add') }}">
+                                <form method="POST" action="{{ url('/admin/drivers/add') }}">
                                     @csrf
                                     <div class="row form-group">
                                         <div class="col-3">&nbsp;</div>
@@ -155,14 +155,14 @@
                                         <div class="col-3">&nbsp;</div>
                                         <div class="col-6">
                                         <div class="input-group mb-3">
-                                          <input type="text" name="unitnumber" class="form-control @error('unitnumber') is-invalid @enderror"
-                                              placeholder="Unit Number" value="{{ old('unitnumber') }}">
+                                          <input type="text" name="license_no" class="form-control @error('license_no') is-invalid @enderror"
+                                              placeholder="License Number" value="{{ old('license_no') }}">
                                           <div class="input-group-append">
                                               <div class="input-group-text">
                                                   <span class="fas fa-address-card"></span>
                                               </div>
                                           </div>
-                                          @error('unitnumber')
+                                          @error('license_no')
                                               <div class="invalid-feedback">
                                                   {{ $message }}
                                               </div>
@@ -196,14 +196,36 @@
                                         <div class="col-3">&nbsp;</div>
                                         <div class="col-6">
                                         <div class="input-group mb-3">
-                                          <input type="text" name="homeaddress" class="form-control @error('homeaddress') is-invalid @enderror"
-                                              placeholder="Home Address" value="{{ old('homeaddress') }}">
+                                          <input type="text" name="address" class="form-control @error('address') is-invalid @enderror"
+                                              placeholder="Home Address" value="{{ old('address') }}">
                                           <div class="input-group-append">
                                               <div class="input-group-text">
                                                   <span class="fas fa-home"></span>
                                               </div>
                                           </div>
-                                          @error('homeaddress')
+                                          @error('address')
+                                              <div class="invalid-feedback">
+                                                  {{ $message }}
+                                              </div>
+                                          @enderror
+                                      </div>
+                                        </div>
+                                        <div class="col-3">&nbsp;</div>
+                                    </div>
+                                    <div class="row form-group">
+                                        <div class="col-3">&nbsp;</div>
+                                        <div class="col-6">
+                                        <div class="input-group mb-3">
+                                            <div class="input-group">
+                                            <div class="custom-file">
+                                              <input type="file" class="custom-file-input" id="exampleInputFile">
+                                              <label class="custom-file-label" for="exampleInputFile">Choose file</label>
+                                            </div>
+                                            <div class="input-group-append">
+                                              <span class="input-group-text">Upload</span>
+                                            </div>
+                                          </div>
+                                          @error('address')
                                               <div class="invalid-feedback">
                                                   {{ $message }}
                                               </div>

@@ -90,16 +90,15 @@ Route::any('admin/leads/ajaxcall/{id}',[App\Http\Controllers\adminpanel\LeadsCon
 // Customers Management 
 
 Route::get('/admin/customers',[App\Http\Controllers\adminpanel\CustomersController::class,'customers'])->name('/admin/customers');
-//Route::get('/admin/lead/{type?}',[App\Http\Controllers\adminpanel\CustomersController::class,'customers'])->name('/admin/customers');
 Route::get('/admin/customers/add',[App\Http\Controllers\adminpanel\CustomersController::class,'addcustomers'])->name('/admin/customers/add');
 Route::post('admin/customers/add',[App\Http\Controllers\adminpanel\CustomersController::class,'SaveCustomersData'])->name('admin/customers/add');
 Route::any('admin/customers/ajaxcall/{id}',[App\Http\Controllers\adminpanel\CustomersController::class,'ajaxcall'])->name('admin/customers/changestatus/{id}');
 
-// PhotoGrapher Management 
-Route::get('/admin/photographers',[App\Http\Controllers\adminpanel\PhotographerController::class,'photographers'])->name('/admin/photographers');
-Route::get('/admin/photographers/add',[App\Http\Controllers\adminpanel\PhotographerController::class,'addphotographers'])->name('/admin/photographers/add');
-Route::post('admin/photographers/add',[App\Http\Controllers\adminpanel\PhotographerController::class,'SavephotographersData'])->name('admin/photographers/add');
-Route::any('admin/photographers/ajaxcall/{id}',[App\Http\Controllers\adminpanel\PhotographerController::class,'ajaxcall'])->name('admin/photographers/changestatus/{id}');
+// Driver Management 
+Route::get('/admin/drivers',[App\Http\Controllers\adminpanel\DriverController::class,'drivers'])->name('/admin/drivers');
+Route::get('/admin/drivers/add',[App\Http\Controllers\adminpanel\DriverController::class,'adddrivers'])->name('/admin/drivers/add');
+Route::post('admin/drivers/add',[App\Http\Controllers\adminpanel\DriverController::class,'SavedriversData'])->name('admin/drivers/add');
+Route::any('admin/drivers/ajaxcall/{id}',[App\Http\Controllers\adminpanel\DriverController::class,'ajaxcall'])->name('admin/drivers/changestatus/{id}');
 
 // Venue Group Management 
 Route::get('/admin/venuegroups',[App\Http\Controllers\adminpanel\VenuegroupsController::class,'venuegroups'])->name('/admin/venuegroups');

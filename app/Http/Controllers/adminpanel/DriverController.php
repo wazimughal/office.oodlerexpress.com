@@ -6,50 +6,35 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\adminpanel\Users;
 use App\Models\adminpanel\Groups;
-use App\Models\adminpanel\Venue_groups;
-use App\Models\adminpanel\venue_users;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Auth;
 
-class VenuegroupsController extends Controller
+class DriverController extends Controller
 {
-   
     
 
     function __construct() {
         
         $this->users= new Users;
         $this->groups= new Groups;
-        $this->venueGroup= new Venue_groups;
-        $this->venue_users= new venue_users;
       }
-      public function addvenuegroups(){
+      public function adddrivers(){
         $user=Auth::user(); 
-        $leadsTypes=getTypesOfLeads();
         
-        $VenueGroupData = $this->venueGroup->orderBy('created_at', 'desc')->with('ownerinfo')->get();
-        if($VenueGroupData)
-        $VenueGroupData= $VenueGroupData->toArray();
-        else
-        $VenueGroupData=array();
-        
- 
-         return view('adminpanel/add_venuegroups',compact('user','VenueGroupData','leadsTypes'));
+         return view('adminpanel/add_drivers',compact('user'));
      }
-     public function SavevenuegroupsData(Request $request){
+     public function SavedriversData(Request $request){
        
         $validator=$request->validate([
             'firstname'=>'required',
             'lastname'=>'required',
             'email'=>'required|email|distinct|unique:users|min:5',
             'mobileno'=>'required|distinct|unique:users|min:5',
-            'vg_name'=>'required',
-            'hod_name'=>'required',
-            'hod_phone'=>'required',
-            'description'=>'required',
+            'phone'=>'required',
+            'license_no'=>'required|distinct|unique:users|min:5',
             'city'=>'required',
-            'vg_address'=>'required',
+            'address'=>'required',
         ]);
         
         
@@ -58,11 +43,14 @@ class VenuegroupsController extends Controller
         $this->users->lastname=$request['lastname'];
         $this->users->email=$request['email'];
         $this->users->mobileno=$request['mobileno'];
-        $this->users->unitnumber=$request['unitnumber'];
+        $this->users->phone=$request['phone'];
+        $this->users->license_no=$request['license_no'];
+        $this->users->address=$request['address'];
         $this->users->is_active=1;
         $this->users->password=Hash::make('12345678');
-        $this->users->created_at=date('Y-m-d H:I:s',time());
-        $this->users->group_id=config('constants.groups.venue_group_hod');
+
+        $this->users->created_at=time();
+        $this->users->group_id=config('constants.groups.driver');
        
         if(isset($request['othercity']) && !empty($request['othercity']))
         $cityId = getOtherCity($request['othercity']);
@@ -76,33 +64,15 @@ class VenuegroupsController extends Controller
         $zipcode=$request['zipcode'];
         $this->users->zipcode_id=$zipcode;
   
-        // $this->venueGroup= new Venue_groups;
-        // $this->venue_users= new venue_users;
-  
-
-
-        $request->session()->flash('alert-success', 'venuegroup Added! Please Check in venuegroups list Tab');
+        $request->session()->flash('alert-success', 'driver Added! Please Check in drivers list Tab');
         $this->users->save();
-        $request['lang']='30.0358172';
-        $request['lat']='72.3670309';
-        $request['hod_designation']='Genral Manager';
-        $this->venueGroup->name=$request['vg_name'];
-        $this->venueGroup->lang=$request['lang'];
-        $this->venueGroup->lat=$request['lat'];
-        $this->venueGroup->address=$request['vg_address'];
-        $this->venueGroup->hod_name=$request['hod_name'];
-        $this->venueGroup->description=$request['description'];
-        $this->venueGroup->hod_phone=$request['hod_phone'];
-        $this->venueGroup->hod_designation=$request['hod_designation'];
-        $this->venueGroup->is_active=1;
-        $this->venueGroup->user_id=$this->users->id;
-        $this->venueGroup->save();
+       
         // Activity Log
-                    $activityComment='Mr.'.get_session_value('name').' Added a new venuegroup '.$this->venueGroup->name;
+                    $activityComment='Mr.'.get_session_value('name').' Added new driver '.$this->users->name;
                     $activityData=array(
                         'user_id'=>get_session_value('id'),
                         'action_taken_on_id'=>$this->users->id,
-                        'action_slug'=>'venuegroup_added',
+                        'action_slug'=>'driver_added',
                         'comments'=>$activityComment,
                         'others'=>'users',
                         'created_at'=>date('Y-m-d H:I:s',time()),
@@ -112,16 +82,18 @@ class VenuegroupsController extends Controller
         return redirect()->back();
         
     }
-    // List All the venuegroups 
-    public function venuegroups($type=NULL){
+    // List All the drivers 
+    public function drivers($type=NULL){
         $user=Auth::user();
         
-            $venuegroupsData=$this->users->with('City')->with('ZipCode')->with('VenueGroup')
-            ->where('group_id', '=', config('constants.groups.venue_group_hod'))
+            $driversData=$this->users->with('City')->with('ZipCode')
+            ->where('group_id', '=', config('constants.groups.driver'))
             ->where('is_active', '=', 1)
+            ->where('zipcode_id', '!=', NULL)
+            ->where('city_id', '!=', NULL)
             ->orderBy('created_at', 'desc')->paginate(config('constants.per_page'));
        
-        return view('adminpanel/venuegroups',compact('venuegroupsData','user'));
+        return view('adminpanel/drivers',compact('driversData','user'));
     }
     public function UpdateUsersData($id,Request $request)
     {
@@ -212,28 +184,28 @@ class VenuegroupsController extends Controller
         }
         if(isset($req['action']) && $req['action']=='changestatus'){ 
             $dataArray['title']='Lead Status Updated ';
-            $activityComment='Mr.'.get_session_value('name').' moved venuegroup to approved/pending/cancelled';
+            $activityComment='Mr.'.get_session_value('name').' moved driver to approved/pending/cancelled';
 
             if(config('constants.lead_status.pending')==$req['status']){
             $dataArray['status_btn']='<a disabled="" class="btn bg-gradient-danger btn-flat btn-sm"><i class="fas fa-chart-line"></i> Pending</a>';
-            $activityComment='Mr.'.get_session_value('name').' moved venuegroup to pending';
+            $activityComment='Mr.'.get_session_value('name').' moved driver to pending';
             }
             else if(config('constants.lead_status.approved')==$req['status']){
             $dataArray['status_btn']='<a disabled="" class="btn bg-gradient-success btn-flat btn-sm"><i class="fas fa-chart-line"></i> Approved</a>';
-            $activityComment='Mr.'.get_session_value('name').' moved venuegroup to approved';
+            $activityComment='Mr.'.get_session_value('name').' moved driver to approved';
             }
             else if(config('constants.lead_status.cancelled')==$req['status']){
             $dataArray['status_btn']='<a disabled="" class="btn bg-gradient-secondary btn-flat btn-sm"><i class="fas fa-chart-line"></i> Cancelled</a>';
-            $activityComment='Mr.'.get_session_value('name').' moved venuegroup to cancelled';
+            $activityComment='Mr.'.get_session_value('name').' moved driver to cancelled';
             }
             $result=$this->users->where('id','=',$id)->update(array('status'=>$req['status']));             
             if($result){
-                $dataArray['msg']='Mr.'.get_session_value('name').', venuegroup '.$req['alertmsg'].' successfully!';
+                $dataArray['msg']='Mr.'.get_session_value('name').', driver '.$req['alertmsg'].' successfully!';
                 
                 $activityData=array(
                     'user_id'=>get_session_value('id'),
                     'action_taken_on_id'=>$id,
-                    'action_slug'=>'venuegroup_status_changed',
+                    'action_slug'=>'driver_status_changed',
                     'comments'=>$activityComment,
                     'others'=>'users',
                     'created_at'=>date('Y-m-d H:I:s',time()),
@@ -257,8 +229,8 @@ class VenuegroupsController extends Controller
              $activityID=log_activity(array(
                 'user_id'=>get_session_value('id'),
                 'action_taken_on_id'=>$id,
-                'action_slug'=>'venuegroup_trashed',
-                'comments'=>'Mr.'.get_session_value('name').' moved venuegroup to trash',
+                'action_slug'=>'driver_trashed',
+                'comments'=>'Mr.'.get_session_value('name').' moved driver to trash',
                 'others'=>'users',
                 'created_at'=>date('Y-m-d H:I:s',time()),
             ));
@@ -279,8 +251,8 @@ class VenuegroupsController extends Controller
              $activityID=log_activity(array(
                 'user_id'=>get_session_value('id'),
                 'action_taken_on_id'=>$id,
-                'action_slug'=>'venuegroup_deleted',
-                'comments'=>'Mr.'.get_session_value('name').' deleted venuegroup',
+                'action_slug'=>'driver_deleted',
+                'comments'=>'Mr.'.get_session_value('name').' deleted driver',
                 'others'=>'users',
                 'created_at'=>date('Y-m-d H:I:s',time()),
             ));
@@ -292,20 +264,20 @@ class VenuegroupsController extends Controller
             }
 
         }
-        else if(isset($req['action']) && $req['action'] =='viewVenueGroupData'){
+        else if(isset($req['action']) && $req['action'] =='viewLeadData'){
             $dataArray['error']='No';
             $dataArray['msg']='Lead Successfully Updated';
             $dataArray['title']='Leads Panel';
            
-            $data=$this->users->with('City')->with('ZipCode')->with('VenueGroup')
-            ->where('group_id', '=', config('constants.groups.venue_group_hod'))
+            $data=$this->users->with('City')->with('ZipCode')
+            ->where('group_id', '=', config('constants.groups.driver'))
             ->where('id', '=', $req['id'])
             ->where('zipcode_id', '!=', NULL)
             ->where('city_id', '!=', NULL)
             ->orderBy('created_at', 'desc')->get()->toArray();
-            $venuegroupData=$data[0];
+            $driverData=$data[0];
             
-            //p($venuegroupData); dd('bss');
+            //p($driverData); dd('bss');
             $leadHTML='<div class="container">
             <div class="row">
                 <div class="col-1">&nbsp;</div>
@@ -313,7 +285,7 @@ class VenuegroupsController extends Controller
                     <strong>Name</strong>
                 </div>
                 <div class="col-5">
-                    '.$venuegroupData['name'].'</div>
+                    '.$driverData['name'].'</div>
                 <div class="col-1">&nbsp;</div>
             </div>
             <div class="row">
@@ -322,7 +294,7 @@ class VenuegroupsController extends Controller
                     <strong>Email</strong>
                 </div>
                 <div class="col-5">
-                    '.$venuegroupData['email'].'</div>
+                    '.$driverData['email'].'</div>
                 <div class="col-1">&nbsp;</div>
             </div>
             <div class="row">
@@ -331,47 +303,35 @@ class VenuegroupsController extends Controller
                     <strong>Mobile No.</strong>
                 </div>
                 <div class="col-5">
-                    '.$venuegroupData['mobileno'].'
+                    '.$driverData['mobileno'].'
                 </div>
                 <div class="col-1">&nbsp;</div>
             </div>
             <div class="row">
                 <div class="col-1">&nbsp;</div>
                 <div class="col-5">
-                    <strong>Venue Group Name</strong>
+                    <strong>Phone</strong>
                 </div>
                 <div class="col-5">
-                    '.$venuegroupData['venue_group']['name'].'
+                    '.$driverData['phone'].'
+                </div>
+                <div class="col-1">&nbsp;</div>
+            </div>
+            <div class="row">
+                <div class="col-1">&nbsp;</div>
+                <div class="col-5"><strong>License Number</strong></div>
+                <div class="col-5">
+                    '.$driverData['license_no'].'
                 </div>
                 <div class="col-1">&nbsp;</div>
             </div>
             <div class="row">
                 <div class="col-1">&nbsp;</div>
                 <div class="col-5">
-                    <strong>Venue Group Manager Name</strong>
+                    <strong>Home Address</strong>
                 </div>
                 <div class="col-5">
-                    '.$venuegroupData['venue_group']['hod_name'].'
-                </div>
-                <div class="col-1">&nbsp;</div>
-            </div>
-            <div class="row">
-                <div class="col-1">&nbsp;</div>
-                <div class="col-5">
-                    <strong>Manager Phone</strong>
-                </div>
-                <div class="col-5">
-                    '.$venuegroupData['venue_group']['hod_phone'].'
-                </div>
-                <div class="col-1">&nbsp;</div>
-            </div>
-            <div class="row">
-                <div class="col-1">&nbsp;</div>
-                <div class="col-5">
-                    <strong>Description</strong>
-                </div>
-                <div class="col-5">
-                    '.$venuegroupData['venue_group']['description'].'
+                    '.$driverData['address'].'
                 </div>
                 <div class="col-1">&nbsp;</div>
             </div>
@@ -381,50 +341,38 @@ class VenuegroupsController extends Controller
                     <strong>City</strong>
                 </div>
                 <div class="col-5">
-                    '.$venuegroupData['city']['name'].'
+                    '.$driverData['city']['name'].'
                 </div>
                 <div class="col-1">&nbsp;</div>
             </div>
             <div class="row">
                 <div class="col-1">&nbsp;</div>
                 <div class="col-5">
-                    <strong>Zip Code</strong>
+                    <strong>Zip Code.</strong>
                 </div>
                 <div class="col-5">
-                    '.$venuegroupData['zip_code']['code'].'
-                </div>
+                    '.$driverData['zip_code']['code'].'
+                    </div>
                 <div class="col-1">&nbsp;</div>
             </div>
-            <div class="row">
-                <div class="col-1">&nbsp;</div>
-                <div class="col-5"><strong>Venue Group Address</strong></div>
-                <div class="col-5">
-                    '.$venuegroupData['venue_group']['address'].'
-                </div>
-                <div class="col-1">&nbsp;</div>
-            </div>
-            
         </div>';
             $dataArray['res']=$leadHTML;
         }
-        else if(isset($req['action']) && $req['action'] =='SaveAddtovenuegroupForm'){
+        else if(isset($req['action']) && $req['action'] =='SaveAddtodriverForm'){
             $dataArray['error']='No';
-            $dataArray['msg']='venuegroup Successfully Updated';
+            $dataArray['msg']='driver Successfully Updated';
             $dataArray['title']='Leads Panel';
-            $dataArray['actionType']='move_to_venuegroup';
+            $dataArray['actionType']='move_to_driver';
             //$dataArray['formdata']=$req->all();
 
             $dataArray['firstname']=$req['firstname'];
             $dataArray['lastname']=$req['lastname'];
             $dataArray['name']=$req['firstname'].' '.$req['lastname'];
             $dataArray['mobileno']=$req['mobileno'];
-            $dataArray['hod_name']=$req['hod_name'];
-            $dataArray['hod_phone']=$req['hod_phone'];
-            $dataArray['gv_address']=$req['gv_address'];
-            $dataArray['description']=$req['description'];
-            $dataArray['gv_name']=$req['gv_name'];
-            $dataArray['id']=$req['uid'];
-            $dataArray['venuegroup_id']=$req['venuegroup_id'];
+            $dataArray['phone']=$req['phone'];
+            $dataArray['address']=$req['address'];
+            $dataArray['license_no']=$req['license_no'];
+            $dataArray['id']=$req['driver_id'];
             $dataArray['city']=$req['cityname'];
             $dataArray['zipcode']=$req['zipcode_no'];
             // Get The City ID from table Cities
@@ -442,33 +390,26 @@ class VenuegroupsController extends Controller
             else
                 $zipcode_id=$req['zipcode_id'];                
 
-            $this->users->where('id', $req['uid'])->update(
+            $this->users->where('id', $req['driver_id'])->update(
                 array(
                     'firstname'=>$req['firstname'],
                     'lastname'=>$req['lastname'],
                     'name'=>$req['firstname'].' '.$req['lastname'],
                     'mobileno'=>$req['mobileno'],
+                    'phone'=>$req['phone'],
+                    'license_no'=>$req['license_no'],
+                    'address'=>$req['address'],
                     'city_id'=>$cityId,
                     'zipcode_id'=>$zipcode_id,
                     )
             );
-            $this->venueGroup->where('id', $req['venuegroup_id'])->update(
-                array(
-                    'name'=>$req['gv_name'],
-                    'address'=>$req['vg_address'],
-                    'hod_name'=>$req['hod_name'],
-                    'description'=>$req['description'],
-                    'hod_phone'=>$req['hod_phone'],
-                    )
-            );
-            
             // Activity Logged
             $activityID=log_activity(array(
                 'user_id'=>get_session_value('id'),
-                'action_taken_on_id'=>$req['uid'],
-                'action_slug'=>'venuegroup_updated',
-                'comments'=>'Mr.'.get_session_value('name').' updated a Venue Group Mr.'.$req['firstname'].' '.$req['lastname'],
-                'others'=>'venuegroup',
+                'action_taken_on_id'=>$req['driver_id'],
+                'action_slug'=>'driver_updated',
+                'comments'=>'Mr.'.get_session_value('name').' updated a driver Mr.'.$req['firstname'].' '.$req['lastname'],
+                'others'=>'driver',
                 'created_at'=>date('Y-m-d H:I:s',time()),
             ));
             
@@ -531,13 +472,24 @@ class VenuegroupsController extends Controller
             $csrf_token = csrf_token();
            
         
-$formHtml='<form id="EditvenuegroupForm"
+$formHtml='<form id="EditdriverForm"
                                                                             method="GET"
                                                                             action=""
-                                                                            onsubmit="return updatevenuegroup('. $data['id'].','. $req['counter'].')">
+                                                                            onsubmit="return updatedriver('. $data['id'].','. $req['counter'].')">
                                                                             <input type="hidden" name="_token" value="'.$csrf_token.'" />
-                                                                            <input type="hidden" name="action" value="SaveEditFormvenuegroup" />
-                                                                            <input type="hidden" name="vg_user_id" value="'.$data['id'].'" />
+                                                                            <input type="hidden" name="action" value="SaveEditFormdriver" />
+                                                                            <input type="hidden" name="driver_id" value="'.$data['id'].'" />
+                                                                            <div class="row form-group">
+                                                                                <div class="col-3">&nbsp;</div>
+                                                                                <div class="col-6">
+                                                                                    <div class="input-group mb-3">
+                                                                                    <select name="lead_type"class="form-control select2bs4" placeholder="Select Lead Type">
+                                                                                   '.$leadTypeOptions.'
+                                                                                    </select>
+                                                                                    </div>
+                                                                                </div>
+                                                                                <div class="col-3">&nbsp;</div>
+                                                                            </div>
                                                                             <div class="row form-group">
                                                                                 <div class="col-3">&nbsp;</div>
                                                                                 <div class="col-6">
@@ -624,12 +576,12 @@ $formHtml='<form id="EditvenuegroupForm"
                                                                         </form>';
             $dataArray['formdata']=$formHtml;
         }
-        else if(isset($req['action']) && $req['action'] =='editvenuegroupForm'){
+        else if(isset($req['action']) && $req['action'] =='editdriverForm'){
             $dataArray['error']='No';
            
             //$data=getLeadWithVenuebyID($req['id']);
-            $data=$this->users->with('City')->with('ZipCode')->with('VenueGroup')
-            ->where('group_id', '=', config('constants.groups.venue_group_hod'))
+            $data=$this->users->with('City')->with('ZipCode')
+            ->where('group_id', '=', config('constants.groups.driver'))
             ->where('id', '=', $req['id'])
             ->where('zipcode_id', '!=', NULL)
             ->where('city_id', '!=', NULL)
@@ -639,12 +591,11 @@ $formHtml='<form id="EditvenuegroupForm"
             $csrf_token = csrf_token();
             
         
-$formHtml='<form id="EditvenuegroupForm"
-                                                                            method="GET" action="" onsubmit="return updatevenuegroup('. $data['id'].','. $req['counter'].')">
+$formHtml='<form id="EditdriverForm"
+                                                                            method="GET" action="" onsubmit="return updatedriver('. $data['id'].','. $req['counter'].')">
                                                                             <input type="hidden" name="_token" value="'.$csrf_token.'" />
-                                                                            <input type="hidden" name="action" value="SaveAddtovenuegroupForm" />
-                                                                            <input type="hidden" name="venuegroup_id" value="'.$data['venue_group']['id'].'" />
-                                                                            <input type="hidden" name="uid" value="'.$data['id'].'" />
+                                                                            <input type="hidden" name="action" value="SaveAddtodriverForm" />
+                                                                            <input type="hidden" name="driver_id" value="'.$data['id'].'" />
                                                                             <input type="hidden" id="cityname" name="cityname" value="'.$data['city']['name'].'" />
                                                                             <input id="zipcode_no" type="hidden" name="zipcode_no" value="'.$data['zip_code']['code'].'" />
                                                                             
@@ -706,7 +657,7 @@ $formHtml='<form id="EditvenuegroupForm"
                                                                             <div class="col-3">&nbsp;</div>
                                                                             <div class="col-6">
                                                                                 <div class="input-group mb-3">
-                                                                                    <input  type="text" name="gv_name" class="form-control" placeholder="Unit Number" value="'. $data['venue_group']['name'].'" required>
+                                                                                    <input  type="text" name="phone" class="form-control" placeholder="Phone No." value="'. $data['phone'].'" required>
                                                                                 </div>
                                                                             </div>
                                                                             <div class="col-3">&nbsp;</div>
@@ -715,25 +666,7 @@ $formHtml='<form id="EditvenuegroupForm"
                                                                             <div class="col-3">&nbsp;</div>
                                                                             <div class="col-6">
                                                                                 <div class="input-group mb-3">
-                                                                                    <input  type="text" name="hod_name" class="form-control" placeholder="Group Venue Manager Name" value="'. $data['venue_group']['hod_name'].'" required>
-                                                                                </div>
-                                                                            </div>
-                                                                            <div class="col-3">&nbsp;</div>
-                                                                            </div>
-                                                                            <div class="row form-group">
-                                                                            <div class="col-3">&nbsp;</div>
-                                                                            <div class="col-6">
-                                                                                <div class="input-group mb-3">
-                                                                                    <input  type="text" name="hod_phone" class="form-control" placeholder="Manager Phone" value="'. $data['venue_group']['hod_phone'].'" required>
-                                                                                </div>
-                                                                            </div>
-                                                                            <div class="col-3">&nbsp;</div>
-                                                                            </div>
-                                                                            <div class="row form-group">
-                                                                            <div class="col-3">&nbsp;</div>
-                                                                            <div class="col-6">
-                                                                                <div class="input-group mb-3">
-                                                                                    <input  type="text" name="description" class="form-control" placeholder="Group Venue Description" value="'. $data['venue_group']['description'].'" required>
+                                                                                    <input  type="text" name="license_no" class="form-control" placeholder="License Number" value="'. $data['license_no'].'" required>
                                                                                 </div>
                                                                             </div>
                                                                             <div class="col-3">&nbsp;</div>
@@ -762,7 +695,7 @@ $formHtml='<form id="EditvenuegroupForm"
                                                                             <div class="col-3">&nbsp;</div>
                                                                             <div class="col-6">
                                                                                 <div class="input-group mb-3">
-                                                                                    <input  type="text" name="vg_address" class="form-control" placeholder="Venue Group Address" value="'. $data['venue_group']['address'].'" required>
+                                                                                    <input  type="text" name="address" class="form-control" placeholder="Home Address" value="'. $data['address'].'" required>
                                                                                 </div>
                                                                             </div>
                                                                             <div class="col-3">&nbsp;</div>
@@ -785,4 +718,5 @@ $formHtml='<form id="EditvenuegroupForm"
         die;
     }
 
+ 
 }

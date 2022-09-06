@@ -45,13 +45,10 @@
                                         <tr>
                                             <th>Name</th>
                                             <th>Email</th>
-                                            <th>Venue Group</th>
-                                            <th>Venue Group Address</th>
-                                            <th>Manager Name</th>
-                                            <th>Manager Phone</th>
-                                            <th>Type</th>
-                                            {{-- <th>Status</th>
-                                            <th>Change</th> --}}
+                                            <th>Mobile</th>
+                                            <th>Business Name</th>
+                                            <th>Business Address</th>
+                                            <th>Business Phone</th>
                                             <th>Action</th>
                                         </tr>
                                     </thead>
@@ -60,31 +57,22 @@
                                             $counter = 1;
                                             
                                             foreach ($customersData as $data){
-                                               
-                                               
-                                            $venueGroupData=getVenueGrpupById(($data['getVenueGroup']['venue_group_id']));
-                                           
-                                            $data['get_venue_group']=$venueGroupData[0];
+                                            
                                            
                                             ?>
                                         <tr id="row_{{ $data['id'] }}">
                                             <td><strong id="name_{{ $data['id'] }}">{{ $data['name'] }}</strong>
                                             </td>
                                             <td id="email_{{ $data['id'] }}">{{ $data['email'] }}</td>
-                                            <td id="venue_group_name_{{ $data['id'] }}">
-                                                {{ $data['get_venue_group']['name'] }}</td>
-                                            <td id="venue_group_address_{{ $data['id'] }}">
-                                                {{ $data['get_venue_group']['address'] }} </td>
-                                                 <td id="venue_group_hod_name_{{ $data['id'] }}">
-                                                    {{ $data['get_venue_group']['hod_name'] }}</td>
-                                                    <td id="venue_group_hod_phone_{{ $data['id'] }}">
-                                                        {{ $data['get_venue_group']['hod_phone'] }}</td>
-                                            <td id="lead_type_title_{{ $data['id'] }}">
-                                                @php
-                                                    $leadType = config('constants.lead_types.' . $data['lead_type']);
-                                                    echo $leadType['title'];
-                                                @endphp
-                                            </td>
+                                            <td id="mobile_{{ $data['id'] }}">
+                                                {{ $data['mobileno'] }}</td>
+                                            <td id="business_name_{{ $data['id'] }}">
+                                                {{ $data['business_name'] }} </td>
+                                                 <td id="business_address_{{ $data['id'] }}">
+                                                    {{ $data['business_address'] }}</td>
+                                                    <td id="business_phone_{{ $data['id'] }}">
+                                                        {{ $data['business_phone'] }}</td>
+                                           
                                             {{-- <td id="status{{ $data['id'] }}">
                                                 @if ($data['status'] == config('constants.lead_status.pending'))
                                                     <a @disabled(true)
@@ -159,13 +147,10 @@
                                         <tr>
                                             <th>Name</th>
                                             <th>Email</th>
-                                            <th>Venue Group</th>
-                                            <th>Venue Group Address</th>
-                                            <th>Manager Name</th>
-                                            <th>Manager Phone</th>
-                                            <th>Type</th>
-                                            {{-- <th>Status</th>
-                                            <th>Change</th> --}}
+                                            <th>Mobile</th>
+                                            <th>Business Name</th>
+                                            <th>Business Address</th>
+                                            <th>Business Phone</th>
                                             <th>Action</th>
                                         </tr>
                                         <tr>
@@ -336,12 +321,10 @@
                     if (data.error == 'No') {
                         console.log(data);
                         $('#name_' + data.id).html(data.name);
-                        $('#venue_group_name_' + data.id).html(data.venue_group_name);
-                        $('#lead_type_title_' + data.id).html(data.lead_type_tile);
-                        // $('#row_' + data.id).removeClass('odd');
-                        // $('#row_' + data.id).removeClass('even');
-                        // $('#row_' + data.id).addClass('alert-info');
-                        // // Close modal and success Message
+                        $('#mobile_' + data.id).html(data.mobileno);
+                        $('#business_name_' + data.id).html(data.business_name);
+                        $('#business_address_' + data.id).html(data.business_name);
+                        $('#business_phone_' + data.id).html(data.business_phone);
                         $('#modal-xl-lead').modal('toggle')
 
 

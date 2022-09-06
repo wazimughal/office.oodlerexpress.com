@@ -7,16 +7,10 @@ return [
     // Costant Value ID set for the groups table for User ROLEs
     'groups' => [
         'admin' => 1,
-        'venue_group_hod' => 2,
-        'customer' => 3,
-        'photographer' => 4,
-        'staff' =>5,
-        'subscriber' =>6,
-    ],
-    'lead_types' => [
-        0 => array('id'=>0, 'title'=>'New'),
-        1 => array('id'=>1, 'title'=>'Hot'),
-        2 =>array('id'=>2, 'title'=>'Cold')
+        'customer' => 2,
+        'driver' => 3,
+        'staff' =>4,
+        'subscriber' =>5,
     ],
     'lead_status' => [
         'pending' => 0,

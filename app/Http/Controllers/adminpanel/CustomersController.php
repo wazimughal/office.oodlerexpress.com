@@ -6,8 +6,6 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\adminpanel\Users;
 use App\Models\adminpanel\Groups;
-use App\Models\adminpanel\Venue_groups;
-use App\Models\adminpanel\venue_users;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Auth;
@@ -19,21 +17,11 @@ class CustomersController extends Controller
         
         $this->users= new Users;
         $this->groups= new Groups;
-        $this->venueGroup= new Venue_groups;
-        $this->venue_users= new venue_users;
       }
       public function addcustomers(){
         $user=Auth::user(); 
-        $leadsTypes=getTypesOfLeads();
         
-        $VenueGroupData = $this->venueGroup->orderBy('created_at', 'desc')->with('ownerinfo')->get();
-        if($VenueGroupData)
-        $VenueGroupData= $VenueGroupData->toArray();
-        else
-        $VenueGroupData=array();
-        
- 
-         return view('adminpanel/add_customers',compact('user','VenueGroupData','leadsTypes'));
+         return view('adminpanel/add_customers',compact('user'));
      }
      public function SaveCustomersData(Request $request){
        
@@ -43,19 +31,28 @@ class CustomersController extends Controller
             'email'=>'required|email|distinct|unique:users|min:5',
             'mobileno'=>'required|distinct|unique:users|min:5',
             'phone'=>'required',
-            'venue_group_id'=>'required',
-            'leads_type'=>'required',
+            'business_mobile'=>'required|distinct|unique:users|min:5',
+            'business_phone'=>'required',
+            'business_name'=>'required',
+            'business_address'=>'required',
+            'subject'=>'required',
+            'message'=>'required',
             'city'=>'required',
         ]);
         
         
         $this->users->name=$request['firstname'].' '.$request['lastname'];
         $this->users->firstname=$request['firstname'];
-        $this->users->lead_type=$request['leads_type'];
         $this->users->lastname=$request['lastname'];
         $this->users->email=$request['email'];
         $this->users->mobileno=$request['mobileno'];
         $this->users->phone=$request['phone'];
+        $this->users->business_name=$request['business_name'];
+        $this->users->business_address=$request['business_address'];
+        $this->users->business_mobile=$request['business_mobile'];
+        $this->users->business_phone=$request['business_phone'];
+        $this->users->subject=$request['subject'];
+        $this->users->message=$request['message'];
         $this->users->is_active=1;
         $this->users->password=Hash::make('12345678');
 
@@ -71,13 +68,6 @@ class CustomersController extends Controller
   
         $request->session()->flash('alert-success', 'Customer Added! Please Check in customers list Tab');
         $this->users->save();
-       
-        $this->venue_users->user_id=$this->users->id;
-        $this->venue_users->venue_group_id=$request['venue_group_id'];
-        $this->venue_users->save();
-
-        $this->users->where('id', $this->users->id)
-                    ->update(array('venue_users_id'=>$this->venue_users->id));
         
                     // Activity Log
                     $activityComment='Mr.'.get_session_value('name').' Added new customer '.$this->users->name;
@@ -99,34 +89,30 @@ class CustomersController extends Controller
         $user=Auth::user();
         
         if($type=='pending'){
-            $customersData=$this->users->with('getVenueGroup')
+            $customersData=$this->users
             ->where('group_id', '=', config('constants.groups.customer'))
             ->where('status', '=', config('constants.lead_status.pending'))
             ->where('is_active', '=', 1)
-            ->where('venue_users_id', '!=', NULL)
             ->orderBy('created_at', 'desc')->paginate(config('constants.per_page'));
         }
         elseif($type=='approved'){
-            $customersData=$this->users->with('getVenueGroup')
+            $customersData=$this->users
             ->where('group_id', '=', config('constants.groups.customer'))
             ->where('status', '=', config('constants.lead_status.approved'))
             ->where('is_active', '=', 1)
-            ->where('venue_users_id', '!=', NULL)
             ->orderBy('created_at', 'desc')->paginate(config('constants.per_page'));
         }
         elseif($type=='cancelled'){
-            $customersData=$this->users->with('getVenueGroup')
+            $customersData=$this->users
             ->where('group_id', '=', config('constants.groups.customer'))
             ->where('status', '=', config('constants.lead_status.cancelled'))
             ->where('is_active', '=', 1)
-            ->where('venue_users_id', '!=', NULL)
             ->orderBy('created_at', 'desc')->paginate(config('constants.per_page'));
         }
         else{
-            $customersData=$this->users->with('getVenueGroup')
+            $customersData=$this->users
             ->where('group_id', '=', config('constants.groups.customer'))
             ->where('is_active', '=', 1)
-            ->where('venue_users_id', '!=', NULL)
             ->orderBy('created_at', 'desc')->paginate(config('constants.per_page'));
         }
         
@@ -305,9 +291,9 @@ class CustomersController extends Controller
             $dataArray['error']='No';
             $dataArray['msg']='Lead Successfully Updated';
             $dataArray['title']='Leads Panel';
-            $leadsData=getLeadWithVenuebyID($req['id']);
+            $leadsData=$this->users->where('id',$req['id'])->get()->toArray();
+            $leadsData=$leadsData[0];
             
-            //p($leadsData);
             $leadHTML='<div class="container">
             <div class="row">
                 <div class="col-1">&nbsp;</div>
@@ -349,39 +335,59 @@ class CustomersController extends Controller
             </div>
             <div class="row">
                 <div class="col-1">&nbsp;</div>
-                <div class="col-5"><strong>Venue Group Name</strong></div>
+                <div class="col-5"><strong>Business Name</strong></div>
                 <div class="col-5">
-                    '.$leadsData['get_venue_group_detail']['name'].'
+                    '.$leadsData['business_name'].'
                 </div>
                 <div class="col-1">&nbsp;</div>
             </div>
             <div class="row">
                 <div class="col-1">&nbsp;</div>
                 <div class="col-5">
-                    <strong>Venue Group Address</strong>
+                    <strong>Business Address</strong>
                 </div>
                 <div class="col-5">
-                    '.$leadsData['get_venue_group_detail']['address'].'
-                </div>
-                <div class="col-1">&nbsp;</div>
-            </div>
-            <div class="row">
-                <div class="col-1">&nbsp;</div>
-                <div class="col-5">
-                    <strong>Venue Manager Name</strong>
-                </div>
-                <div class="col-5">
-                    '.$leadsData['get_venue_group_detail']['hod_name'].'
+                    '.$leadsData['business_address'].'
                 </div>
                 <div class="col-1">&nbsp;</div>
             </div>
             <div class="row">
                 <div class="col-1">&nbsp;</div>
                 <div class="col-5">
-                    <strong>Manager Phone NO.</strong>
+                    <strong>Business Phone</strong>
                 </div>
                 <div class="col-5">
-                    '.$leadsData['get_venue_group_detail']['hod_phone'].'
+                    '.$leadsData['business_phone'].'
+                </div>
+                <div class="col-1">&nbsp;</div>
+            </div>
+            <div class="row">
+                <div class="col-1">&nbsp;</div>
+                <div class="col-5">
+                    <strong>Business Mobile.</strong>
+                </div>
+                <div class="col-5">
+                    '.$leadsData['business_mobile'].'
+                    </div>
+                <div class="col-1">&nbsp;</div>
+            </div>
+            <div class="row">
+                <div class="col-1">&nbsp;</div>
+                <div class="col-5">
+                    <strong>Lead Subject</strong>
+                </div>
+                <div class="col-5">
+                    '.$leadsData['subject'].'
+                    </div>
+                <div class="col-1">&nbsp;</div>
+            </div>
+            <div class="row">
+                <div class="col-1">&nbsp;</div>
+                <div class="col-5">
+                    <strong>Lead Message</strong>
+                </div>
+                <div class="col-5">
+                    '.$leadsData['message'].'
                     </div>
                 <div class="col-1">&nbsp;</div>
             </div>
@@ -393,21 +399,18 @@ class CustomersController extends Controller
             $dataArray['msg']='customer Successfully Updated';
             $dataArray['title']='Leads Panel';
             $dataArray['actionType']='move_to_customer';
-            //$dataArray['formdata']=$req->all();
-
-            // $this->venue_users->user_id=$req['id'];
-            // $this->venue_users->venue_group_id=$req['venue_group_id'];
-            // $this->venue_users->save();
-    
-            $this->venue_users->where('id', $req['venue_user_id'])->update(array('venue_group_id'=>$req['venue_group_id']));
+            
             $LeadData=array();
             $dataArray['firstname']=$req['firstname'];
             $dataArray['lastname']=$req['lastname'];
             $dataArray['name']=$req['firstname'].' '.$req['lastname'];
             $dataArray['mobileno']=$req['mobileno'];
             $dataArray['phone']=$req['phone'];
+            $dataArray['business_name']=$req['business_name'];
+            $dataArray['business_address']=$req['business_address'];
+            $dataArray['business_mobile']=$req['business_mobile'];
+            $dataArray['business_phone']=$req['business_phone'];
             $dataArray['id']=$req['lead_id'];
-            $dataArray['lead_type']=$req['lead_type'];
             if(isset($req['othercity']) && !empty($req['othercity']))
                 $cityId = getOtherCity($req['othercity']);
             else
@@ -420,8 +423,11 @@ class CustomersController extends Controller
                     'name'=>$req['firstname'].' '.$req['lastname'],
                     'mobileno'=>$req['mobileno'],
                     'phone'=>$req['phone'],
+                    'business_name'=>$req['business_name'],
+                    'business_address'=>$req['business_address'],
+                    'business_mobile'=>$req['business_mobile'],
+                    'business_mobile'=>$req['business_mobile'],
                     'group_id'=>config('constants.groups.customer'),
-                    'lead_type'=>$req['lead_type'],
                     'city_id'=>$cityId)
             );
             // Activity Logged
@@ -433,12 +439,7 @@ class CustomersController extends Controller
                 'others'=>'users',
                 'created_at'=>date('Y-m-d H:I:s',time()),
             ));
-            //$this->users->where('id', $req['lead_id'])->update(array($LeadData));
-
-            $leadType=config('constants.lead_types.'.$req['lead_type']);
-            $dataArray['lead_type_tile']=$leadType['title'];
-            $dataArray['venue_group_name']=$req['venue_group_name'];
-       
+            
             echo json_encode($dataArray);
             die;
 
@@ -492,59 +493,17 @@ class CustomersController extends Controller
         else if(isset($req['action']) && $req['action'] =='updateLeadForm'){
             $dataArray['error']='No';
            
-            $data=getLeadWithVenuebyID($req['id']);
-           // p($data); die;
+            $data=$this->users->where('id',$req['id'])->get()->toArray();
+           $data=$data[0];
             $csrf_token = csrf_token();
-            $venueGroupOptions=$leadTypeOptions='';            
-            $leadsTypes=getTypesOfLeads();
-          
-            foreach ($leadsTypes as $key=>$leadtype) 
-            {
-                $selected='';
-                if($data['lead_type']==$key)
-                $selected='selected';
-                $leadTypeOptions .='<option '.$selected.' value="' . $key . '">' . $leadtype['title'] .'</option>';
-             }
-
-             // Get Venue Group detail to list dropdown
-             $VenueGroupData = $this->venueGroup->orderBy('created_at', 'desc')->with('ownerinfo')->get();
-                if($VenueGroupData)
-                $VenueGroupData= $VenueGroupData->toArray();
-                else
-                $VenueGroupData=array();
-
-             foreach ($VenueGroupData as $venueData){
-                $selected='';
-                if($data['get_venue_group_detail']['id']==$venueData['id']){
-                    $selected='selected';
-                    $venueGroupName=$venueData['name'];
-                }
-                
-                $venueGroupOptions .='<option '.$selected.' value="' . $venueData['id'] . '">' . $venueData['name'] . '</option>';
-             }
             
-        
 $formHtml='<form id="EditLeadForm"
                                                                             method="GET"
                                                                             action=""
                                                                             onsubmit="return updateLead('. $data['id'].','. $req['counter'].')">
                                                                             <input type="hidden" name="_token" value="'.$csrf_token.'" />
                                                                             <input type="hidden" name="action" value="SaveEditFormLead" />
-                                                                            <input type="hidden" name="venue_user_id" value="'.$data['get_venue_group']['id'].'" />
                                                                             <input type="hidden" name="lead_id" value="'.$data['id'].'" />
-                                                                            <input type="hidden" id="venue_group_name" name="venue_group_name" value="'.$venueGroupName.'" />
-
-                                                                            <div class="row form-group">
-                                                                                <div class="col-3">&nbsp;</div>
-                                                                                <div class="col-6">
-                                                                                    <div class="input-group mb-3">
-                                                                                    <select name="lead_type"class="form-control select2bs4" placeholder="Select Lead Type">
-                                                                                   '.$leadTypeOptions.'
-                                                                                    </select>
-                                                                                    </div>
-                                                                                </div>
-                                                                                <div class="col-3">&nbsp;</div>
-                                                                            </div>
                                                                             <div class="row form-group">
                                                                                 <div class="col-3">&nbsp;</div>
                                                                                 <div class="col-6">
@@ -607,15 +566,6 @@ $formHtml='<form id="EditLeadForm"
                                                                                 </div>
                                                                             </div>
                                                                             <div class="col-3">&nbsp;</div>
-                                                                            </div>
-                                                                            <div class="row form-group">
-                                                                                <div class="col-3">&nbsp;</div>
-                                                                                <div class="col-6">
-                                                                                    <div class="input-group mb-3">
-                                                                                    <select id="venue_group_id" name="venue_group_id" onchange="$(\'#venue_group_name\').val($(\'#venue_group_id option:selected\').text())" class="form-control select2bs4" placeholder="Select Venue Group">'.$venueGroupOptions.'</select>
-                                                                                    </div>
-                                                                                </div>
-                                                                                <div class="col-3">&nbsp;</div>
                                                                             </div>
                                                                             <div class="row form-group">
                                                                                 <div class="col-5">&nbsp;</div>
@@ -633,60 +583,19 @@ $formHtml='<form id="EditLeadForm"
         }
         else if(isset($req['action']) && $req['action'] =='editCustomerForm'){
             $dataArray['error']='No';
-           
-            $data=getLeadWithVenuebyID($req['id']);
-           // p($data); die;
-            $csrf_token = csrf_token();
-            $venueGroupOptions=$leadTypeOptions='';            
-            $leadsTypes=getTypesOfLeads();
-          
-            foreach ($leadsTypes as $key=>$leadtype) 
-            {
-                $selected='';
-                if($data['lead_type']==$key)
-                $selected='selected';
-                $leadTypeOptions .='<option '.$selected.' value="' . $key . '">' . $leadtype['title'] .'</option>';
-             }
-
-             // Get Venue Group detail to list dropdown
-             $VenueGroupData = $this->venueGroup->orderBy('created_at', 'desc')->with('ownerinfo')->get();
-                if($VenueGroupData)
-                $VenueGroupData= $VenueGroupData->toArray();
-                else
-                $VenueGroupData=array();
-
-             foreach ($VenueGroupData as $venueData){
-                $selected='';
-                if($data['get_venue_group_detail']['id']==$venueData['id']){
-                    $selected='selected';
-                    $venueGroupName=$venueData['name'];
-                }
-                
-                $venueGroupOptions .='<option '.$selected.' value="' . $venueData['id'] . '">' . $venueData['name'] . '</option>';
-             }
             
-        
+            $data=$this->users->where('id',$req['id'])->get()->toArray();
+            $data=$data[0];
+            $csrf_token = csrf_token();
+            
 $formHtml='<form id="EditCustomerForm"
                                                                             method="GET"
                                                                             action=""
                                                                             onsubmit="return updateCustomer('. $data['id'].','. $req['counter'].')">
                                                                             <input type="hidden" name="_token" value="'.$csrf_token.'" />
                                                                             <input type="hidden" name="action" value="SaveAddtoCustomerForm" />
-                                                                            <input type="hidden" name="venue_user_id" value="'.$data['get_venue_group']['id'].'" />
                                                                             <input type="hidden" name="lead_id" value="'.$data['id'].'" />
-                                                                            <input type="hidden" id="venue_group_name" name="venue_group_name" value="'.$venueGroupName.'" />
-
-                                                                            <div class="row form-group">
-                                                                                <div class="col-3">&nbsp;</div>
-                                                                                <div class="col-6">
-                                                                                    <div class="input-group mb-3">
-                                                                                    <select name="lead_type"class="form-control select2bs4" placeholder="Select Lead Type">
-                                                                                   '.$leadTypeOptions.'
-                                                                                    </select>
-                                                                                    </div>
-                                                                                </div>
-                                                                                <div class="col-3">&nbsp;</div>
-                                                                            </div>
+                                                                                                                        
                                                                             <div class="row form-group">
                                                                                 <div class="col-3">&nbsp;</div>
                                                                                 <div class="col-6">
@@ -751,6 +660,42 @@ $formHtml='<form id="EditCustomerForm"
                                                                             <div class="col-3">&nbsp;</div>
                                                                             </div>
                                                                             <div class="row form-group">
+                                                                            <div class="col-3">&nbsp;</div>
+                                                                            <div class="col-6">
+                                                                                <div class="input-group mb-3">
+                                                                                    <input  type="text" name="business_name" class="form-control" placeholder="Business Name " value="'. $data['business_name'].'" required>
+                                                                                </div>
+                                                                            </div>
+                                                                            <div class="col-3">&nbsp;</div>
+                                                                            </div>
+                                                                            <div class="row form-group">
+                                                                            <div class="col-3">&nbsp;</div>
+                                                                            <div class="col-6">
+                                                                                <div class="input-group mb-3">
+                                                                                    <input  type="text" name="business_address" class="form-control" placeholder="Business Address" value="'. $data['business_address'].'" required>
+                                                                                </div>
+                                                                            </div>
+                                                                            <div class="col-3">&nbsp;</div>
+                                                                            </div>
+                                                                            <div class="row form-group">
+                                                                            <div class="col-3">&nbsp;</div>
+                                                                            <div class="col-6">
+                                                                                <div class="input-group mb-3">
+                                                                                    <input  type="text" name="business_mobile" class="form-control" placeholder="Business Mobile No." value="'. $data['business_mobile'].'" required>
+                                                                                </div>
+                                                                            </div>
+                                                                            <div class="col-3">&nbsp;</div>
+                                                                            </div>
+                                                                            <div class="row form-group">
+                                                                            <div class="col-3">&nbsp;</div>
+                                                                            <div class="col-6">
+                                                                                <div class="input-group mb-3">
+                                                                                    <input  type="text" name="business_phone" class="form-control" placeholder="Business Phone No." value="'. $data['business_phone'].'" required>
+                                                                                </div>
+                                                                            </div>
+                                                                            <div class="col-3">&nbsp;</div>
+                                                                            </div>
+                                                                            <div class="row form-group">
                                                                                 <div class="col-3">&nbsp;</div>
                                                                                 <div class="col-6">
                                                                                     <div class="input-group mb-3">
@@ -760,15 +705,7 @@ $formHtml='<form id="EditCustomerForm"
                                                                                 <div class="col-3">&nbsp;</div>
                                                                             </div>
                                                                             <div id="othercity"></div>
-                                                                            <div class="row form-group">
-                                                                                <div class="col-3">&nbsp;</div>
-                                                                                <div class="col-6">
-                                                                                    <div class="input-group mb-3">
-                                                                                    <select id="venue_group_id" name="venue_group_id" onchange="$(\'#venue_group_name\').val($(\'#venue_group_id option:selected\').text())" class="form-control select2bs4" placeholder="Select Venue Group">'.$venueGroupOptions.'</select>
-                                                                                    </div>
-                                                                                </div>
-                                                                                <div class="col-3">&nbsp;</div>
-                                                                            </div>
+                                                                            
                                                                             <div class="row form-group">
                                                                                 <div class="col-4">&nbsp;</div>
                                                                                 <div class="col-4">

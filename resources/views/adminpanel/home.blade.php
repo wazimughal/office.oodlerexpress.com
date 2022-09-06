@@ -121,7 +121,7 @@
                     @php
                     $boxDataArr=array();
                     $k=1;
-                        for($i=0; $i<4; $i++){
+                        for($i=0; $i<3; $i++){
 
                         if(isset($user_info[$i]) && !empty($user_info[$i])){
 
@@ -133,13 +133,6 @@
                             $boxDataArr['title']='Admin';
                             $boxDataArr['more']='/admin/lead/pending';
                             }
-                        elseif($userData->group_id==config('constants.groups.venue_group_hod')){
-                            $boxDataArr['class']='bg-success';
-                            $boxDataArr['total']=$userData->total;
-                            $boxDataArr['type']=$userData->group_id;
-                            $boxDataArr['title']='Venue Groups';
-                            $boxDataArr['more']='/admin/lead/approved';
-                            }
                         elseif($userData->group_id==config('constants.groups.customer')){
                             $boxDataArr['class']='bg-danger';
                             $boxDataArr['total']=$userData->total;
@@ -147,11 +140,11 @@
                             $boxDataArr['title']='Customers';
                             $boxDataArr['more']='/admin/lead/cancelled';
                             }
-                        elseif($userData->group_id==config('constants.groups.photographer')){
+                        elseif($userData->group_id==config('constants.groups.driver')){
                             $boxDataArr['class']='bg-info';
                             $boxDataArr['total']=$userData->total;
                             $boxDataArr['type']=$userData->group_id;
-                            $boxDataArr['title']='Photographers';
+                            $boxDataArr['title']='Drivers';
                             $boxDataArr['more']='/admin/lead/trash';
                             }
                         }
