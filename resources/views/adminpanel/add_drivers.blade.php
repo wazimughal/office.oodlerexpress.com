@@ -212,29 +212,6 @@
                                         </div>
                                         <div class="col-3">&nbsp;</div>
                                     </div>
-                                    <div class="row form-group">
-                                        <div class="col-3">&nbsp;</div>
-                                        <div class="col-6">
-                                        <div class="input-group mb-3">
-                                            <div class="input-group">
-                                            <div class="custom-file">
-                                              <input type="file" class="custom-file-input" id="exampleInputFile">
-                                              <label class="custom-file-label" for="exampleInputFile">Choose file</label>
-                                            </div>
-                                            <div class="input-group-append">
-                                              <span class="input-group-text">Upload</span>
-                                            </div>
-                                          </div>
-                                          @error('address')
-                                              <div class="invalid-feedback">
-                                                  {{ $message }}
-                                              </div>
-                                          @enderror
-                                      </div>
-                                        </div>
-                                        <div class="col-3">&nbsp;</div>
-                                    </div>
-                                    
                                     {{-- New Row Button --}}
                                     <div class="row form-group">
                                         <div class="col-5">&nbsp;</div>

@@ -79,6 +79,7 @@
                                             
                                             <td>
 
+                                                <a href="{{ url('/admin/drivers/add-documents/'.$data['id']) }}" class="btn btn-success btn-block btn-sm"><i class="fas fa-plus"></i>Add documents</a>
                                                 <button onClick="editdriverForm({{ $data['id'] }},{{ $counter }})"
                                                     class="btn btn-info btn-block btn-sm"><i class="fas fa-edit"></i>
                                                     Edit</button>

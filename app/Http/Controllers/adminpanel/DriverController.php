@@ -6,9 +6,11 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\adminpanel\Users;
 use App\Models\adminpanel\Groups;
+use App\Models\adminpanel\FilesManage;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Auth;
+
 
 class DriverController extends Controller
 {
@@ -18,11 +20,59 @@ class DriverController extends Controller
         
         $this->users= new Users;
         $this->groups= new Groups;
+        $this->files= new FilesManage;
       }
       public function adddrivers(){
         $user=Auth::user(); 
         
          return view('adminpanel/add_drivers',compact('user'));
+     }
+    public function add_documents($id){
+        $user=Auth::user(); 
+        $userData=$this->users->where('id',$id)->with('files')->with('city')->with('ZipCode')->with('getGroups')->get()->toArray();
+       
+         return view('adminpanel/uploadform',compact('user','userData'));
+         return view('adminpanel/add_driver_documents',compact('user','userData'));
+     }
+    public function upload_documents($id,Request $request){
+        $user=Auth::user();
+            $image = $request->file('file');
+            $imageExt=$image->extension();
+            $imageName = time().'.'.$imageExt;
+
+     
+
+            $image->move(public_path('uploads'),$imageName);
+            $orginalImageName=$image->getClientOriginalName();
+        
+        //return response()->json(['success'=>$imageName]);
+
+            $this->files->name=$orginalImageName;
+            $this->files->slug=phpslug($imageName);
+            $this->files->path=url('uploads').'/'.$imageName;
+            $this->files->description=$orginalImageName.' file uploaded';
+            $this->files->otherinfo=$imageExt;
+            $this->files->user_id=$id;
+            $this->files->save();
+        //             ->update($data);
+        // $this->files->where('id', $id)
+        //             ->update($data);
+
+                    // Activity Log
+                    $activityComment='Mr.'.get_session_value('name').' uploaded documents for driver';
+                    $activityData=array(
+                        'user_id'=>get_session_value('id'),
+                        'action_taken_on_id'=>$id,
+                        'action_slug'=>'driver_documents_added',
+                        'comments'=>$activityComment,
+                        'others'=>'files',
+                        'created_at'=>date('Y-m-d H:I:s',time()),
+                    );
+                    $activityID=log_activity($activityData);
+
+        return response()->json(['success'=>$imageName]);
+
+        
      }
      public function SavedriversData(Request $request){
        
@@ -182,35 +232,29 @@ class DriverController extends Controller
             echo json_encode($dataArray);
             die;
         }
-        if(isset($req['action']) && $req['action']=='changestatus'){ 
-            $dataArray['title']='Lead Status Updated ';
-            $activityComment='Mr.'.get_session_value('name').' moved driver to approved/pending/cancelled';
-
-            if(config('constants.lead_status.pending')==$req['status']){
-            $dataArray['status_btn']='<a disabled="" class="btn bg-gradient-danger btn-flat btn-sm"><i class="fas fa-chart-line"></i> Pending</a>';
-            $activityComment='Mr.'.get_session_value('name').' moved driver to pending';
-            }
-            else if(config('constants.lead_status.approved')==$req['status']){
-            $dataArray['status_btn']='<a disabled="" class="btn bg-gradient-success btn-flat btn-sm"><i class="fas fa-chart-line"></i> Approved</a>';
-            $activityComment='Mr.'.get_session_value('name').' moved driver to approved';
-            }
-            else if(config('constants.lead_status.cancelled')==$req['status']){
-            $dataArray['status_btn']='<a disabled="" class="btn bg-gradient-secondary btn-flat btn-sm"><i class="fas fa-chart-line"></i> Cancelled</a>';
-            $activityComment='Mr.'.get_session_value('name').' moved driver to cancelled';
-            }
-            $result=$this->users->where('id','=',$id)->update(array('status'=>$req['status']));             
-            if($result){
-                $dataArray['msg']='Mr.'.get_session_value('name').', driver '.$req['alertmsg'].' successfully!';
+        if(isset($req['action']) && $req['action']=='delteFile'){ 
+            $dataArray['title']='ٖFile deleted';
+            $fileData=$this->files->where('id','=',$id)->get()->toArray();
+            if($fileData){
+                $fileData=$fileData[0];
+              $filePath=public_path('uploads').'/'.$fileData['slug'];
+              
+                unlink($filePath);
                 
+           
+                $file=$this->files->where('id', $id)->delete();
+                $dataArray['msg']='Mr.'.get_session_value('name').', deleted  '.$fileData['name'].' successfully!';
+                $activityComment=$fileData['name'].' File delted ';
                 $activityData=array(
                     'user_id'=>get_session_value('id'),
                     'action_taken_on_id'=>$id,
-                    'action_slug'=>'driver_status_changed',
+                    'action_slug'=>'file_deleted',
                     'comments'=>$activityComment,
-                    'others'=>'users',
+                    'others'=>'files',
                     'created_at'=>date('Y-m-d H:I:s',time()),
                 );
                 $activityID=log_activity($activityData);
+                $dataArray['error']='No';
             }
             
             else{

@@ -18,6 +18,7 @@ if(!function_exists('get_session_value')){
     function get_session_value($key=NULL){
 
         $userData=session()->get('userData'); 
+        
         if($key==NULL)
         return $userData;
         return $userData[$key];
@@ -31,13 +32,27 @@ if(!function_exists('phpslug')){
         return $slug;
     }
 }
-if(!function_exists('getParamsByTestID')){
-    function getParamsByTestID($id){
-        $testParams = App\Models\adminpanel\LabTestsParams::where('lab_test_id',$id)->orderBy('created_at', 'desc')->get();
-        if($testParams)
-        return $testParams->toArray();
-        
-        return array();
+if(!function_exists('userNameByGroupID')){
+    function userNameByGroupID($group_id){
+        switch ($group_id) {
+            case 1:
+             return 'Admin';
+              break;
+            case 2:
+                return 'Customer';
+              break;
+            case 3:
+                return 'Driver';
+              break;
+            case 4:
+                return 'Staff';
+              break;
+            case 5:
+                return 'Lead';
+              break;
+            default:
+              return 'invalid';
+          }
     }
 }
 if(!function_exists('getGroups')){
@@ -85,15 +100,6 @@ if(!function_exists('getAllGroups')){
     }
 }
 
-if(!function_exists('getVenueGrpupById')){
-    function getVenueGrpupById($id){
-        $Organizations = App\Models\adminpanel\Venue_groups::orderBy('created_at', 'desc')->with('ownerinfo')->where('id',$id)->get();
-        if($Organizations)
-        return $Organizations->toArray();
-        
-        return array();
-    }
-}
 // Add City in cities table if already city not exist 
 if(!function_exists('getOtherCity')){
     function getOtherCity($name){

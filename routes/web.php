@@ -37,7 +37,7 @@ Route::get('clearcache', function () {
     $exitCode = Artisan::call('config:cache');
     $exitCode1 = Artisan::call('config:clear');
     $exitCode2 = Artisan::call('cache:clear');
-   // $exitCode3 = Artisan::call('route:cache');
+    $exitCode3 = Artisan::call('route:cache');
 
     return "View Cache Cleared!";
 });
@@ -46,19 +46,12 @@ Route::resource('/admin/patient-reports', PatientReportsController::class)->exce
     'store'
 ])->middleware('adminHodGaurd');
 
-Route::post('/admin/patient-reports/save', [PatientReportsController::class,'saveReport'])->name('save')->middleware('adminHodGaurd');
-Route::get('/admin/patient-reports/delete/{id}', [PatientReportsController::class,'destroy'])->name('destroy')->middleware('adminHodGaurd');
-Route::get('/admin/patient-reports/show/{id}', [PatientReportsController::class,'showReportJson'])->name('showReport')->middleware('adminHodGaurd');
-Route::get('/admin/patient-reports/view/{id}', [PatientReportsController::class,'viewReport'])->name('view')->middleware('adminHodGaurd');
-
-
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
-Route::get('/admin/login/', [AdminController::class,'login'])->name('admin/login/');
-//Route::post('/admin/login/', [AdminController::class,'getlogin'])->name('admin/login/');
-Route::post('/admin/login/', [AdminController::class,'authenticate'])->name('admin/login/');
-Route::get('/admin/register/', [AdminController::class,'index'])->name('admin/register/');
-Route::post('/admin/register/', [AdminController::class,'register'])->name('admin/register/');
+Route::get('/admin/login/', [AdminController::class,'login'])->name('admin.loginform');
+Route::post('/admin/login/', [AdminController::class,'authenticate'])->name('admin.loginpost');
+Route::get('/admin/register/', [AdminController::class,'index'])->name('admin.registerform');
+Route::post('/admin/register/', [AdminController::class,'register'])->name('admin.registerpost');
 Route::get('/admin/logout/', [AdminController::class,'logout'])->name('admin/logout/');
 
 
@@ -73,16 +66,10 @@ Route::get('/admin/dashboard/{id?}', [DashboardController::class,'index'])->name
 
 Route::middleware(['adminHodGaurd'])->group(function () {
 
-//CRUD for Organization Data
-Route::get('/admin/organizations',[OrganizationsController::class,'show'])->name('/admin/organizations');
-Route::get('/admin/organizations/add',[OrganizationsController::class,'add'])->name('/admin/organizations/add');
-Route::post('admin/organizations/add',[OrganizationsController::class,'SaveOrgData'])->name('admin/organizations/add');
-Route::get('admin/organizations/update/{id}',[OrganizationsController::class,'UpdateOrgData'])->name('admin/organizations/update/{id}');
-
 // Lead Management 
 
-Route::get('/admin/leads',[App\Http\Controllers\adminpanel\LeadsController::class,'leads'])->name('/admin/leads');
-Route::get('/admin/lead/{type?}',[App\Http\Controllers\adminpanel\LeadsController::class,'leads'])->name('/admin/leads');
+Route::get('/admin/leads',[App\Http\Controllers\adminpanel\LeadsController::class,'leads'])->name('/admin.leads');
+Route::get('/admin/lead/{type?}',[App\Http\Controllers\adminpanel\LeadsController::class,'leads'])->name('admin.lead');
 Route::get('/admin/leads/add',[App\Http\Controllers\adminpanel\LeadsController::class,'addLeads'])->name('/admin/leads/add');
 Route::post('admin/leads/add',[App\Http\Controllers\adminpanel\LeadsController::class,'SaveUsersData'])->name('admin/leads/add');
 Route::any('admin/leads/ajaxcall/{id}',[App\Http\Controllers\adminpanel\LeadsController::class,'ajaxcall'])->name('admin/leads/changestatus/{id}');
@@ -96,9 +83,14 @@ Route::any('admin/customers/ajaxcall/{id}',[App\Http\Controllers\adminpanel\Cust
 
 // Driver Management 
 Route::get('/admin/drivers',[App\Http\Controllers\adminpanel\DriverController::class,'drivers'])->name('/admin/drivers');
-Route::get('/admin/drivers/add',[App\Http\Controllers\adminpanel\DriverController::class,'adddrivers'])->name('/admin/drivers/add');
-Route::post('admin/drivers/add',[App\Http\Controllers\adminpanel\DriverController::class,'SavedriversData'])->name('admin/drivers/add');
-Route::any('admin/drivers/ajaxcall/{id}',[App\Http\Controllers\adminpanel\DriverController::class,'ajaxcall'])->name('admin/drivers/changestatus/{id}');
+Route::get('/admin/drivers/add-documents/{id}',[App\Http\Controllers\adminpanel\DriverController::class,'add_documents'])->name('drivers.add-documents');
+Route::any('/admin/drivers/upload-documents/{id}',[App\Http\Controllers\adminpanel\DriverController::class,'upload_documents'])->name('drivers.uploaddocuments');
+// For Testing Purpose
+Route::any('dropzone/store/{id?}', [App\Http\Controllers\adminpanel\DriverController::class,'upload_documents'])->name('dropzone.store');
+
+Route::get('/admin/drivers/add',[App\Http\Controllers\adminpanel\DriverController::class,'adddrivers'])->name('drivers.openform');
+Route::post('admin/drivers/add',[App\Http\Controllers\adminpanel\DriverController::class,'SavedriversData'])->name('drivers.add');
+Route::any('admin/drivers/ajaxcall/{id}',[App\Http\Controllers\adminpanel\DriverController::class,'ajaxcall'])->name('drivers.ajaxcall');
 
 // Venue Group Management 
 Route::get('/admin/venuegroups',[App\Http\Controllers\adminpanel\VenuegroupsController::class,'venuegroups'])->name('/admin/venuegroups');

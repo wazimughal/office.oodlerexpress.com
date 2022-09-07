@@ -28,4 +28,8 @@ class Users extends Model
        {
            return $this->hasOne(zipcode::class, 'id', 'zipcode_id');
        }
+    public function files()
+       {
+           return $this->hasMany(FilesManage::class, 'user_id', 'id');
+       }
 }
