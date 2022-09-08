@@ -18,17 +18,7 @@
         </div>
       </div>
 
-      <!-- SidebarSearch Form -->
-      {{-- <div class="form-inline">
-        <div class="input-group" data-widget="sidebar-search">
-          <input class="form-control form-control-sidebar" type="search" placeholder="Search" aria-label="Search">
-          <div class="input-group-append">
-            <button class="btn btn-sidebar">
-              <i class="fas fa-search fa-fw"></i>
-            </button>
-          </div>
-        </div>
-      </div> --}}
+      
 
       <!-- Sidebar Menu -->
       <nav class="mt-2">
@@ -121,6 +111,48 @@
           </li>
           <li class="nav-item">
             <a href="#" class="nav-link">
+              <i class="nav-icon far fa-building"></i>
+              <p>
+                Quotes
+                <i class="right fas fa-angle-left"></i>
+              </p>
+            </a>
+            <ul class="nav nav-treeview">
+              <li class="nav-item">
+                <a href="{{url('admin/quotes/request')}}" class="nav-link">
+                  <i class="fa fa-plus"></i>
+                  <p>Request Quote</p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="{{url('admin/quotes')}}" class="nav-link">
+                  <i class="fa fa-hospital"></i>
+                  <p>All Quotes</p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="{{url('admin/quote/pending')}}" class="nav-link">
+                  <i class="fa fa-hospital"></i>
+                  <p>Pending Quotes</p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="{{url('admin/quote/approved')}}" class="nav-link">
+                  <i class="fa fa-hospital"></i>
+                  <p>Aproved Quotes</p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="{{url('admin/quote/cancelled')}}" class="nav-link">
+                  <i class="fa fa-hospital"></i>
+                  <p>Cancelled Quotes</p>
+                </a>
+              </li>
+              
+            </ul>
+          </li>
+          <li class="nav-item ">
+            <a href="#" class="nav-link">
               <i class="nav-icon fa fa-images"></i>
               <p>
                 Drivers
@@ -143,7 +175,7 @@
               </li>
             </ul>
           </li>
-          <li class="nav-item">
+          <li class="nav-item menu-open">
             <a href="#" class="nav-link">
               <i class="nav-icon fa fa-users"></i>
               <p>
@@ -169,6 +201,15 @@
             </ul>
           </li>
           <li class="nav-item">
+            <a href="{{url('admin/calender')}}" class="nav-link">
+              <i class="nav-icon far fa-calendar-alt"></i>
+              <p>
+                Calendar
+                <span class="badge badge-info right">2</span>
+              </p>
+            </a>
+          </li>
+          <li class="nav-item">
             <a href="#" class="nav-link">
               <i class="nav-icon fa fa-images"></i>
               <p>
@@ -186,6 +227,14 @@
               </li>
              
             </ul>
+          </li>
+          <li class="nav-item">
+            <a href="{{url('/admin/colors')}}" class="nav-link">
+              <i class="nav-icon far fa-calendar-alt"></i>
+              <p>
+                Color Management
+              </p>
+            </a>
           </li>
           <li class="nav-item">
             <a href="{{url('/admin/logout')}}" class="nav-link">

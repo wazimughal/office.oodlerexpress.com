@@ -81,6 +81,20 @@ Route::get('/admin/customers/add',[App\Http\Controllers\adminpanel\CustomersCont
 Route::post('admin/customers/add',[App\Http\Controllers\adminpanel\CustomersController::class,'SaveCustomersData'])->name('admin/customers/add');
 Route::any('admin/customers/ajaxcall/{id}',[App\Http\Controllers\adminpanel\CustomersController::class,'ajaxcall'])->name('admin/customers/changestatus/{id}');
 
+// Color Management 
+Route::get('/admin/colors',[App\Http\Controllers\adminpanel\ColorsController::class,'colors'])->name('colors');
+//Route::get('/admin/colors/add',[App\Http\Controllers\adminpanel\ColorsController::class,'addcolors'])->name('colors.addfomr');
+Route::post('/admin/colors',[App\Http\Controllers\adminpanel\ColorsController::class,'SavecolorsData'])->name('colors.add');
+Route::any('admin/colors/ajaxcall/{id}',[App\Http\Controllers\adminpanel\ColorsController::class,'ajaxcall'])->name('colors.ajaxcall');
+
+// Quotes Management 
+
+Route::get('/admin/quotes',[App\Http\Controllers\adminpanel\QuotesController::class,'quotes'])->name('admin.quotes');
+Route::get('/admin/quote/{type?}',[App\Http\Controllers\adminpanel\QuotesController::class,'quotes'])->name('admin.quote.types');
+Route::get('/admin/quotes/request',[App\Http\Controllers\adminpanel\QuotesController::class,'addquotes'])->name('admin.quotes.reqform');
+Route::post('admin/quotes/add',[App\Http\Controllers\adminpanel\QuotesController::class,'SaveUsersData'])->name('admin.quotes.add');
+Route::any('admin/quotes/ajaxcall/{id}',[App\Http\Controllers\adminpanel\QuotesController::class,'ajaxcall'])->name('quotes.ajaxcall');
+
 // Driver Management 
 Route::get('/admin/drivers',[App\Http\Controllers\adminpanel\DriverController::class,'drivers'])->name('/admin/drivers');
 Route::get('/admin/drivers/add-documents/{id}',[App\Http\Controllers\adminpanel\DriverController::class,'add_documents'])->name('drivers.add-documents');
@@ -92,12 +106,6 @@ Route::get('/admin/drivers/add',[App\Http\Controllers\adminpanel\DriverControlle
 Route::post('admin/drivers/add',[App\Http\Controllers\adminpanel\DriverController::class,'SavedriversData'])->name('drivers.add');
 Route::any('admin/drivers/ajaxcall/{id}',[App\Http\Controllers\adminpanel\DriverController::class,'ajaxcall'])->name('drivers.ajaxcall');
 
-// Venue Group Management 
-Route::get('/admin/venuegroups',[App\Http\Controllers\adminpanel\VenuegroupsController::class,'venuegroups'])->name('/admin/venuegroups');
-Route::get('/admin/venuegroups/add',[App\Http\Controllers\adminpanel\VenuegroupsController::class,'addvenuegroups'])->name('/admin/venuegroups/add');
-Route::post('admin/venuegroups/add',[App\Http\Controllers\adminpanel\VenuegroupsController::class,'SavevenuegroupsData'])->name('admin/venuegroups/add');
-Route::any('admin/venuegroups/ajaxcall/{id}',[App\Http\Controllers\adminpanel\VenuegroupsController::class,'ajaxcall'])->name('admin/venuegroups/changestatus/{id}');
-
 //echo 'echo'. config('constants.groups.staff');
 //echo '<br>echasdo'. config('constants.groups.subscriber'); die;
 // Users Management
@@ -108,6 +116,7 @@ Route::any('admin/users/update/{id}',[App\Http\Controllers\adminpanel\AdminContr
 Route::any('admin/users/delete/{id}',[App\Http\Controllers\adminpanel\AdminController::class,'DeleteUsersData'])->name('admin/users/delete/{id}');
 Route::any('admin/users/changestatus/{id}',[App\Http\Controllers\adminpanel\AdminController::class,'changeStatus'])->name('admin/users/changestatus/{id}');
 Route::get('/admin/activity-log',[App\Http\Controllers\adminpanel\AdminController::class,'activitylog'])->name('/admin/activitylog');
+Route::get('/admin/calender',[App\Http\Controllers\adminpanel\AdminController::class,'calenderSchedule'])->name('user.calender');
 
 
 

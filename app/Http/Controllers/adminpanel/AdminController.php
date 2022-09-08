@@ -214,6 +214,13 @@ class AdminController extends Controller
         //$usersData=$usersData->toArray();
         return view('adminpanel/users',compact('usersData','user'));
     }
+    public function calenderSchedule(){
+        $user=Auth::user();
+        
+        
+        
+        return view('adminpanel/calender_schedule',compact('user'));
+    }
     public function UpdateUsersData($id,Request $request)
     {
         $dataArray['error']='No';
