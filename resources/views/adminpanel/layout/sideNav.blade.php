@@ -2,6 +2,9 @@
   <aside class="main-sidebar sidebar-dark-primary elevation-4">
     <!-- Brand Logo -->
     <a href="{{url('admin/dashboard')}}" class="brand-link">
+    <img src="{{url('adminpanel/dist/img/logo_oodler.jpg')}}" alt="OodlerExpress CRM" width="100%">
+    </a>
+    <a href="{{url('admin/dashboard')}}" class="brand-link">
       {{-- {{config('constants.app_name')}} --}}
       <span class="brand-text font-weight-light">{{config('constants.app_name')}}</span>
     </a>
@@ -175,7 +178,37 @@
               </li>
             </ul>
           </li>
-          <li class="nav-item menu-open">
+          <li class="nav-item ">
+            <a href="#" class="nav-link">
+              <i class="nav-icon fa fa-images"></i>
+              <p>
+                Products
+                <i class="right fas fa-angle-left"></i>
+              </p>
+            </a>
+            <ul class="nav nav-treeview">
+              
+              <li class="nav-item">
+                <a href="{{url('admin/products')}}" class="nav-link">
+                  <i class="fa fa-images"></i>
+                  <p> Products List</p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="{{url('admin/products/add')}}" class="nav-link">
+                  <i class="fa fa-plus"></i>
+                  <p>Add Products</p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="{{url('admin/products/categories')}}" class="nav-link">
+                  <i class="fa fa-plus"></i>
+                  <p>Categories</p>
+                </a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-item">
             <a href="#" class="nav-link">
               <i class="nav-icon fa fa-users"></i>
               <p>

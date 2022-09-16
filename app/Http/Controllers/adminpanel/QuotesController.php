@@ -8,6 +8,9 @@ use Illuminate\Http\Request;
 use App\Models\adminpanel\Users;
 use App\Models\adminpanel\Quotes;
 use App\Models\adminpanel\Groups;
+use App\Models\adminpanel\products;
+use App\Models\adminpanel\quote_products;
+use App\Models\adminpanel\product_categories;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Gate;
@@ -22,6 +25,9 @@ class QuotesController extends Controller
         $this->users= new Users;
         $this->groups= new Groups;
         $this->quotes= new Quotes;
+        $this->products= new products;
+        $this->quote_products= new quote_products;
+        $this->product_categories= new product_categories;
       }
 
     // List All the quotes 
@@ -55,56 +61,99 @@ class QuotesController extends Controller
             ->orderBy('created_at', 'desc')->paginate(config('constants.per_page'));
         }
 
-      
- 
-        
-        return view('adminpanel/quotes',compact('quotesData','user'));
+    return view('adminpanel/quotes',compact('quotesData','user'));
     }
-    public function addquotes(){
+    public function request_quotes_form(){
        $user=Auth::user(); 
+       $products=$this->product_categories->with('products')
+       ->where('is_active', '=', 1)
+       ->get()->toArray();
        
-        return view('adminpanel/request_quote',compact('user'));
+       
+        return view('adminpanel/request_quote',compact('user','products'));
     }
-    public function SaveUsersData(Request $request){
+    public function save_quote_date(Request $request){
        
         $validator=$request->validate([
-            'firstname'=>'required',
-            'lastname'=>'required',
-            'email'=>'required|email|distinct|unique:users|min:5',
-            'mobileno'=>'required|distinct|unique:users|min:5',
-            'phone'=>'required',
-            'subject'=>'required',
-            'message'=>'required',
+            'quote_type'=>'required',
+            'business_type'=>'required',
+            'po_number'=>'required',
+            'pickup_street_address'=>'required',
+            'pickup_contact_number'=>'required',
+            'pickup_date'=>'required',
+            'pickup_at_time'=>'required',
+            'drop_off_street_address'=>'required',
+            'drop_off_contact_number'=>'required',
+            'drop_off_date'=>'required',
+            'drop_off_at_time'=>'required',
             
         ]);
         
+        // p($request->all());
+        // die;
         
-        $this->users->name=$request['firstname'].' '.$request['lastname'];
-        $this->users->firstname=$request['firstname'];
-        $this->users->lastname=$request['lastname'];
-        $this->users->email=$request['email'];
-        $this->users->mobileno=$request['mobileno'];
-        $this->users->phone=$request['phone'];
-        $this->users->subject=$request['subject'];
-        $this->users->message=$request['message'];
-        $this->users->is_active=1;
-        $this->users->password=Hash::make('12345678');
+        $this->quotes->quote_type=$request['quote_type'];
+        $this->quotes->elevator=$request['elevator'];
+        $this->quotes->no_of_appartments=$request['no_of_appartments'];
+        $this->quotes->list_of_floors=json_encode($request['list_of_floors']);
+        $this->quotes->business_type=$request['business_type'];
+        $this->quotes->po_number=$request['po_number'];
+        $this->quotes->pickup_street_address=$request['pickup_street_address'];
+        $this->quotes->pickup_unit=$request['pickup_unit'];
+        $this->quotes->pickup_state_id=$request['pickup_state_id'];
+        $this->quotes->pickup_city_id=$request['pickup_city_id'];
+        $this->quotes->pickup_zipcode_id=$request['pickup_zipcode_id'];
+        $this->quotes->pickup_contact_number=$request['pickup_contact_number'];
+        $this->quotes->pickup_date=$request['pickup_date'];
+        $this->quotes->pickup_at_time=$request['pickup_at_time'];
+        $this->quotes->drop_off_street_address=$request['drop_off_street_address'];
+        $this->quotes->drop_off_unit=$request['drop_off_unit'];
+        $this->quotes->drop_off_state_id=$request['drop_off_state_id'];
+        $this->quotes->drop_off_city_id=$request['drop_off_city_id'];
+        $this->quotes->drop_off_zipcode_id=$request['drop_off_zipcode_id'];
+        $this->quotes->drop_off_contact_number=$request['drop_off_contact_number'];
+        $this->quotes->drop_off_instructions=$request['drop_off_instructions'];
+        $this->quotes->drop_off_date=$request['drop_off_date'];
+        $this->quotes->drop_off_at_time=$request['drop_off_at_time'];
+        $this->quotes->customer_id=get_session_value('id');
+        
 
-        $this->users->created_at=time();
-        $this->users->group_id=config('constants.groups.subscriber');
+        $this->quotes->created_at=time();
         
-      
-  
-        $request->session()->flash('alert-success', 'quote Added! Please Check in Pending quotes Tab');
-        $this->users->save();
+     
+        $this->quotes->save();
+       
+        foreach($request['product_details'] as $key=>$productData){
+           
+            // echo 'pid :'.$productData['cat_id'][0];
+            // p($productData); die; && $productData['product_name'][0]==''
+            if(isset($productData['product_id'][0]) && $productData['product_id'][0]>0 && !isset($productData['product_name'][0]) )
+            continue;
+
+            $this->quote_products->product_name=$productData['product_name'][0];
+            
+            if(isset($productData['product_id'][0]) && $productData['product_id'][0]>0)
+            $this->quote_products->product_id=$productData['product_id'][0];
+
+            $this->quote_products->quantity=$productData['item_quantity'][0];
+            $this->quote_products->size=$productData['item_size'][0];
+            $this->quote_products->size_unit=$productData['item_size_unit'][0];
+            $this->quote_products->description=$productData['item_description'][0];
+            $this->quote_products->cat_id=$productData['cat_id'][0];
+            $this->quote_products->quote_id=$this->quotes->id;
+            $this->quote_products->save();
+        }
+
+        $request->session()->flash('alert-success', 'Quote Request Submitted! Please Check in Pending quotes Tab');
+
                     // Activity Log
-                    $activityComment='Mr.'.get_session_value('name').' Added new quote '.$this->users->name;
+                    $activityComment='Mr.'.get_session_value('name').' Requested for quote having PO number : '.$request['po_number'];
                     $activityData=array(
                         'user_id'=>get_session_value('id'),
-                        'action_taken_on_id'=>$this->users->id,
-                        'action_slug'=>'new_quote_added',
+                        'action_taken_on_id'=>$this->quotes->id,
+                        'action_slug'=>'new_quote_requested',
                         'comments'=>$activityComment,
-                        'others'=>'users',
+                        'others'=>'quotes',
                         'created_at'=>date('Y-m-d H:I:s',time()),
                     );
                     $activityID=log_activity($activityData);

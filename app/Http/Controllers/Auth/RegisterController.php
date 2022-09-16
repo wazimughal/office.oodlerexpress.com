@@ -55,7 +55,6 @@ class RegisterController extends Controller
             'email'=>'required|email|distinct|unique:users|min:5',
             'password'=>'required|',
             'password_confirmation'=>'required|same:password',
-            'org_id'=>'required',
             'group_id'=>'required',
             'terms'=>'required',
 
@@ -80,7 +79,9 @@ class RegisterController extends Controller
             'name' => $data['name'],
             'email' => $data['email'],
             'group_id' => $data['group_id'],
-            'org_id' => $data['org_id'],
+            'is_active' => 1,
+            'city_id' => 1,
+            'zipcode_id' => 1,
             'password' => Hash::make($data['password']),
         ]);
     }

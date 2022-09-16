@@ -44,7 +44,7 @@ Route::get('clearcache', function () {
 
 Route::resource('/admin/patient-reports', PatientReportsController::class)->except([
     'store'
-])->middleware('adminHodGaurd');
+])->middleware('authGaurd');
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
@@ -91,8 +91,8 @@ Route::any('admin/colors/ajaxcall/{id}',[App\Http\Controllers\adminpanel\ColorsC
 
 Route::get('/admin/quotes',[App\Http\Controllers\adminpanel\QuotesController::class,'quotes'])->name('admin.quotes');
 Route::get('/admin/quote/{type?}',[App\Http\Controllers\adminpanel\QuotesController::class,'quotes'])->name('admin.quote.types');
-Route::get('/admin/quotes/request',[App\Http\Controllers\adminpanel\QuotesController::class,'addquotes'])->name('admin.quotes.reqform');
-Route::post('admin/quotes/add',[App\Http\Controllers\adminpanel\QuotesController::class,'SaveUsersData'])->name('admin.quotes.add');
+Route::get('/admin/quotes/request',[App\Http\Controllers\adminpanel\QuotesController::class,'request_quotes_form'])->name('quotes.request_quotes_form');
+Route::post('admin/quotes/request',[App\Http\Controllers\adminpanel\QuotesController::class,'save_quote_date'])->name('quotes.save_quote_date');
 Route::any('admin/quotes/ajaxcall/{id}',[App\Http\Controllers\adminpanel\QuotesController::class,'ajaxcall'])->name('quotes.ajaxcall');
 
 // Driver Management 
@@ -100,11 +100,21 @@ Route::get('/admin/drivers',[App\Http\Controllers\adminpanel\DriverController::c
 Route::get('/admin/drivers/add-documents/{id}',[App\Http\Controllers\adminpanel\DriverController::class,'add_documents'])->name('drivers.add-documents');
 Route::any('/admin/drivers/upload-documents/{id}',[App\Http\Controllers\adminpanel\DriverController::class,'upload_documents'])->name('drivers.uploaddocuments');
 // For Testing Purpose
-Route::any('dropzone/store/{id?}', [App\Http\Controllers\adminpanel\DriverController::class,'upload_documents'])->name('dropzone.store');
-
+//Route::any('dropzone/store/{id?}', [App\Http\Controllers\adminpanel\DriverController::class,'upload_documents'])->name('dropzone.store');
 Route::get('/admin/drivers/add',[App\Http\Controllers\adminpanel\DriverController::class,'adddrivers'])->name('drivers.openform');
 Route::post('admin/drivers/add',[App\Http\Controllers\adminpanel\DriverController::class,'SavedriversData'])->name('drivers.add');
 Route::any('admin/drivers/ajaxcall/{id}',[App\Http\Controllers\adminpanel\DriverController::class,'ajaxcall'])->name('drivers.ajaxcall');
+
+
+// Product Management
+Route::get('/admin/products/categories',[App\Http\Controllers\adminpanel\ProductsController::class,'categoreis'])->name('admin.categories'); 
+Route::get('/admin/products',[App\Http\Controllers\adminpanel\ProductsController::class,'products'])->name('/admin/products');
+Route::get('/admin/products/add',[App\Http\Controllers\adminpanel\ProductsController::class,'addproducts'])->name('products.openform');
+Route::post('admin/products/add',[App\Http\Controllers\adminpanel\ProductsController::class,'SaveproductsData'])->name('products.add');
+Route::any('admin/products/ajaxcall/{id}',[App\Http\Controllers\adminpanel\ProductsController::class,'ajaxcall'])->name('products.ajaxcall');
+Route::any('admin/products/categoryajaxcall/{id?}',[App\Http\Controllers\adminpanel\ProductsController::class,'categoryajaxcall'])->name('pro_category.ajaxcall');
+
+
 
 //echo 'echo'. config('constants.groups.staff');
 //echo '<br>echasdo'. config('constants.groups.subscriber'); die;

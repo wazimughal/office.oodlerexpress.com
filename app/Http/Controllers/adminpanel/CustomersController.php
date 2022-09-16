@@ -20,7 +20,7 @@ class CustomersController extends Controller
       }
       public function addcustomers(){
         $user=Auth::user(); 
-        
+       
          return view('adminpanel/add_customers',compact('user'));
      }
      public function SaveCustomersData(Request $request){
@@ -31,6 +31,7 @@ class CustomersController extends Controller
             'email'=>'required|email|distinct|unique:users|min:5',
             'mobileno'=>'required|distinct|unique:users|min:5',
             'phone'=>'required',
+            'password'=>'required',
             'business_mobile'=>'required|distinct|unique:users|min:5',
             'business_phone'=>'required',
             'business_name'=>'required',
@@ -54,7 +55,7 @@ class CustomersController extends Controller
         $this->users->subject=$request['subject'];
         $this->users->message=$request['message'];
         $this->users->is_active=1;
-        $this->users->password=Hash::make('12345678');
+        $this->users->password=Hash::make($request['password']);
 
         $this->users->created_at=time();
         $this->users->group_id=config('constants.groups.customer');

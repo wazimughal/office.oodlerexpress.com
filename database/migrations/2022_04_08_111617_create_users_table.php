@@ -31,6 +31,7 @@ return new class extends Migration
             $table->string('business_address')->nullable();
             $table->string('business_mobile')->nullable();
             $table->string('business_phone')->nullable();
+            $table->string('shipping')->nullable();
             $table->string('license_no')->nullable();
             $table->string('country')->default('USA');
             $table->unsignedBigInteger('state_id')->nullable();

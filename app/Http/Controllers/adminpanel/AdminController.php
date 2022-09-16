@@ -68,6 +68,7 @@ class AdminController extends Controller
              'password'=>'required',
                
        ]);
+       
        if(Auth::check())
         return redirect('/admin/dashboard');
  
@@ -108,6 +109,7 @@ class AdminController extends Controller
             'password'=>'required',
               
       ]);
+     
       $userData = $this->users
                                 ->with('getGroups')
                                 ->with('getOrganization')
@@ -168,6 +170,8 @@ class AdminController extends Controller
         $this->users->phone=$request['phone'];
         $this->users->password=Hash::make($request['password']);
         $this->users->is_active=0;
+        $this->users->zipcode_id=1;
+        $this->users->city_id=1;
         $this->users->created_at=time();
         $this->users->group_id=$groupsData[0]['id'];
         $request->session()->flash('alert-success', 'Successfully Registered! Please login');
@@ -197,6 +201,8 @@ class AdminController extends Controller
         $this->users->phone=$request['phone'];
         $this->users->password=Hash::make($request['password']);
         $this->users->is_active=1;
+        $this->users->zipcode_id=1;
+        $this->users->city_id=1;
         $this->users->created_at=time();
         $this->users->group_id=$request['group_id'];
         $request->session()->flash('alert-success', 'Successfully Registered! Please login');

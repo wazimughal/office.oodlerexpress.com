@@ -98,7 +98,7 @@ class AdminLabTestsController extends Controller
         $LabTestData['test_name']=$request['test_title'];
         $LabTestData['description']=$request['description'];
         $LabTestData['test_slug']=phpslug($request['test_slug']);
-        $LabTestData['description']=$request['description'];
+
         $LabTestData['organization_id']=$user->org_id;
         $LabTestData['user_id']=$user->id;
         

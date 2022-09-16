@@ -28,38 +28,31 @@ class ColorsController extends Controller
      public function SavecolorsData(Request $request){
        
         $validator=$request->validate([
-            'bg_color'=>'required',
-            'color_value'=>'required',
-            'color_for'=>'required',
+            'color_book'=>'required',
         ]);
         $colorData=$request->all();
        unset($colorData['_token']);
-        foreach($colorData as $data){
-           
-            p($data); break;
+       //p($colorData);
+        foreach($colorData['color_book'] as $key=>$data){
+           // p($data);break;
+            $dataToUpdate['bg_color']=$data[0];
+            $dataToUpdate['color_value']=$data[1];
+            $dataToUpdate['color_for']=$data[2];
+            $dataToUpdate['description']=$data[3];
+            $this->colors->where('id',$key)->update($dataToUpdate);
         }
-        p($request->all());
-        dd('test');
-        $this->users->name=$request['firstname'].' '.$request['lastname'];
-        $this->users->firstname=$request['firstname'];
-        $this->users->lastname=$request['lastname'];
-        $this->users->email=$request['email'];
-        $this->users->mobileno=$request['mobileno'];
-        $this->users->phone=$request['phone'];
         
-        $this->users->created_at=time();
+        $request->session()->flash('alert-success', 'Colors updated Successfully');
         
-        $request->session()->flash('alert-success', 'Customer Added! Please Check in colors list Tab');
-        $this->users->save();
         
                     // Activity Log
-                    $activityComment='Mr.'.get_session_value('name').' Added new customer '.$this->users->name;
+                    $activityComment='Mr.'.get_session_value('name').' updated colors';
                     $activityData=array(
                         'user_id'=>get_session_value('id'),
-                        'action_taken_on_id'=>$this->users->id,
-                        'action_slug'=>'customer_added',
+                        'action_taken_on_id'=>get_session_value('id'),
+                        'action_slug'=>'color_updated',
                         'comments'=>$activityComment,
-                        'others'=>'users',
+                        'others'=>'colors_book',
                         'created_at'=>date('Y-m-d H:I:s',time()),
                     );
                     $activityID=log_activity($activityData);

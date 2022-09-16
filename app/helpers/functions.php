@@ -156,17 +156,7 @@ if(!function_exists('getAdvisedTestsNames')){
     }
 }
 
-// Get Test Report by Test ID
-// if(!function_exists('getReportByTestId')){
-//     function getReportByTestId($id){
-//         //return array($id);
-//         $testReport = App\Models\adminpanel\LabTestsParams::where('lab_test_id',$id)->with('ParamResult')->with('LabTest')->get();
-//         if($testReport)
-//         return $testReport->toArray();
-        
-//         return array();
-//     }
-// }
+
 // Get Options of States
 if(!function_exists('getStatesOptions')){
     function getStatesOptions($selectID=NULL){
@@ -177,6 +167,59 @@ if(!function_exists('getStatesOptions')){
          $options='';
          
         foreach($statesData as $key=>$data){
+            $selected='';
+            if($selectID==$data['id']) $selected='selected';
+            $options .='<option '.$selected.' value="'.$data['id'].'">'.$data['name'].'</option>';
+        }
+        $options .='<option  value="other">Other</option>';
+     return $options;   
+    }
+}
+
+// Get Options of States
+if(!function_exists('getItemSizeUnitsOptions')){
+    function getItemSizeUnitsOptions($selectID=NULL){
+    
+    $sizeUnits[]=array('id'=>1, 'name'=>'Inch');
+    $sizeUnits[]=array('id'=>2, 'name'=>'Feet');
+    $sizeUnits[]=array('id'=>3, 'name'=>'Meter');
+    $sizeUnits[]=array('id'=>4, 'name'=>'Kilo Grams');
+    $sizeUnits[]=array('id'=>5, 'name'=>'Grams');
+         $options='';
+        foreach($sizeUnits as $data){
+            $selected='';
+            if($selectID==$data['name']) $selected='selected';
+            $options .='<option '.$selected.' value="'.phpslug($data['name']).'">'.$data['name'].'</option>';
+        }
+        
+     return $options;   
+    }
+}
+
+// Add Product Category in product_categories table if already category not exist 
+if(!function_exists('getOtherCategory')){
+    function getOtherCategory($name){
+        $nameSlug=phpslug($name);
+        $categoryData = App\Models\adminpanel\product_categories::where('slug',$nameSlug)->get();
+        $categoryData=$categoryData->toArray();
+        if(!empty($categoryData)){
+            return $categoryData[0]['id'];
+        }
+        $categoryId = DB::table('product_categories')->insertGetId(array('name'=>strtolower($name),'slug'=>phpslug($name),'is_active'=>1,'user_id'=>get_session_value('id')),'id');
+        return $categoryId;
+        
+    }
+}
+// Get Options of Prodcut Categories
+if(!function_exists('getProductCatOptions')){
+    function getProductCatOptions($selectID=NULL){
+    
+        $categoryData = App\Models\adminpanel\product_categories::where('is_active',1)->orderBy('id', 'asc')->get();
+        if($categoryData)
+         $categoryData=$categoryData->toArray();
+         $options='';
+         
+        foreach($categoryData as $key=>$data){
             $selected='';
             if($selectID==$data['id']) $selected='selected';
             $options .='<option '.$selected.' value="'.$data['id'].'">'.$data['name'].'</option>';

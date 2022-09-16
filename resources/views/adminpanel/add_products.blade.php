@@ -1,6 +1,6 @@
 @extends('adminpanel.admintemplate')
 @push('title')
-    <title>Add Colors | {{ config('constants.app_name') }}</title>
+    <title>Add products | {{ config('constants.app_name') }}</title>
 @endpush
 @section('main-section')
     <!-- Content Wrapper. Contains page content -->
@@ -10,12 +10,12 @@
             <div class="container-fluid">
                 <div class="row mb-2">
                     <div class="col-sm-6">
-                        <h1>View Colors</h1>
+                        <h1>Add New products</h1>
                     </div>
                     <div class="col-sm-6">
                         <ol class="breadcrumb float-sm-right">
                             <li class="breadcrumb-item"><a href="#">Home</a></li>
-                            <li class="breadcrumb-item active">View Colors</li>
+                            <li class="breadcrumb-item active">Add New product</li>
                         </ol>
                     </div>
                 </div>
@@ -29,7 +29,7 @@
                     <div class="col-12">
                         <div class="card card-success">
                             <div class="card-header">
-                                <h3 class="card-title">Add New Colors</h3>
+                                <h3 class="card-title">Add New products</h3>
                             </div>
                             <div class="card-body">
                               <div class="row">
@@ -47,56 +47,60 @@
                                 </div>
                                 <div class="col-3">&nbsp;</div>
                               </div>
-                                <form method="POST" action="{{ url('/admin/colors') }}">
+                                <form method="POST" action="{{ url('/admin/products/add') }}">
                                     @csrf
-                                    @foreach ($colorsData as $data )
-                                    {{-- <input type="hidden" name="color_id[]" value="{{$data['id']}}"> --}}
                                     <div class="row form-group">
-                                        <div class="col-1">&nbsp;</div>
-                                        <div class="col-2">{!!($data['id']==1)?'<label>Title</label>':''!!}<input readonly disabled type="text" name="title[]" class="form-control @error('title') is-invalid @enderror"
-                                            placeholder="Title" value="{{ $data['title'] }}">
-                                            @error('title')
+                                        <div class="col-3">&nbsp;</div>
+                                        <div class="col-6">
+                                          <div class="input-group mb-3">
+                                            <input type="text" name="name" class="form-control @error('name') is-invalid @enderror"
+                                                placeholder="Product Name" value="{{ old('name') }}">
+                                            <div class="input-group-append">
+                                                <div class="input-group-text">
+                                                    <span class="fas fa-user"></span>
+                                                </div>
+                                            </div>
+                                            @error('name')
                                                 <div class="invalid-feedback">
                                                     {{ $message }}
                                                 </div>
                                             @enderror
+                    
                                         </div>
-                                        <div class="col-2">{!!($data['id']==1)?'<label>Background Color</label>':''!!}<input type="text" name="color_book[{{$data['id']}}][]" required class="my-colorpicker1 form-control @error('bg_color') is-invalid @enderror"
-                                            placeholder="Background Color" value="{{ $data['bg_color'] }}">
-                                            @error('bg_color')
-                                                <div class="invalid-feedback">
-                                                    {{ $message }}
-                                                </div>
-                                            @enderror
                                         </div>
-                                        <div class="col-2">{!!($data['id']==1)?'<label>Color (e.g #000f24)</label>':''!!}<input type="text" name="color_book[{{$data['id']}}][]" required class="my-colorpicker2 form-control @error('color_value') is-invalid @enderror"
-                                            placeholder="Color (e.g #000f24)" value="{{ $data['color_value'] }}">
-                                            @error('color_value')
-                                                <div class="invalid-feedback">
-                                                    {{ $message }}
-                                                </div>
-                                            @enderror
-                                        </div>
-                                        <div class="col-2">{!!($data['id']==1)?'<label>Lable (e.g danger)</label>':''!!}<input type="text" name="color_book[{{$data['id']}}][]" required class="form-control @error('color_for') is-invalid @enderror"
-                                            placeholder="Lable (e.g danger)" value="{{ $data['color_for'] }}">
-                                            @error('color_for')
-                                                <div class="invalid-feedback">
-                                                    {{ $message }}
-                                                </div>
-                                            @enderror
-                                        </div>
-                                        
-                                        <div class="col-2">{!!($data['id']==1)?'<label>Any note..</label>':''!!}<input type="text" name="color_book[{{$data['id']}}][]" class="form-control @error('description') is-invalid @enderror"
-                                            placeholder="Any note.." value="{{ $data['description'] }}">
-                                            @error('description')
-                                                <div class="invalid-feedback">
-                                                    {{ $message }}
-                                                </div>
-                                            @enderror
-                                        </div>
-                                        
+                                        <div class="col-3">&nbsp;</div>
                                     </div>
-                                    @endforeach
+                                    <div class="row form-group">
+                                        <div class="col-3">&nbsp;</div>
+                                        <div class="col-6">
+                                          <div class="input-group mb-3">
+                                            <textarea type="text" name="additional_notes" class="form-control @error('additional_notes') is-invalid @enderror"
+                                                placeholder="Addition Notes" >{{ old('additional_notes');}}</textarea>
+                                            <div class="input-group-append">
+                                                <div class="input-group-text">
+                                                    <span class="fas fa-building"></span>
+                                                </div>
+                                            </div>
+                                            @error('additional_notes')
+                                                <div class="invalid-feedback">
+                                                    {{ $message }}
+                                                </div>
+                                            @enderror
+                    
+                                        </div>
+                                        </div>
+                                        <div class="col-3">&nbsp;</div>
+                                    </div>
+                                    <div class="row form-group">
+                                        <div class="col-3">&nbsp;</div>
+                                        <div class="col-6">
+                                            <div class="input-group mb-3">
+                                            <select id="cat_id" onChange="changeProCategory()" name="cat_id" class="form-control select2bs4 @error('city') is-invalid @enderror" placeholder="Select City">@php echo getProductCatOptions(); @endphp</select>
+                                            </div>
+                                        </div>
+                                        <div class="col-3">&nbsp;</div>
+                                    </div>
+                                    <div id="other_cat"></div>
                                     
                                     {{-- New Row Button --}}
                                     <div class="row form-group">
@@ -128,35 +132,29 @@
    <!-- Select2 -->
       <link rel="stylesheet" href="{{ url('adminpanel/plugins/select2/css/select2.min.css') }}">
       <link rel="stylesheet" href="{{ url('adminpanel/plugins/select2-bootstrap4-theme/select2-bootstrap4.min.css') }}">
-      <!-- Bootstrap Color Picker -->
-  <link rel="stylesheet" href="{{ url('adminpanel/plugins/bootstrap-colorpicker/css/bootstrap-colorpicker.min.css') }}">
 @endsection
 @section('footer-js-css')
 
  <!-- Select2 -->
  <script src="{{ url('adminpanel/plugins/select2/js/select2.full.min.js') }}"></script>
- <!-- bootstrap color picker -->
-<script src="{{ url('adminpanel/plugins/bootstrap-colorpicker/js/bootstrap-colorpicker.min.js') }}"></script>
  <script>
     $(function() {
         $('.select2bs4').select2({
             theme: 'bootstrap4'
             });
             // Shorthand for $( document ).ready()
-
-                //Colorpicker
-                $('.my-colorpicker1').colorpicker()
-                //color picker with addon
-                $('.my-colorpicker2').colorpicker()
-
-                $('.my-colorpicker2').on('colorpickerChange', function(event) {
-                $('.my-colorpicker2 .fa-square').css('color', event.color.toString());
-                })
-
-                $("input[data-bootstrap-switch]").each(function(){
-                $(this).bootstrapSwitch('state', $(this).prop('checked'));
-                })
        
         });
+        function changeProCategory() {
+            selectOption = $('#cat_id option:selected').text();
+            
+            if (selectOption == 'Other') {
+                otherCity ='<div class="row form-group"><div class="col-3">&nbsp;</div><div class="col-6"><div class="input-group mb-3"><input  type="text" name="other_category" class="form-control" placeholder="Please enter Category Name" required></div></div><div class="col-3">&nbsp;</div></div>';
+                $('#other_cat').html(otherCity);
+            } else {
+                $('#other_cat').html('');
+            }
+        };
+        
         </script>
  @endsection
