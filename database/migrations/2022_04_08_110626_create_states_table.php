@@ -25,34 +25,34 @@ return new class extends Migration
                 array(
                     
                     [
-                    'name' => 'Punjab',
+                    'name' => 'Alabama',
                     'is_active' => '1',
-                    'slug' => phpslug('punjab'),
+                    'slug' => phpslug('Alabama'),
                     ],
                     [
-                    'name' => 'Khyber Pakhtunkhawa',
+                    'name' => 'Alaska',
                     'is_active' => '1',
-                    'slug' => phpslug('Khyber Pakhtunkhawa'),
+                    'slug' => phpslug('Alaska'),
                     ],
                     [
-                    'name' => 'Sindh',
+                    'name' => 'Arizona',
                     'is_active' => '1',
-                    'slug' => phpslug('sindh'),
+                    'slug' => phpslug('Arizona'),
                     ],
                     [
-                    'name' => 'Balochistan',
+                    'name' => 'California',
                     'is_active' => '1',
-                    'slug' => phpslug('Balochistan'),
+                    'slug' => phpslug('California'),
                     ],
                     [
-                    'name' => 'Azad Kashmir',
+                    'name' => 'Washington',
                     'is_active' => '1',
-                    'slug' => phpslug('Azad Kashmir'),
+                    'slug' => phpslug('Washington'),
                     ],
                     [
-                    'name' => 'Islamabad(Capital)',
+                    'name' => 'South Carolina',
                     'is_active' => '1',
-                    'slug' => phpslug('Islamabad'),
+                    'slug' => phpslug('South Carolina'),
                     ],
                 )
             );

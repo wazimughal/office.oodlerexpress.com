@@ -22,31 +22,39 @@ return new class extends Migration
         DB::table('zipcode')->insert(
             array(
                 [
-                'code' => 61107,
+                'code' => 10952,
                 'is_active' => '1',
                 ],
                 [
-                'code' => 61106,
+                'code' => 10953,
                 'is_active' => '1',
                 ],
                 [
-                'code' => 61105,
+                'code' => 10954,
                 'is_active' => '1',
                 ],
                 [
-                'code' => 61104,
+                'code' => 71217,
                 'is_active' => '1',
                 ],
                 [
-                'code' => 61103,
+                'code' => 71201,
                 'is_active' => '1',
                 ],
                 [
-                'code' => 61102,
+                'code' => 71202,
                 'is_active' => '1',
                 ],
                 [
-                'code' => 61101,
+                'code' => 44119,
+                'is_active' => '1',
+                ],
+                [
+                'code' => 44120,
+                'is_active' => '1',
+                ],
+                [
+                'code' => 44121,
                 'is_active' => '1',
                 ],
             )

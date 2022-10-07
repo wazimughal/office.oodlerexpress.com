@@ -14,8 +14,13 @@
                         <h1>View drivers </h1>
 
                     </div>
-                    <div class="col-sm-2"><a style="width:60%" href="{{ url('/admin/drivers/add') }}"
-                            class="btn btn-block btn-success btn-lg">Add New <i class="fa fa-plus"></i></a></div>
+                    <div class="col-sm-2">
+                        @if ($user->group_id==config('constants.groups.admin'))
+                        <a style="width:60%" href="{{ route('drivers.openform') }}"
+                            class="btn btn-block btn-success btn-lg">Add New <i class="fa fa-plus"></i></a>    
+                        @endif
+                         &nbsp; 
+                        </div>
                     <div class="col-sm-1">&nbsp;</div>
                     <div class="col-sm-6">
                         <ol class="breadcrumb float-sm-right">
@@ -45,7 +50,7 @@
                                         <tr>
                                             <th>Name</th>
                                             <th>Email</th>
-                                            <th>Mobile Number</th>
+                                            <th>Phone</th>
                                             <th>License no</th>
                                             <th>Address</th>
                                             <th>Zip Code</th>
@@ -65,42 +70,44 @@
                                             <td><strong id="name_{{ $data['id'] }}">{{ $data['name'] }}</strong>
                                             </td>
                                             <td id="email_{{ $data['id'] }}">{{ $data['email'] }}</td>
-                                            <td id="mobileno_{{ $data['id'] }}">
-                                                {{ $data['mobileno'] }}</td>
+                                            <td id="phone_{{ $data['id'] }}">
+                                                {{ $data['phone'] }}</td>
                                             <td id="license_no_{{ $data['id'] }}">
                                                 {{ $data['license_no'] }} </td>
-                                                 <td id="address_{{ $data['id'] }}">
-                                                    {{ $data['address'] }}</td>
-                                                    <td id="zipcode_{{ $data['id'] }}">
-                                                        {{ $data['ZipCode']['code'] }}</td>
-                                                    <td id="city_{{ $data['id'] }}">
-                                                        {{ $data['City']['name'] }}</td>
-                                           
-                                            
+                                            <td id="address_{{ $data['id'] }}">
+                                                {{ $data['address'] }}</td>
+                                            <td id="zipcode_{{ $data['id'] }}">
+                                                {{ $data['ZipCode']['code'] }}</td>
+                                            <td id="city_{{ $data['id'] }}">
+                                                {{ $data['City']['name'] }}</td>
+
+
                                             <td>
 
-                                                <a href="{{ url('/admin/drivers/add-documents/'.$data['id']) }}" class="btn btn-success btn-block btn-sm"><i class="fas fa-plus"></i> Attach documents</a>
-                                                <button onClick="editdriverForm({{ $data['id'] }},{{ $counter }})"
-                                                    class="btn btn-info btn-block btn-sm"><i class="fas fa-edit"></i>
-                                                    Edit</button>
-                                                <button onClick="viewLeadData({{ $data['id'] }},{{ $counter }})"
+                                                
+                                                {{-- <button onClick="viewLeadData({{ $data['id'] }},{{ $counter }})"
                                                     class="btn btn-primary btn-block btn-sm"><i class="fas fa-eye"></i>
-                                                    View</button>
+                                                    View</button> --}}
+                                                @if ($data['is_active'] == 1)
+                                                <a href="{{ url('/admin/drivers/add-documents/' . $data['id']) }}"
+                                                    class="btn btn-success btn-block btn-sm"><i class="fas fa-plus"></i>
+                                                    Attach documents</a>
+                                                <a href="{{route('drivers.open_edit_form',$data['id'])}}"
+                                                    class="btn btn-info btn-block btn-sm"><i class="fas fa-edit"></i>
+                                                    Edit</a>
+                                                    <button
+                                                        onClick="do_action({{ $data['id'] }},{{ $counter }},'delete')"
+                                                        type="button" class="btn btn-danger btn-block btn-sm"><i
+                                                            class="fas fa-trash"></i>
+                                                        Delete</button>
+                                                @elseif ($data['is_active'] == 2)
                                                 <button
-                                                    onClick="changeStatus({{ $data['id'] }},{{ $counter }},'delete')"
-                                                    type="button" class="btn btn-danger btn-block btn-sm"><i
-                                                        class="fas fa-trash"></i>
-                                                    Delete</button>
-                                                <div style="margin-top: 5px;" id="status_action_btn_{{ $data['id'] }}">
-                                                    @if ($data['is_active'] == 1)
-                                                        <button
-                                                            onClick="changeStatus({{ $data['id'] }},{{ $counter }},'trash')"
-                                                            type="button" class="btn btn-warning btn-block btn-sm"><i
-                                                                class="fas fa-chart-line"></i>
-                                                            Trash</button>
-                                                        
-                                                    @endif
-                                                </div>
+                                                        onClick="do_action({{ $data['id'] }},{{ $counter }},'restore')"
+                                                        type="button" class="btn btn-warning btn-block btn-sm"><i
+                                                            class="fas fa-undo"></i>
+                                                        Restore</button>
+                                                @endif
+
                                             </td>
 
                                             </td>
@@ -221,290 +228,40 @@
 
         });
 
-        function viewLeadData(id) {
-            var sendInfo = {
-                action: 'viewLeadData',
-                id: id
-            };
-            $.ajax({
-                url: "{{ url('/admin/drivers/ajaxcall') }}/" + id,
-                data: sendInfo,
-                contentType: 'application/json',
-                error: function() {
-                    alert('There is Some Error, Please try again !');
-                },
-                type: 'GET',
-                dataType: 'json',
-                success: function(data) {
-                    if (data.error == 'No') {
-                        $('#responseData').html(data.res);
-
-                    } else {
-                        $('#responseData').html('There is some error, Please try again Later');
-                    }
-                    $('#modal-xl-lead').modal('toggle')
-                }
-            });
-            return false;
-        }
-
-        function updateForm(id, counter_id = 1) {
-            var sendInfo = {
-                action: 'updateLeadForm',
-                counter: counter_id,
-                status: status,
-                id: id
-            };
-            $.ajax({
-                url: "{{ url('/admin/drivers/ajaxcall') }}/" + id,
-                data: sendInfo,
-                contentType: 'application/json',
-                error: function() {
-                    alert('There is Some Error, Please try again !');
-                },
-                type: 'GET',
-                dataType: 'json',
-                success: function(data) {
-                    if (data.error == 'No') {
-                        $('#responseData').html(data.formdata);
-                        $('.select2bs4').select2({
-                            theme: 'bootstrap4'
-                        });
-                    } else {
-                        $('#responseData').html('There is some error, Please try again Later');
-                    }
-                    $('#modal-xl-lead').modal('toggle')
-                }
-            });
-            return false;
-        }
-        // Ajax to Update Lead Data
-        function updateLead(id, counter_id = 1) {
-            var formData = ($('#EditLeadForm').formToJson());
-            // console.log(formData);
-            $.ajax({
-                url: "{{ url('/admin/drivers/ajaxcall') }}/" + id,
-                data: formData,
-                contentType: 'application/json',
-                error: function() {
-                    alert('There is Some Error, Please try again !');
-                },
-                type: 'GET',
-                dataType: 'json',
-                success: function(data) {
-                    if (data.error == 'No') {
-                        console.log(data);
-                        $('#name_' + data.id).html(data.name);
-                        $('#venue_group_name_' + data.id).html(data.venue_group_name);
-                        $('#lead_type_title_' + data.id).html(data.lead_type_tile);
-                        // $('#row_' + data.id).removeClass('odd');
-                        // $('#row_' + data.id).removeClass('even');
-                        // $('#row_' + data.id).addClass('alert-info');
-                        // // Close modal and success Message
-                        $('#modal-xl-lead').modal('toggle')
-
-
-                        $(document).Toasts('create', {
-                            class: 'bg-success',
-                            title: data.title,
-                            subtitle: 'record',
-                            body: data.msg
-                        });
-
-
-                    } else {
-                        $(document).Toasts('create', {
-                            class: 'bg-danger',
-                            title: data.name,
-                            subtitle: 'record',
-                            body: data.msg
-                        });
-                    }
-                }
-            });
-            return false;
-        }
-
-        // add Lead to driver 
-        function editdriverForm(id, counter_id = 1) {
-
-            var sendInfo = {
-                action: 'editdriverForm',
-                counter: counter_id,
-                status: status,
-                id: id
-            };
-            $.ajax({
-                url: "{{ url('/admin/drivers/ajaxcall') }}/" + id,
-                data: sendInfo,
-                contentType: 'application/json',
-                error: function() {
-                    alert('There is Some Error, Please try again !');
-                },
-                type: 'GET',
-                dataType: 'json',
-                success: function(data) {
-                    if (data.error == 'No') {
-                        $('#responseData').html(data.formdata);
-                        $('.select2bs4').select2({
-                            theme: 'bootstrap4'
-                        });
-                    } else {
-                        $('#responseData').html('There is some error, Please try again Later');
-                    }
-                    $('#modal-xl-lead').modal('toggle')
-                }
-            });
-            return false;
-        }
-        // Ajax to Update Lead Data
-        function updatedriver(id, counter_id = 1) {
-            var formData = ($('#EditdriverForm').formToJson());
-            // console.log(formData);
-            $.ajax({
-                url: "{{ url('/admin/drivers/ajaxcall') }}/" + id,
-                data: formData,
-                contentType: 'application/json',
-                error: function() {
-                    alert('There is Some Error, Please try again !');
-                },
-                type: 'GET',
-                dataType: 'json',
-                success: function(data) {
-                    if (data.error == 'No') {
-                        console.log(data);
-                        
-                        $('#name_' + data.id).html(data.name);
-                        $('#mobileno_' + data.id).html(data.mobileno_);
-                        $('#license_no_' + data.id).html(data.license_no);
-                        $('#address_' + data.id).html(data.address);
-                        $('#zipcode_' + data.id).html(data.zipcode);
-                        $('#city_' + data.id).html(data.city);
-
-                        
-                        // $('#row_' + data.id).removeClass('odd');
-                        // $('#row_' + data.id).removeClass('even');
-                        // $('#row_' + data.id).addClass('alert-info');
-                        // // Close modal and success Message
-                        $('#modal-xl-lead').modal('toggle')
-
-
-                        $(document).Toasts('create', {
-                            class: 'bg-success',
-                            title: data.title,
-                            subtitle: 'record',
-                            body: data.msg
-                        });
-
-
-                    } else {
-                        $(document).Toasts('create', {
-                            class: 'bg-danger',
-                            title: data.name,
-                            subtitle: 'record',
-                            body: data.msg
-                        });
-                    }
-                }
-            });
-            return false;
-        }
-        // Shorthand for $( document ).ready()
         function changeCity() {
-            
-                selectOption = $('#city option:selected').text();
-               $('#cityname').val(selectOption);
 
-                console.log('option' + selectOption);
-                if (selectOption == 'Other') {
-                    otherCity ='<div class="row form-group"><div class="col-3">&nbsp;</div><div class="col-6"><div class="input-group mb-3"><input  type="text" name="othercity" class="form-control" placeholder="City Name" required></div></div><div class="col-3">&nbsp;</div></div>';
-                    $('#othercity').html(otherCity);
-                } else {
-                    $('#othercity').html('');
-                }
-            };
-            function changezipcode() {
+            selectOption = $('#city option:selected').text();
+            $('#cityname').val(selectOption);
+
+            console.log('option' + selectOption);
+            if (selectOption == 'Other') {
+                otherCity =
+                    '<div class="row form-group"><div class="col-3">&nbsp;</div><div class="col-6"><div class="input-group mb-3"><input  type="text" name="othercity" class="form-control" placeholder="City Name" required></div></div><div class="col-3">&nbsp;</div></div>';
+                $('#othercity').html(otherCity);
+            } else {
+                $('#othercity').html('');
+            }
+        };
+
+        function changezipcode() {
             selectOption = $('#zipcode_id option:selected').text();
             $('#zipcode_no').val(selectOption);
 
             if (selectOption == 'Other') {
-                otherZipCode ='<div class="row form-group"><div class="col-3">&nbsp;</div><div class="col-6"><div class="input-group mb-3"><input  type="text" name="otherzipcode" class="form-control" placeholder="Please enter Zip Code" required></div></div><div class="col-3">&nbsp;</div></div>';
+                otherZipCode =
+                    '<div class="row form-group"><div class="col-3">&nbsp;</div><div class="col-6"><div class="input-group mb-3"><input  type="text" name="otherzipcode" class="form-control" placeholder="Please enter Zip Code" required></div></div><div class="col-3">&nbsp;</div></div>';
                 $('#otherzipcode').html(otherZipCode);
             } else {
                 $('#otherzipcode').html('');
             }
         };
-        $(function() {
-       
-            $('.current_status').on('change', function() {
-                var status = $(this).val();
-                var id = $(this).attr('dataid');
-                var counter_id = $(this).attr('datacounter');
-                counter_id = 1;
-
-                if (status == {{ config('constants.lead_status.pending') }})
-                    alertmsg = 'move in pending'
-                else if (status == {{ config('constants.lead_status.approved') }})
-                    alertmsg = 'move in approved'
-                if (status == {{ config('constants.lead_status.cancelled') }})
-                    alertmsg = 'move in Cancelled'
-
-                if (confirm("Are you sure you want to " + alertmsg + " this?")) {
-
-                    var sendInfo = {
-                        action: 'changestatus',
-                        counter: counter_id,
-                        status: status,
-                        alertmsg: alertmsg,
-                        id: id
-                    };
-
-                    $.ajax({
-                        url: "{{ url('/admin/drivers/ajaxcall/') }}/" + id,
-                        data: sendInfo,
-                        contentType: 'application/json',
-                        error: function() {
-                            alert('There is Some Error, Please try again !');
-                        },
-                        type: 'GET',
-                        dataType: 'json',
-                        success: function(data) {
-                            if (data.error == 'No') {
-                                // Close modal and success Message
-                                $('#status' + id).html(data.status_btn);
-                                // $('#status_action_btn_' + id).html(data.status_action_btn);
-
-                                $(document).Toasts('create', {
-                                    class: 'bg-success',
-                                    title: data.title,
-                                    subtitle: 'record',
-                                    body: data.msg
-                                });
 
 
-                            } else {
-                                $(document).Toasts('create', {
-                                    class: 'bg-danger',
-                                    title: data.title,
-                                    subtitle: 'record',
-                                    body: data.msg
-                                });
-                            }
-                            console.log(data);
-                            //alert('i am here');
-                        }
+        function do_action(id, counter_id, action) {
 
-                    });
-
-                }
-
-            });
-        });
-
-        function changeStatus(id, counter_id, action) {
-
-            if (action == 'trash')
-                alertMsg = 'Are you sure you want to Trash this?';
+            alertMsg = 'Are you sure you want to perform this action?';
+            if (action == 'restore')
+                alertMsg = 'Are you sure you want to restore this?';
             else if (action == 'delete')
                 alertMsg = 'Are you sure you want to Delete this?';
 
@@ -544,8 +301,7 @@
                                 body: data.msg
                             });
                         }
-                        console.log(data);
-                        //alert('i am here');
+
                     }
 
                 });
@@ -553,8 +309,5 @@
             }
 
         }
-
-        // $(document).ready(function() {
-        // });
     </script>
 @endsection

@@ -26,95 +26,19 @@ return new class extends Migration
             array(
                 
                 [
-                'name' => 'Multan',
-                'slug' => phpslug('Multan'),
+                'name' => 'Monsey',
+                'slug' => phpslug('Monsey'),
                 'is_active' => '1'
                 ],
                 [
-                'name' => 'Vehari',
-                'slug' => phpslug('Vehari'),
+                'name' => 'Monroe',
+                'slug' => phpslug('Monroe'),
                 'is_active' => '1'
                 ],
                 [
-                'name' => 'Okara',
-                'slug' => phpslug('Okara'),
+                'name' => 'Brooklyn',
+                'slug' => phpslug('Brooklyn'),
                 'is_active' => '1'
-                ],
-                [
-                'name' => 'Sahiwal',
-                'slug' => phpslug('Sahiwal'),
-                'is_active' => '1'
-                ],
-                [
-                'name' => 'khanewal',
-                'slug' => phpslug('Khanewal'),
-                'is_active' => '1'
-                ],
-                [
-                'name' => 'MuzafarGhar',
-                'slug' => phpslug('MuzafarGhar'),
-                'is_active' => '1'
-                ],
-                [
-                'name' => 'Lodharan',
-                'slug' => phpslug('Lodharan'),
-                'is_active' => '1'
-                ],
-                [
-                'name' => 'Khushab',
-                'slug' => phpslug('Khushab'),
-                'is_active' => '1'
-                ],
-                [
-                'name' => 'MianWali',
-                'slug' => phpslug('MianWali'),
-                'is_active' => '1'
-                ],
-                [
-                'name' => 'Rajan Pur',
-                'slug' => phpslug('Rajan Pur'),
-                'is_active' => '1'
-                ],
-                [
-                'name' => 'DG Khan',
-                'slug' => phpslug('DG Khan'),
-                'is_active' => '1'
-                ],
-                [
-                'name' => 'PakPattan',
-                'slug' => phpslug('PakPattan'),
-                'is_active' => '1'
-                ],
-                [
-                'name' => 'Kasoor',
-                'slug' => phpslug('Kasoor'),
-                'is_active' => '1'
-                ],
-                [
-                'name' => 'Sheikhupura',
-                'slug' => phpslug('Sheikhupura'),
-                'is_active' => '1'
-                ],
-                [
-                'name' => 'Chakwal',
-                'slug' => phpslug('Chakwal'),
-                'is_active' => '1'
-                ],
-                [
-                'name' => 'Lahore',
-                'slug' => phpslug('Lahore'),
-                'is_active' => '1'
-                ],
-                [
-                'name' => 'Rawalpindi',
-                'slug' => phpslug('RawalPindi'),
-                'is_active' => '1'
-                ],
-                [
-                'name' => 'Islambad',
-                'slug' => phpslug('Islambad'),
-                'is_active' => '1'
-                
                 ],
           
             )

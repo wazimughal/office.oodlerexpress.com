@@ -52,7 +52,7 @@
                                     </div>
                                     <div class="col-3">&nbsp;</div>
                                 </div>
-                                <form method="POST" action="{{ url('/admin/quotes/request') }}">
+                                <form method="POST" action="{{ route('quotes.save_quote_date') }}">
                                     @csrf
                                     <input type="hidden" name="quote_type" value="single" id="quote_type">
 
@@ -134,7 +134,7 @@
                                           <div class="col-4">
                                               <div class="form-group clearfix">
                                                   <div class="icheck-primary d-inline">
-                                                    <input type="hidden" name="product_details[{{$proData['id']}}][cat_id][]" value="{{$data['id']}}">
+                                                      <input type="hidden" name="product_details[{{$proData['id']}}][cat_id][]" value="{{$data['id']}}">
                                                       <input type="hidden" value="{{$proData['id']}}" name="product_details[{{$proData['id']}}][product_id][]">
                                                       <input type="checkbox" value="{{$proData['name']}}" name="product_details[{{$proData['id']}}][product_name][]" id="{{$proData['slug']}}_{{$proData['id']}}">
                                                       <label for="{{$proData['slug']}}_{{$proData['id']}}">
@@ -172,7 +172,7 @@
                                       <div class="row form-group">
                                           <div class="col-11">&nbsp;</div>
                                           <div class="col-1">
-                                              <div style="width: 90px; float:right;" onclick="addmore_items('{{$data['slug']}}')"
+                                              <div style="width: 90px; float:right;" onclick="addmore_items({{$data['id']}},'{{$data['slug']}}')"
                                                   class="btn btn-success btn-block btn-sm"><i class="fas fa-plus"></i> Add
                                                   more</div>
                                           </div>
@@ -499,9 +499,10 @@
                 
             }
             // Add more Items manually
-        function addmore_items(cat_id) {
+        function addmore_items(cat_id, cat_slug) {
             counter++;
             itemHTML = '<div class="row form-group"><div class="col-1">&nbsp;</div>';
+            itemHTML += '<input value="'+cat_id+'" placeholder="Category ID" type="hidden" name="product_details['+counter+'][cat_id][]" required  class=" form-control" >';
             itemHTML +=
                 '<div class="col-4"><div class="input-group mb-3"><input placeholder="Item Name" type="text" name="product_details['+counter+'][product_name][]" required  class=" form-control" ></div></div>';
             itemHTML +=
@@ -516,7 +517,7 @@
                 '<div class="col-1"><div style="width:20px; cursor:pointer; padding:10px; color:red;"><i onclick=$("#manual_item_' +
                 counter + '").remove() class="fas fa-minus"></i></div></div></div>';
                 
-            $('#' + cat_id).append('<div id="manual_item_' + counter + '">' + itemHTML + '</div>');
+            $('#' + cat_slug).append('<div id="manual_item_' + counter + '">' + itemHTML + '</div>');
             
         }
 

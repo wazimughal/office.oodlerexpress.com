@@ -3,6 +3,9 @@
 
 return [
     'app_name'=>'CRM Oodler Express',
+    'admin_email'=>'to.wazim@gmail.com',
+    'date_formate'=>'d/m/Y',
+    'date_formate_us'=>'m/d/Y',
     'per_page'=>2,
     // Costant Value ID set for the groups table for User ROLEs
     'groups' => [
@@ -12,11 +15,14 @@ return [
         'staff' =>4,
         'subscriber' =>5,
     ],
-    'lead_status' => [
+    'quote_status' => [
         'pending' => 0,
-        'approved' => 1,
-        'cancelled' => 2,
-        'trashed' => 3,
+        'quote_submitted' => 1,
+        'approved' => 2,
+        'declined' => 3,
+        'trashed' => 4,
+        'delivery' => 5,
+        'complete' => 6,
     ]
 ];
 

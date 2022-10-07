@@ -32,8 +32,6 @@
             <div class="container-fluid">
                 <div class="row">
                     <div class="col-12">
-
-
                         <div class="card card-success">
                             <div class="card-header">
                                 <h3 class="card-title">Leads</h3>
@@ -46,10 +44,10 @@
                                             <th>Name</th>
                                             <th>Email</th>
                                             <th>Mobile</th>
-                                            <th>Subject</th>
-                                            <th>Message</th>
-                                            <th>Status</th>
-                                            <th>Change</th>
+                                            <th>Business Name</th>
+                                            <th>Business Address</th>
+                                            <th>Business Phone</th>
+                                            <th>Lead By</th>
                                             <th>Action</th>
                                         </tr>
                                     </thead>
@@ -64,74 +62,46 @@
                                             <td id="email_{{ $data['id'] }}">{{ $data['email'] }}</td>
                                             <td id="mobileno_{{ $data['id'] }}">
                                                 {{ $data['mobileno'] }}</td>
-                                            <td id="subject_{{ $data['id'] }}">
-                                                {{ $data['subject'] }}</td>
-                                            <td id="message_{{ $data['id'] }}">
-                                               {{$data['message']}}
+                                            <td id="business_name_{{ $data['id'] }}">
+                                                {{ $data['business_name'] }}</td>
+                                            <td id="business_address_{{ $data['id'] }}">
+                                               {{$data['business_address']}}
+                                            </td>
+                                            <td id="business_phone_{{ $data['id'] }}">
+                                               {{$data['business_phone']}}
                                             </td>
                                             <td id="status{{ $data['id'] }}">
-                                                @if ($data['status'] == config('constants.lead_status.pending'))
+                                                @if ($data['lead_by'] == 0)
                                                     <a @disabled(true)
-                                                        class="btn btn-danger btn-flat btn-sm"><i
-                                                            class="fas fa-chart-line"></i> Pending</a>
-                                                @elseif ($data['status'] == config('constants.lead_status.approved'))
-                                                    <a @disabled(true)
-                                                        class="btn bg-gradient-success btn-flat btn-sm"><i
-                                                            class="fas fa-chart-line"></i> Approved</a>
+                                                        class="btn btn-success btn-flat btn-sm"><i
+                                                            class="fas fa-chart-line"></i> Office</a>
                                                 @else
                                                     <a @disabled(true)
                                                         class="btn bg-gradient-secondary btn-flat btn-sm"><i
-                                                            class="fas fa-chart-line"></i> Cancelled</a>
+                                                            class="fas fa-chart-line"></i> Website</a>
                                                 @endif
                                             </td>
-                                            <td id="is_active_{{ $data['id'] }}">
-                                               
-                                                <select datacounter="{{ $counter }}" dataid="{{ $data['id'] }}"
-                                                    class="form-control select2bs4 current_status" style="width: 100%;">
-                                                    <option datacounter="{{ $counter }}" dataid="{{ $data['id'] }}"
-                                                        value="{{ config('constants.lead_status.pending') }}"
-                                                        @php if(config('constants.lead_status.pending')==$data['status']){echo 'selected="selected"';} @endphp>
-                                                        Pending</option>
-                                                    <option datacounter="{{ $counter }}" dataid="{{ $data['id'] }}"
-                                                        value="{{ config('constants.lead_status.approved') }}"
-                                                        @php if(config('constants.lead_status.approved')==$data['status']){echo 'selected="selected"';} @endphp>
-                                                        Approve</option>
-                                                    <option datacounter="{{ $counter }}" dataid="{{ $data['id'] }}"
-                                                        value="{{ config('constants.lead_status.cancelled') }}"
-                                                        @php if(config('constants.lead_status.cancelled')==$data['status']){echo 'selected="selected"';} @endphp>
-                                                        Cancel</option>
-                                                </select>
-                                            </td>
                                             <td>
-
-                                                <a onClick="addToCustomerForm({{ $data['id'] }},{{ $counter }})"
+                                                @if ($data['is_active']==2)
+                                                <button
+                                                onClick="do_action({{ $data['id'] }},'restore',{{ $counter }})"
+                                                type="button" class="btn btn-info btn-block btn-sm"><i
+                                                    class="fas fa-undo"></i>
+                                                Restore</button> 
+                                               @else 
+                                                <a href="{{route('admin.add_to_customer',$data['id']) }}"
                                                     class="btn btn-success btn-block btn-sm"><i class="fa fa-plus"></i> Add
                                                     to Customer</a>
-                                                <button onClick="updateForm({{ $data['id'] }},{{ $counter }})"
+                                                <a href="{{route('admin.leadseditform',$data['id']) }}"
                                                     class="btn btn-info btn-block btn-sm"><i class="fas fa-edit"></i>
-                                                    Edit</button>
-                                                <button onClick="viewLeadData({{ $data['id'] }},{{ $counter }})"
-                                                    class="btn btn-primary btn-block btn-sm"><i class="fas fa-eye"></i>
-                                                    View</button>
+                                                    Edit</a>
+                                                
                                                 <button
-                                                    onClick="changeStatus({{ $data['id'] }},{{ $counter }},'delete')"
+                                                    onClick="do_action({{ $data['id'] }},'delete',{{ $counter }})"
                                                     type="button" class="btn btn-danger btn-block btn-sm"><i
                                                         class="fas fa-trash"></i>
                                                     Delete</button>
-                                                <div style="margin-top: 5px;" id="status_action_btn_{{ $data['id'] }}">
-                                                    @if ($data['is_active'] == 1)
-                                                        <button
-                                                            onClick="changeStatus({{ $data['id'] }},{{ $counter }},'trash')"
-                                                            type="button" class="btn btn-warning btn-block btn-sm"><i
-                                                                class="fas fa-chart-line"></i>
-                                                            Trash</button>
-                                                        {{-- @else
-                                                        <button
-                                                        onClick="changeStatus({{ $data['id'] }},{{ $counter }},'activate')"
-                                                        type="button" class="btn btn-success btn-block btn-sm"><i class="fas fa-chart-line"></i>
-                                                        Activate</button> --}}
                                                     @endif
-                                                </div>
                                             </td>
 
                                             </td>
@@ -150,11 +120,11 @@
                                         <tr>
                                             <th>Name</th>
                                             <th>Email</th>
-                                            <th>Organization Name</th>
-                                            <th>Address</th>
-                                            <th>Group</th>
-                                            <th>Status</th>
-                                            <th>Change</th>
+                                            <th>Mobile</th>
+                                            <th>Business Name</th>
+                                            <th>Business Address</th>
+                                            <th>Business Phone</th>
+                                            <th>Lead By</th>
                                             <th>Action</th>
                                         </tr>
                                         <tr>
@@ -251,275 +221,19 @@
 
         });
 
-        function viewLeadData(id) {
-            var sendInfo = {
-                action: 'viewLeadData',
-                id: id
-            };
-            $.ajax({
-                url: "{{ url('/admin/leads/ajaxcall') }}/" + id,
-                data: sendInfo,
-                contentType: 'application/json',
-                error: function() {
-                    alert('There is Some Error, Please try again !');
-                },
-                type: 'GET',
-                dataType: 'json',
-                success: function(data) {
-                    if (data.error == 'No') {
-                        $('#responseData').html(data.res);
+        
 
-                    } else {
-                        $('#responseData').html('There is some error, Please try again Later');
-                    }
-                    $('#modal-xl-lead').modal('toggle')
-                }
-            });
-            return false;
-        }
+        function do_action(id, action_name,counter_id) {
 
-        function updateForm(id, counter_id = 1) {
-            var sendInfo = {
-                action: 'updateLeadForm',
-                counter: counter_id,
-                status: status,
-                id: id
-            };
-            $.ajax({
-                url: "{{ url('/admin/leads/ajaxcall') }}/" + id,
-                data: sendInfo,
-                contentType: 'application/json',
-                error: function() {
-                    alert('There is Some Error, Please try again !');
-                },
-                type: 'GET',
-                dataType: 'json',
-                success: function(data) {
-                    if (data.error == 'No') {
-                        $('#responseData').html(data.formdata);
-                        $('.select2bs4').select2({
-                            theme: 'bootstrap4'
-                        });
-                    } else {
-                        $('#responseData').html('There is some error, Please try again Later');
-                    }
-                    $('#modal-xl-lead').modal('toggle')
-                }
-            });
-            return false;
-        }
-        // Ajax to Update Lead Data
-        function updateLead(id, counter_id = 1) {
-            var formData = ($('#EditLeadForm').formToJson());
-            // console.log(formData);
-            $.ajax({
-                url: "{{ url('/admin/leads/ajaxcall') }}/" + id,
-                data: formData,
-                contentType: 'application/json',
-                error: function() {
-                    alert('There is Some Error, Please try again !');
-                },
-                type: 'GET',
-                dataType: 'json',
-                success: function(data) {
-                    if (data.error == 'No') {
-                        $('#name_' + data.id).html(data.name);
-                        $('#mobile_' + data.id).html(data.mobileno);
-                        $('#subject_' + data.id).html(data.subject);
-                        $('#message_' + data.id).html(data.message);
-                        // // Close modal and success Message
-                        $('#modal-xl-lead').modal('toggle')
-
-                        $(document).Toasts('create', {
-                            class: 'bg-success',
-                            title: data.title,
-                            subtitle: 'record',
-                            body: data.msg
-                        });
-
-
-                    } else {
-                        $(document).Toasts('create', {
-                            class: 'bg-danger',
-                            title: data.name,
-                            subtitle: 'record',
-                            body: data.msg
-                        });
-                    }
-                }
-            });
-            return false;
-        }
-
-        // add Lead to Customer 
-        function addToCustomerForm(id, counter_id = 1) {
-
-            var sendInfo = {
-                action: 'addToCustomerForm',
-                counter: counter_id,
-                status: status,
-                id: id
-            };
-            $.ajax({
-                url: "{{ url('/admin/leads/ajaxcall') }}/" + id,
-                data: sendInfo,
-                contentType: 'application/json',
-                error: function() {
-                    alert('There is Some Error, Please try again !');
-                },
-                type: 'GET',
-                dataType: 'json',
-                success: function(data) {
-                    if (data.error == 'No') {
-                        $('#responseData').html(data.formdata);
-                        $('.select2bs4').select2({
-                            theme: 'bootstrap4'
-                        });
-                    } else {
-                        $('#responseData').html('There is some error, Please try again Later');
-                    }
-                    $('#modal-xl-lead').modal('toggle')
-                }
-            });
-            return false;
-        }
-        // Ajax to Update Lead Data
-        function updateLead(id, counter_id = 1) {
-            var formData = ($('#EditLeadForm').formToJson());
-            // console.log(formData);
-            $.ajax({
-                url: "{{ url('/admin/leads/ajaxcall') }}/" + id,
-                data: formData,
-                contentType: 'application/json',
-                error: function() {
-                    alert('There is Some Error, Please try again !');
-                },
-                type: 'GET',
-                dataType: 'json',
-                success: function(data) {
-                    if (data.error == 'No') {
-                        console.log(data);
-                        
-                        $('#name_' + data.id).html(data.name);
-                        $('#mobile_' + data.id).html(data.mobileno);
-                        $('#subject_' + data.id).html(data.subject);
-                        $('#message_' + data.id).html(data.message);
-                        // // Close modal and success Message
-                        if(data.actionType=='move_to_customer')
-                        $('#row_' + data.id).html('');
-                        $('#modal-xl-lead').modal('toggle')
-
-
-                        $(document).Toasts('create', {
-                            class: 'bg-success',
-                            title: data.title,
-                            subtitle: 'record',
-                            body: data.msg
-                        });
-
-
-                    } else {
-                        $(document).Toasts('create', {
-                            class: 'bg-danger',
-                            title: data.name,
-                            subtitle: 'record',
-                            body: data.msg
-                        });
-                    }
-                }
-            });
-            return false;
-        }
-        // Shorthand for $( document ).ready()
-        function changeCity() {
-            
-                selectOption = $('#city option:selected').text();
-                console.log('option' + selectOption);
-                if (selectOption == 'Other') {
-                    otherCity ='<div class="row form-group"><div class="col-3">&nbsp;</div><div class="col-6"><div class="input-group mb-3"><input  type="text" name="othercity" class="form-control" placeholder="City Name" required></div></div><div class="col-3">&nbsp;</div></div>';
-                    $('#othercity').html(otherCity);
-                } else {
-                    $('#othercity').html('');
-                }
-            };
-        $(function() {
-       
-            $('.current_status').on('change', function() {
-                var status = $(this).val();
-                var id = $(this).attr('dataid');
-                var counter_id = $(this).attr('datacounter');
-                counter_id = 1;
-
-                if (status == {{ config('constants.lead_status.pending') }})
-                    alertmsg = 'move in pending'
-                else if (status == {{ config('constants.lead_status.approved') }})
-                    alertmsg = 'move in approved'
-                if (status == {{ config('constants.lead_status.cancelled') }})
-                    alertmsg = 'move in Cancelled'
-
-                if (confirm("Are you sure you want to " + alertmsg + " this?")) {
-
-                    var sendInfo = {
-                        action: 'changestatus',
-                        counter: counter_id,
-                        status: status,
-                        alertmsg: alertmsg,
-                        id: id
-                    };
-
-                    $.ajax({
-                        url: "{{ url('/admin/leads/ajaxcall/') }}/" + id,
-                        data: sendInfo,
-                        contentType: 'application/json',
-                        error: function() {
-                            alert('There is Some Error, Please try again !');
-                        },
-                        type: 'GET',
-                        dataType: 'json',
-                        success: function(data) {
-                            if (data.error == 'No') {
-                                // Close modal and success Message
-                                $('#status' + id).html(data.status_btn);
-                                // $('#status_action_btn_' + id).html(data.status_action_btn);
-
-                                $(document).Toasts('create', {
-                                    class: 'bg-success',
-                                    title: data.title,
-                                    subtitle: 'record',
-                                    body: data.msg
-                                });
-
-
-                            } else {
-                                $(document).Toasts('create', {
-                                    class: 'bg-danger',
-                                    title: data.title,
-                                    subtitle: 'record',
-                                    body: data.msg
-                                });
-                            }
-                            console.log(data);
-                            //alert('i am here');
-                        }
-
-                    });
-
-                }
-
-            });
-        });
-
-        function changeStatus(id, counter_id, action) {
-
-            if (action == 'trash')
-                alertMsg = 'Are you sure you want to Trash this?';
-            else if (action == 'delete')
+                if(action_name=='restore')
+                alertMsg = 'Are you sure you want to Restore this?';
+                else if(action_name=='delete')
                 alertMsg = 'Are you sure you want to Delete this?';
 
             if (confirm(alertMsg)) {
 
                 var sendInfo = {
-                    action: action,
+                    action: action_name,
                     counter: counter_id,
                     id: id
                 };
@@ -555,14 +269,8 @@
                         console.log(data);
                         //alert('i am here');
                     }
-
                 });
-
             }
-
         }
-
-        // $(document).ready(function() {
-        // });
     </script>
 @endsection

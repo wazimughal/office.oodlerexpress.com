@@ -13,6 +13,26 @@ if(!function_exists('get_formatted_date')){
         return $formattedDate; 
     }
 }
+if(!function_exists('quote_status_msg')){
+    function quote_status_msg($status){
+        $msg='Submit Quote';
+        if($status==config('constants.quote_status.pending'))
+        $msg='Quote in Pending';
+        elseif($status==config('constants.quote_status.quote_submitted'))
+        $msg='Quote submitted and Waiting for Customer Response';
+        elseif($status==config('constants.quote_status.approved'))
+        $msg='Quote approved by the customer';
+        elseif($status==config('constants.quote_status.declined'))
+        $msg='Quote declined by the customer';
+        elseif($status==config('constants.quote_status.trashed'))
+        $msg='Quote is in Trash';
+        elseif($status==config('constants.quote_status.delivery'))
+        $msg='Confirmed Delivery, Driver need to deliver this!';
+        elseif($status==config('constants.quote_status.complete'))
+        $msg='Successfully delivered ';
+        return $msg;
+    }
+}
 
 if(!function_exists('get_session_value')){
     function get_session_value($key=NULL){
@@ -128,6 +148,7 @@ if(!function_exists('getOtherZipCode')){
         
     }
 }
+
 if(!function_exists('log_activity')){
     function log_activity($data){
         
@@ -158,6 +179,24 @@ if(!function_exists('getAdvisedTestsNames')){
 
 
 // Get Options of States
+if(!function_exists('get_drivers_options')){
+    function get_drivers_options($selectID=NULL){
+    
+        $userData = App\Models\adminpanel\users::where('is_active',1)->where('group_id',config('constants.groups.driver'))->orderBy('id', 'desc')->get();
+        if($userData)
+         $userData=$userData->toArray();
+         $options='';
+         
+        foreach($userData as $key=>$data){
+            $selected='';
+            if($selectID==$data['id']) $selected='selected';
+            $options .='<option '.$selected.' value="'.$data['id'].'">'.$data['name'].'</option>';
+        }
+        
+     return $options;   
+    }
+}
+// Get Options of States
 if(!function_exists('getStatesOptions')){
     function getStatesOptions($selectID=NULL){
     
@@ -173,6 +212,20 @@ if(!function_exists('getStatesOptions')){
         }
         $options .='<option  value="other">Other</option>';
      return $options;   
+    }
+}
+// Add state in cities table if already state not exist 
+if(!function_exists('getOtherstate')){
+    function getOtherstate($name){
+        $nameSlug=phpslug($name);
+        $stateData = App\Models\adminpanel\states::where('slug',$nameSlug)->get();
+        $stateData=$stateData->toArray();
+        if(!empty($stateData)){
+            return $stateData[0]['id'];
+        }
+        $stateId = DB::table('states')->insertGetId(array('name'=>strtolower($name),'slug'=>phpslug($name),'is_active'=>1),'id');
+        return $stateId;
+        
     }
 }
 
@@ -264,14 +317,17 @@ if(!function_exists('getZipCodeOptions')){
      return $options;   
     }
 }
-if(!function_exists('getReportByIDs')){
-    function getReportByIDs($advisedTestID, $patientTestID){
-        //return array($id);
-        $testReport = App\Models\adminpanel\PatientReports::with('LabTest')->where('lab_test_id',$advisedTestID)->where('patient_test_id',$patientTestID)->orderBy('id', 'desc')->get();
-        if($testReport)
-        return $testReport->toArray();
-        
-        return array();
+if(!function_exists('driver_activities')){
+    function driver_activities($selectID=NULL){
+        $driver_activities=[
+            'reached_at_pickup' =>'Reached at pick-up',
+            'picked_up' =>'Finished pick-up',
+            'on_the_way' =>'On the way to delivery',
+            'reached_at_dropoff' =>'Reached at drop-off',
+            'delivered' =>'Delivered',
+        ];
+       return $driver_activities;
+
     }
 }
 

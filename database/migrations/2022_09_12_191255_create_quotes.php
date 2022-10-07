@@ -46,7 +46,16 @@ return new class extends Migration
             $table->text('drop_off_date')->nullable();
             $table->tinyInteger('drop_off_at_time')->default(1);
 
+            // Driver Activity
+            $table->string('reached_at_pickup')->nullable();
+            $table->string('picked_up')->nullable();
+            $table->string('on_the_way')->nullable();
+            $table->string('reached_at_dropoff')->nullable();
+            $table->string('delivered')->nullable();
+
             $table->tinyInteger('status')->default(0);
+            $table->tinyInteger('quote_by')->default(0); //0: By Office , 1: by Website
+            $table->tinyInteger('is_active')->default(1); //0: In Active , 1: Active, 2: Trash, 3:Delete
             $table->unsignedBigInteger('customer_id');
             $table->foreign('customer_id')->references('id')->on('users');
 

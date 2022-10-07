@@ -17,7 +17,7 @@ class AdminGaurd
      */
     public function handle(Request $request, Closure $next)
     {
-        
+       
        if(Auth::user() && Auth::user()->group_id==config('constants.groups.admin')){
             return $next($request);
        }

@@ -17,7 +17,7 @@ class adminHodGaurd
      */
     public function handle(Request $request, Closure $next)
     {
-        if(Auth::check() && (Auth::user()->group_id==config('constants.groups.admin') || Auth::user()->group_id==config('constants.groups.hod'))){
+        if(Auth::check() && (Auth::user()->group_id==config('constants.groups.admin') || Auth::user()->group_id==config('constants.groups.customer'))){
             return $next($request);
        }
         else{

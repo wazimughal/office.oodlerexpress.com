@@ -14,7 +14,7 @@
                     </div>
                     <div class="col-sm-6">
                         <ol class="breadcrumb float-sm-right">
-                            <li class="breadcrumb-item"><a href="#">Home</a></li>
+                            <li class="breadcrumb-item"><a href="{{url('/')}}">Home</a></li>
                             <li class="breadcrumb-item active">Add New driver</li>
                         </ol>
                     </div>
@@ -47,7 +47,7 @@
                                 </div>
                                 <div class="col-3">&nbsp;</div>
                               </div>
-                                <form method="POST" action="{{ url('/admin/drivers/add') }}">
+                                <form method="POST" action="{{ route('drivers.add') }}">
                                     @csrf
                                     <div class="row form-group">
                                         <div class="col-3">&nbsp;</div>
@@ -115,14 +115,14 @@
                                         <div class="col-3">&nbsp;</div>
                                         <div class="col-6">
                                         <div class="input-group mb-3">
-                                          <input type="text" name="mobileno" class="form-control @error('mobileno') is-invalid @enderror"
-                                              placeholder="Mobile No." value="{{ old('mobileno') }}">
+                                          <input type="password" name="password" class="form-control @error('password') is-invalid @enderror"
+                                              placeholder="Password" value="{{ old('password') }}">
                                           <div class="input-group-append">
                                               <div class="input-group-text">
-                                                  <span class="fas fa-address-card"></span>
+                                                  <span class="fas fa-envelope"></span>
                                               </div>
                                           </div>
-                                          @error('mobileno')
+                                          @error('password')
                                               <div class="invalid-feedback">
                                                   {{ $message }}
                                               </div>

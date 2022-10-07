@@ -13,6 +13,11 @@ class quote_products extends Model
 
     public function quote()
     {
-        return $this->hasOne(quotes::class, 'id', '	quote_id');
+        return $this->hasOne(quotes::class, 'id', 'quote_id');
     }
+    public function category()
+    {
+        return $this->hasOne(product_categories::class, 'id', 'cat_id');
+    }
+    //return $this->hasOne(User::class, 'foreign_key', 'local_key');
 }

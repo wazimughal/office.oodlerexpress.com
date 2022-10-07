@@ -11,6 +11,9 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Auth;
 
+use App\Mail\EmailTemplate;
+use Illuminate\Support\Facades\Mail;
+
 class LeadsController extends Controller
 {
 
@@ -30,31 +33,71 @@ class LeadsController extends Controller
             'firstname'=>'required',
             'lastname'=>'required',
             'email'=>'required|email|distinct|unique:users|min:5',
-            'mobileno'=>'required|distinct|unique:users|min:5',
-            'phone'=>'required',
-            'subject'=>'required',
-            'message'=>'required',
+            'mobileno'=>'required',
+            'business_name'=>'required',
+            'business_phone'=>'required',
+            'business_address'=>'required',
+            'business_email'=>'required',
             
         ]);
         
-        
+        // User Information
         $this->users->name=$request['firstname'].' '.$request['lastname'];
         $this->users->firstname=$request['firstname'];
         $this->users->lastname=$request['lastname'];
         $this->users->email=$request['email'];
         $this->users->mobileno=$request['mobileno'];
-        $this->users->phone=$request['phone'];
-        $this->users->subject=$request['subject'];
-        $this->users->message=$request['message'];
+        $this->users->designation=$request['designation'];
+        $this->users->password=Hash::make(1234);
+
+       // Business Information 
+        $this->users->business_name=$request['business_name'];
+        $this->users->business_email=$request['business_email'];
+        $this->users->business_phone=$request['business_phone'];
+        $this->users->years_in_business=$request['years_in_business'];
+        $this->users->business_address=$request['business_address'];
+        $this->users->street=$request['street'];
+        $this->users->how_often_shipping=$request['how_often_shipping']; //
         $this->users->is_active=1;
-        $this->users->password=Hash::make('12345678');
+        
 
         $this->users->created_at=time();
         $this->users->group_id=config('constants.groups.subscriber');
         
-      
-  
-        $request->session()->flash('alert-success', 'Lead Added! Please Check in Pending Leads Tab');
+        if(isset($request['othercity']) && !empty($request['othercity']))
+        $cityId = getOtherCity($request['othercity']);
+        else
+        $cityId=$request['city'];
+
+        if(isset($request['otherstate']) && !empty($request['otherstate']))
+        $state_id = getOtherstate($request['otherstate']);
+        else
+        $state_id=$request['state_id'];
+        $this->users->state_id=$state_id;
+
+        if(isset($request['otherzipcode']) && !empty($request['otherzipcode']))
+        $zipcode = getOtherZipCode($request['otherzipcode']);
+        else
+        $zipcode=$request['zipcode_id'];
+        $this->users->zipcode_id=$zipcode;
+
+        $this->users->business_address=$request['business_address'];
+
+        if(isset($request['othershipping']) && !empty($request['othershipping']))
+        $shipping_cat = getOtherCategory($request['othershipping']);
+        else
+        $shipping_cat=$request['shipping_cat'];
+        
+
+        $this->users->shipping_cat=$shipping_cat;
+
+
+        $mailData['body_message']='Welcome To Oodler Express . A lead have been genrated by Oodler Express, Contact us for User Name and Password';
+        $mailData['subject']='Welcom to Oodler Express (New Lead added)';
+        if(Mail::to("waximarshad@outlook.com")->send(new EmailTemplate($mailData)))
+        $request->session()->flash('alert-info', 'Email Notification also sent  ');
+
+        $request->session()->flash('alert-success', 'Lead Added! Please Check in Leads Tab');
         $this->users->save();
                     // Activity Log
                     $activityComment='Mr.'.get_session_value('name').' Added new Lead '.$this->users->name;
@@ -71,41 +114,262 @@ class LeadsController extends Controller
         return redirect()->back();
         
     }
+    public function editLeads($id, Request $req){
+        $user=Auth::user(); 
+
+        $userData=$this->users->where('id',$id)->get()->toarray();
+        $userData=$userData[0];
+
+        return view('adminpanel/edit_leads',get_defined_vars());
+    }
+    
+    public function save_editLeads($id,Request $request){
+    //     p($request->all());
+    //    dd('dfsaf');
+        $validator=$request->validate([
+            'firstname'=>'required',
+            'lastname'=>'required',
+            'mobileno'=>'required',
+            'business_name'=>'required',
+            'business_phone'=>'required',
+            'business_address'=>'required',
+            'business_email'=>'required',
+            
+        ]);
+        
+        // User Information
+        $data_to_update['name']=$this->users->name=$request['firstname'].' '.$request['lastname'];
+        $data_to_update['firstname']=$this->users->firstname=$request['firstname'];
+        $data_to_update['lastname']=$this->users->lastname=$request['lastname'];
+        //$data_to_update['email']=$this->users->email=$request['email'];
+        $data_to_update['mobileno']=$this->users->mobileno=$request['mobileno'];
+        $data_to_update['designation']=$this->users->designation=$request['designation'];
+        
+       // Business Information 
+       $data_to_update['business_name']=$this->users->business_name=$request['business_name'];
+       $data_to_update['business_email']=$this->users->business_email=$request['business_email'];
+       $data_to_update['business_phone']=$this->users->business_phone=$request['business_phone'];
+       $data_to_update['years_in_business']=$this->users->years_in_business=$request['years_in_business'];
+       $data_to_update['street']=$this->users->street=$request['street'];
+       $data_to_update['how_often_shipping']=$this->users->how_often_shipping=$request['how_often_shipping']; //
+       
+        
+        
+        if(isset($request['othercity']) && !empty($request['othercity']))
+        $data_to_update['city_id']=$cityId = getOtherCity($request['othercity']);
+        else
+        $data_to_update['city_id']=$cityId=$request['city'];
+
+        if(isset($request['otherstate']) && !empty($request['otherstate']))
+        $state_id = getOtherstate($request['otherstate']);
+        else
+        $state_id=$request['state_id'];
+        $data_to_update['state_id']=$this->users->state_id=$state_id;
+
+        if(isset($request['otherzipcode']) && !empty($request['otherzipcode']))
+        $zipcode = getOtherZipCode($request['otherzipcode']);
+        else
+        $zipcode=$request['zipcode_id'];
+        $data_to_update['zipcode_id']= $this->users->zipcode_id=$zipcode;
+
+        $data_to_update['business_address']=$this->users->business_address=$request['business_address'];
+
+        if(isset($request['othershipping']) && !empty($request['othershipping']))
+        $shipping_cat = getOtherCategory($request['othershipping']);
+        else
+        $shipping_cat=$request['shipping_cat'];
+        
+
+        $data_to_update['shipping_cat']=$this->users->shipping_cat=$shipping_cat;
+
+        $mailData['body_message']='Welcome To Oodler Express . A lead have been genrated by Oodler Express, Contact us for User Name and Password';
+        $mailData['subject']='Welcom to Oodler Express (New Lead added)';
+        // if(Mail::to("waximarshad@outlook.com")->send(new EmailTemplate($mailData)))
+        // $request->session()->flash('alert-info', 'Email Notification also sent  ');
+
+        $request->session()->flash('alert-success', 'Lead update! Please Check in Leads Tab');
+        
+        $this->users->where('id',$id)->update($data_to_update);
+                    // Activity Log
+                    $activityComment='Mr.'.get_session_value('name').' updated Lead '.$this->users->name;
+                    $activityData=array(
+                        'user_id'=>get_session_value('id'),
+                        'action_taken_on_id'=>$id,
+                        'action_slug'=>'lead_updated',
+                        'comments'=>$activityComment,
+                        'others'=>'users',
+                        'created_at'=>date('Y-m-d H:I:s',time()),
+                    );
+                    $activityID=log_activity($activityData);
+
+        return redirect()->back();
+        
+    }
+    public function add_to_customer($id, Request $req){
+        $user=Auth::user(); 
+        if($user->group_id!=config('constants.groups.admin'))
+        return false;
+
+        $userData=$this->users->where('id',$id)->get()->toarray();
+        $userData=$userData[0];
+
+        return view('adminpanel/add_to_customer_leads',get_defined_vars());
+    }
+    
+    public function save_add_to_customer($id,Request $request){
+    
+        $customerData=$this->users->where('id',$id)->get('email')->toArray();
+        $customerData=$customerData[0];
+        $validator=$request->validate([
+            'firstname'=>'required',
+            'lastname'=>'required',
+            'mobileno'=>'required',
+            'business_name'=>'required',
+            'business_phone'=>'required',
+            'business_address'=>'required',
+            'business_email'=>'required',
+            'password'=>'required',
+            
+        ]);
+        
+        // User Information
+        $data_to_update['name']=$this->users->name=$request['firstname'].' '.$request['lastname'];
+        $data_to_update['firstname']=$this->users->firstname=$request['firstname'];
+        $data_to_update['lastname']=$this->users->lastname=$request['lastname'];
+        $data_to_update['mobileno']=$this->users->mobileno=$request['mobileno'];
+        $data_to_update['designation']=$this->users->designation=$request['designation'];
+        $data_to_update['password']=$this->users->password=Hash::make($request['password']);
+        $data_to_update['group_id']=$this->users->group_id=config('constants.groups.customer');
+       // Business Information 
+       $data_to_update['business_name']=$this->users->business_name=$request['business_name'];
+       $data_to_update['business_email']=$this->users->business_email=$request['business_email'];
+       $data_to_update['business_phone']=$this->users->business_phone=$request['business_phone'];
+       $data_to_update['years_in_business']=$this->users->years_in_business=$request['years_in_business'];
+       $data_to_update['street']=$this->users->street=$request['street'];
+       $data_to_update['how_often_shipping']=$this->users->how_often_shipping=$request['how_often_shipping']; //
+       
+        
+        
+        if(isset($request['othercity']) && !empty($request['othercity']))
+        $data_to_update['city_id']=$cityId = getOtherCity($request['othercity']);
+        else
+        $data_to_update['city_id']=$cityId=$request['city'];
+
+        if(isset($request['otherstate']) && !empty($request['otherstate']))
+        $state_id = getOtherstate($request['otherstate']);
+        else
+        $state_id=$request['state_id'];
+        $data_to_update['state_id']=$this->users->state_id=$state_id;
+
+        if(isset($request['otherzipcode']) && !empty($request['otherzipcode']))
+        $zipcode = getOtherZipCode($request['otherzipcode']);
+        else
+        $zipcode=$request['zipcode_id'];
+        $data_to_update['zipcode_id']= $this->users->zipcode_id=$zipcode;
+
+        $data_to_update['business_address']=$this->users->business_address=$request['business_address'];
+
+        if(isset($request['othershipping']) && !empty($request['othershipping']))
+        $shipping_cat = getOtherCategory($request['othershipping']);
+        else
+        $shipping_cat=$request['shipping_cat'];
+        
+
+        $data_to_update['shipping_cat']=$this->users->shipping_cat=$shipping_cat;
+
+        $mailData['body_message']='Welcome To Oodler Express . A lead have been genrated by Oodler Express, and you are added as customer in oodler express. You can login to oodler CRM using password <strong>'.$request['password'].'</strong> and your email '.$customerData['email'].' as user name.';
+        $mailData['subject']='Welcom to Oodler Express (You are added as a customer in Oodler Express)';
+         $toEmail=[
+            $customerData['email']
+         ];
+        if(Mail::to($toEmail)->send(new EmailTemplate($mailData)))
+         $request->session()->flash('alert-info', 'Email Notification also sent to customer with password  ');
+
+        $request->session()->flash('alert-success', 'A new customer is added in the system');
+        
+        $this->users->where('id',$id)->update($data_to_update);
+                    // Activity Log
+                    $activityComment='Mr.'.get_session_value('name').' added new customer '.$this->users->name. 'from the leads' ;
+                    $activityData=array(
+                        'user_id'=>get_session_value('id'),
+                        'action_taken_on_id'=>$id,
+                        'action_slug'=>'add_to_customer',
+                        'comments'=>$activityComment,
+                        'others'=>'users',
+                        'created_at'=>date('Y-m-d H:I:s',time()),
+                    );
+                    $activityID=log_activity($activityData);
+
+        return redirect()->back();
+        
+    }
     
 
     // List All the Leads 
     public function leads($type=NULL){
         $user=Auth::user();
-        if($type=='pending'){
-            $leadsData=$this->users
-            ->where('group_id', '=', config('constants.groups.subscriber'))
-            ->where('status', '=', config('constants.lead_status.pending'))
-            ->where('is_active', '=', 1)
-            ->orderBy('created_at', 'desc')->paginate(config('constants.per_page'));
-        }
-        elseif($type=='approved'){
-            $leadsData=$this->users
-            ->where('group_id', '=', config('constants.groups.subscriber'))
-            ->where('status', '=', config('constants.lead_status.approved'))
-            ->where('is_active', '=', 1)
-            ->orderBy('created_at', 'desc')->paginate(config('constants.per_page'));
-        }
-        elseif($type=='cancelled'){
-            $leadsData=$this->users
-            ->where('group_id', '=', config('constants.groups.subscriber'))
-            ->where('status', '=', config('constants.lead_status.cancelled'))
-            ->where('is_active', '=', 1)
-            ->orderBy('created_at', 'desc')->paginate(config('constants.per_page'));
-        }
-        else{
-            $leadsData=$this->users
-            ->where('group_id', '=', config('constants.groups.subscriber'))
-            ->where('is_active', '=', 1)
-            ->orderBy('created_at', 'desc')->paginate(config('constants.per_page'));
-        }
+        if($user->group_id==config('constants.groups.admin')){
+            if($type=='office'){
+                $leadsData=$this->users
+                ->where('group_id', '=', config('constants.groups.subscriber'))
+                ->where('lead_by', '=', 0) // 0 is for office
+                ->where('is_active', '=', 1)
+                ->orderBy('created_at', 'desc')->paginate(config('constants.per_page'));
+            }
+            elseif($type=='web'){
+                $leadsData=$this->users
+                ->where('group_id', '=', config('constants.groups.subscriber'))
+                ->where('lead_by', '=', 1) // 1 is for web
+                ->where('is_active', '=', 1)
+                ->orderBy('created_at', 'desc')->paginate(config('constants.per_page'));
+            }
+            elseif($type=='trashed'){
+                $leadsData=$this->users
+                ->where('group_id', '=', config('constants.groups.subscriber'))
+                ->where('is_active', '=', 2)
+                ->orderBy('created_at', 'desc')->paginate(config('constants.per_page'));
+            }
+            else{
+                $leadsData=$this->users
+                ->where('group_id', '=', config('constants.groups.subscriber'))
+                ->where('is_active', '=', 1)
+                ->orderBy('created_at', 'desc')->paginate(config('constants.per_page'));
+            }
 
-      
- 
+        }else{ // This section is for the user
+
+
+            if($type=='office'){
+                $leadsData=$this->users
+                ->where('group_id', '=', config('constants.groups.subscriber'))
+                ->where('lead_by', '=', 0) // 0 is for office
+                ->where('id', get_session_value('id'))
+                ->where('is_active', '=', 1)
+                ->orderBy('created_at', 'desc')->paginate(config('constants.per_page'));
+            }
+            elseif($type=='web'){
+                $leadsData=$this->users
+                ->where('group_id', '=', config('constants.groups.subscriber'))
+                ->where('lead_by', '=', 1) // 1 is for web
+                ->where('is_active', '=', 1)
+                ->where('id', get_session_value('id'))
+                ->orderBy('created_at', 'desc')->paginate(config('constants.per_page'));
+            }
+            elseif($type=='trashed'){
+                $leadsData=$this->users
+                ->where('group_id', '=', config('constants.groups.subscriber'))
+                ->where('is_active', '=', 2)
+                ->where('id', get_session_value('id'))
+                ->orderBy('created_at', 'desc')->paginate(config('constants.per_page'));
+            }
+            else{
+                $leadsData=$this->users
+                ->where('group_id', '=', config('constants.groups.subscriber'))
+                ->where('is_active', '=', 1)
+                ->where('id', get_session_value('id'))
+                ->orderBy('created_at', 'desc')->paginate(config('constants.per_page'));
+            }
+        }
         
         return view('adminpanel/leads',compact('leadsData','user'));
     }
@@ -196,49 +460,13 @@ class LeadsController extends Controller
             echo json_encode($dataArray);
             die;
         }
-        if(isset($req['action']) && $req['action']=='changestatus'){ 
-            $dataArray['title']='Lead Status Updated ';
-            $activityComment='Mr.'.get_session_value('name').' moved lead to approved/pending/cancelled';
-
-            if(config('constants.lead_status.pending')==$req['status']){
-            $dataArray['status_btn']='<a disabled="" class="btn bg-gradient-danger btn-flat btn-sm"><i class="fas fa-chart-line"></i> Pending</a>';
-            $activityComment='Mr.'.get_session_value('name').' moved lead to pending';
-            }
-            else if(config('constants.lead_status.approved')==$req['status']){
-            $dataArray['status_btn']='<a disabled="" class="btn bg-gradient-success btn-flat btn-sm"><i class="fas fa-chart-line"></i> Approved</a>';
-            $activityComment='Mr.'.get_session_value('name').' moved lead to approved';
-            }
-            else if(config('constants.lead_status.cancelled')==$req['status']){
-            $dataArray['status_btn']='<a disabled="" class="btn bg-gradient-secondary btn-flat btn-sm"><i class="fas fa-chart-line"></i> Cancelled</a>';
-            $activityComment='Mr.'.get_session_value('name').' moved lead to cancelled';
-            }
-            $result=$this->users->where('id','=',$id)->update(array('status'=>$req['status']));             
-            if($result){
-                $dataArray['msg']='Mr.'.get_session_value('name').', User Lead '.$req['alertmsg'].' successfully!';
-                
-                $activityData=array(
-                    'user_id'=>get_session_value('id'),
-                    'action_taken_on_id'=>$id,
-                    'action_slug'=>'lead_status_changed',
-                    'comments'=>$activityComment,
-                    'others'=>'users',
-                    'created_at'=>date('Y-m-d H:I:s',time()),
-                );
-                $activityID=log_activity($activityData);
-            }
-            
-            else{
-                $dataArray['error']='Yes';
-                $dataArray['msg']='There is some error ! Please fill all the required fields.';
-            }
-            
-        }
-        else if(isset($req['action']) && $req['action']=='trash')
+       if(isset($req['action']) && $req['action']=='delete')
         {
-            $dataArray['title']='Record Trashed';
+            $dataArray['title']='Record Deleted';
+            $dataArray['id']=$id;
             $result=$this->users->where('id','=',$id)->update(array('is_active'=>2));             
             if($result){
-                $dataArray['msg']='Mr.'.get_session_value('name').', Record Trashed successfully!';
+                $dataArray['msg']='Mr.'.get_session_value('name').', Record Deleted successfully!';
                   // Activity Logged
              $activityID=log_activity(array(
                 'user_id'=>get_session_value('id'),
@@ -255,18 +483,19 @@ class LeadsController extends Controller
                 $dataArray['msg']='There is some error ! Please fill all the required fields.';
             }
         }
-        else if(isset($req['action']) && $req['action']=='delete')
+       elseif(isset($req['action']) && $req['action']=='restore')
         {
-            $dataArray['title']='Record Deleted';
-            $result=$this->users->where('id','=',$id)->update(array('is_active'=>3));             
+            $dataArray['title']='Record Restored';
+            $dataArray['id']=$id;
+            $result=$this->users->where('id','=',$id)->update(array('is_active'=>1));             
             if($result){
-                $dataArray['msg']='Mr.'.get_session_value('name').', Record Deleted successfully!';
-                // Activity Logged
+                $dataArray['msg']='Mr.'.get_session_value('name').', Record Restored successfully!';
+                  // Activity Logged
              $activityID=log_activity(array(
                 'user_id'=>get_session_value('id'),
                 'action_taken_on_id'=>$id,
-                'action_slug'=>'lead_deleted',
-                'comments'=>'Mr.'.get_session_value('name').' deleted record',
+                'action_slug'=>'lead_restored',
+                'comments'=>'Mr.'.get_session_value('name').' moved record to trash',
                 'others'=>'users',
                 'created_at'=>date('Y-m-d H:I:s',time()),
             ));
@@ -276,441 +505,8 @@ class LeadsController extends Controller
                 $dataArray['error']='Yes';
                 $dataArray['msg']='There is some error ! Please fill all the required fields.';
             }
-
         }
-        else if(isset($req['action']) && $req['action'] =='viewLeadData'){
-            $dataArray['error']='No';
-            $dataArray['msg']='Lead Successfully Updated';
-            $dataArray['title']='Leads Panel';
-            $leadsData=$this->users->where('id',($req['id']))->get()->toArray();
-            $leadsData=$leadsData[0];
-            //p($leadsData);
-            $leadHTML='<div class="container">
-            <div class="row">
-                <div class="col-1">&nbsp;</div>
-                <div class="col-5">
-                    <strong>Name</strong>
-                </div>
-                <div class="col-5">
-                    '.$leadsData['name'].'</div>
-                <div class="col-1">&nbsp;</div>
-            </div>
-            <div class="row">
-                <div class="col-1">&nbsp;</div>
-                <div class="col-5">
-                    <strong>Email</strong>
-                </div>
-                <div class="col-5">
-                    '.$leadsData['email'].'</div>
-                <div class="col-1">&nbsp;</div>
-            </div>
-            <div class="row">
-                <div class="col-1">&nbsp;</div>
-                <div class="col-5">
-                    <strong>Mobile No.</strong>
-                </div>
-                <div class="col-5">
-                    '.$leadsData['mobileno'].'
-                </div>
-                <div class="col-1">&nbsp;</div>
-            </div>
-            <div class="row">
-                <div class="col-1">&nbsp;</div>
-                <div class="col-5">
-                    <strong>Phone</strong>
-                </div>
-                <div class="col-5">
-                    '.$leadsData['phone'].'
-                </div>
-                <div class="col-1">&nbsp;</div>
-            </div>
-            <div class="row">
-                <div class="col-1">&nbsp;</div>
-                <div class="col-5"><strong>Subject</strong></div>
-                <div class="col-5">
-                    '.$leadsData['subject'].'
-                </div>
-                <div class="col-1">&nbsp;</div>
-            </div>
-            <div class="row">
-                <div class="col-1">&nbsp;</div>
-                <div class="col-5">
-                    <strong>Message</strong>
-                </div>
-                <div class="col-5">
-                    '.$leadsData['message'].'
-                </div>
-                <div class="col-1">&nbsp;</div>
-            </div>
-            
-        </div>';
-            $dataArray['res']=$leadHTML;
-        }
-        else if(isset($req['action']) && $req['action'] =='SaveAddtoCustomerForm'){
-            $dataArray['error']='No';
-            $dataArray['msg']='Lead added to customer Successfully Updated';
-            $dataArray['title']='Leads Panel';
-            $dataArray['actionType']='move_to_customer';
-            
-            $LeadData=array();
-            $dataArray['firstname']=$req['firstname'];
-            $dataArray['lastname']=$req['lastname'];
-            $dataArray['name']=$req['firstname'].' '.$req['lastname'];
-            $dataArray['mobileno']=$req['mobileno'];
-            $dataArray['phone']=$req['phone'];
-            $dataArray['business_name']=$req['business_name'];
-            $dataArray['business_address']=$req['business_address'];
-            $dataArray['business_mobile']=$req['business_phone'];
-            $dataArray['business_phone']=$req['business_phone'];
-            $dataArray['subject']=$req['subject'];
-            $dataArray['message']=$req['message'];
-            $dataArray['id']=$req['lead_id'];
-            if(isset($req['othercity']) && !empty($req['othercity']))
-                $cityId = getOtherCity($req['othercity']);
-            else
-                $cityId=$req['city'];
-
-            $this->users->where('id', $req['lead_id'])->update(
-                array(
-                    'firstname'=>$req['firstname'],
-                    'lastname'=>$req['lastname'],
-                    'name'=>$req['firstname'].' '.$req['lastname'],
-                    'mobileno'=>$req['mobileno'],
-                    'phone'=>$req['phone'],
-                    'business_name'=>$req['business_name'],
-                    'business_address'=>$req['business_address'],
-                    'business_phone'=>$req['business_phone'],
-                    'business_mobile'=>$req['business_mobile'],
-                    'password'=>Hash::make(Str::random(10)),
-                    'group_id'=>config('constants.groups.customer'),
-                    'subject'=>$req['subject'],
-                    'message'=>$req['message'],
-                    'city_id'=>$cityId)
-            );
-            // Activity Logged
-            $activityID=log_activity(array(
-                'user_id'=>get_session_value('id'),
-                'action_taken_on_id'=>$req['lead_id'],
-                'action_slug'=>'customer_added',
-                'comments'=>'Mr.'.get_session_value('name').' added a customer Mr.'.$req['firstname'].' '.$req['lastname'],
-                'others'=>'users',
-                'created_at'=>date('Y-m-d H:I:s',time()),
-            ));
-            
-            echo json_encode($dataArray);
-            die;
-
-        }
-        else if(isset($req['action']) && $req['action'] =='SaveEditFormLead'){
-            $dataArray['error']='No';
-            $dataArray['msg']='Lead Successfully Updated';
-            $dataArray['title']='Leads Panel';
-            $LeadData=array();
-            $dataArray['firstname']=$req['firstname'];
-            $dataArray['lastname']=$req['lastname'];
-            $dataArray['name']=$req['firstname'].' '.$req['lastname'];
-            $dataArray['mobileno']=$req['mobileno'];
-            $dataArray['phone']=$req['phone'];
-            $dataArray['subject']=$req['subject'];
-            $dataArray['message']=$req['message'];
-            $dataArray['id']=$req['lead_id'];
-            
-            $this->users->where('id', $req['lead_id'])->update(array(
-                'firstname'=>$req['firstname'],
-                'lastname'=>$req['lastname'],
-                'name'=>$req['firstname'].' '.$req['lastname'],
-                'mobileno'=>$req['mobileno'],
-                'phone'=>$req['phone'],
-                'subject'=>$req['subject'],
-                'message'=>$req['message'],
-            
-            ));
-             // Activity Logged
-             $activityID=log_activity(array(
-                'user_id'=>get_session_value('id'),
-                'action_taken_on_id'=>$req['lead_id'],
-                'action_slug'=>'lead_updated',
-                'comments'=>'Mr.'.get_session_value('name').' updated Lead having name Mr.'.$req['firstname'].' '.$req['lastname'],
-                'others'=>'users',
-                'created_at'=>date('Y-m-d H:I:s',time()),
-            ));
-
-            echo json_encode($dataArray);
-            die;
-
-        }
-        else if(isset($req['action']) && $req['action'] =='updateLeadForm'){
-            $dataArray['error']='No';
-           
-            
-            $leadsData=$this->users->where('id', '=', $req['id'])->get()->toArray();
-            $data=$leadsData[0];
-            $csrf_token = csrf_token();
-            
         
-$formHtml='<form id="EditLeadForm"
-                                                                            method="GET"
-                                                                            action=""
-                                                                            onsubmit="return updateLead('. $data['id'].','. $req['counter'].')">
-                                                                            <input type="hidden" name="_token" value="'.$csrf_token.'" />
-                                                                            <input type="hidden" name="action" value="SaveEditFormLead" />
-                                                                            <input type="hidden" name="lead_id" value="'.$data['id'].'" />
-                                                                            
-                                                                            
-                                                                            <div class="row form-group">
-                                                                                <div class="col-3">&nbsp;</div>
-                                                                                <div class="col-6">
-                                                                                    <div class="input-group mb-3">
-                                                                                        <input type="text" name="firstname"
-                                                                                            class="form-control"
-                                                                                            placeholder="Enter Name"
-                                                                                            value="'. $data['firstname'].'"
-                                                                                            required>
-                                                                                    </div>
-                                                                                </div>
-                                                                                <div class="col-3">&nbsp;</div>
-                                                                            </div>
-                                                                            <div class="row form-group">
-                                                                                <div class="col-3">&nbsp;</div>
-                                                                                <div class="col-6">
-                                                                                    <div class="input-group mb-3">
-                                                                                        <input type="text" name="lastname"
-                                                                                            class="form-control"
-                                                                                            placeholder="Enter Name"
-                                                                                            value="'. $data['lastname'].'"
-                                                                                            required>
-                                                                                    </div>
-                                                                                </div>
-                                                                                <div class="col-3">&nbsp;</div>
-                                                                            </div>
-                                                                            <div class="row form-group">
-                                                                                <div class="col-3">&nbsp;</div>
-                                                                                <div class="col-6">
-                                                                                    <div class="input-group mb-3">
-                                                                                        <input disabled readonly type="text"
-                                                                                            name="email"
-                                                                                            class="form-control"
-                                                                                            placeholder="Enter Email"
-                                                                                            value="'. $data['email'].'"
-                                                                                            required>
-                                                                                    </div>
-                                                                                </div>
-                                                                                <div class="col-3">&nbsp;</div>
-                                                                            </div>
-                                                                            <div class="row form-group">
-                                                                            <div class="col-3">&nbsp;</div>
-                                                                            <div class="col-6">
-                                                                                <div class="input-group mb-3">
-                                                                                    <input type="text"
-                                                                                        name="mobileno"
-                                                                                        class="form-control"
-                                                                                        placeholder="Mobile No."
-                                                                                        value="'. $data['mobileno'].'"
-                                                                                        required>
-                                                                                </div>
-                                                                            </div>
-                                                                            <div class="col-3">&nbsp;</div>
-                                                                            </div>
-                                                                            <div class="row form-group">
-                                                                            <div class="col-3">&nbsp;</div>
-                                                                            <div class="col-6">
-                                                                                <div class="input-group mb-3">
-                                                                                    <input  type="text" name="phone" class="form-control" placeholder="Phone No." value="'. $data['phone'].'" required>
-                                                                                </div>
-                                                                            </div>
-                                                                            <div class="col-3">&nbsp;</div>
-                                                                            </div>
-                                                                            <div class="row form-group">
-                                                                            <div class="col-3">&nbsp;</div>
-                                                                            <div class="col-6">
-                                                                                <div class="input-group mb-3">
-                                                                                    <input  type="text" name="subject" class="form-control" placeholder="Subject" value="'. $data['subject'].'" required>
-                                                                                </div>
-                                                                            </div>
-                                                                            <div class="col-3">&nbsp;</div>
-                                                                            </div>
-                                                                            <div class="row form-group">
-                                                                            <div class="col-3">&nbsp;</div>
-                                                                            <div class="col-6">
-                                                                                <div class="input-group mb-3">
-                                                                                    <textarea rows="10" name="message" class="form-control" placeholder="Write your Message"  required>'. $data['message'].'</textarea>
-                                                                                </div>
-                                                                            </div>
-                                                                            <div class="col-3">&nbsp;</div>
-                                                                            </div>
-                                                                            
-                                                                            <div class="row form-group">
-                                                                                <div class="col-5">&nbsp;</div>
-                                                                                <div class="col-2">
-                                                                                    <button type="submit"
-                                                                                        class="btn btn-outline-success btn-block btn-lg"><i
-                                                                                            class="fa fa-save"></i>
-                                                                                        Save Changes</button>
-                                                                                </div>
-                                                                                <div class="col-5">&nbsp;</div>
-
-                                                                            </div>
-                                                                        </form>';
-            $dataArray['formdata']=$formHtml;
-        }
-        else if(isset($req['action']) && $req['action'] =='addToCustomerForm'){
-            $dataArray['error']='No';
-           
-            $data=$this->users->where('id',$req['id'])->get()->toArray();
-            $data= $data[0];
-            $csrf_token = csrf_token();
-            
-        
-$formHtml='<form id="EditLeadForm"
-                                                                            method="GET"
-                                                                            action=""
-                                                                            onsubmit="return updateLead('. $data['id'].','. $req['counter'].')">
-                                                                            <input type="hidden" name="_token" value="'.$csrf_token.'" />
-                                                                            <input type="hidden" name="action" value="SaveAddtoCustomerForm" />
-                                                                            <input type="hidden" name="lead_id" value="'.$data['id'].'" />
-                                                                            
-                                                                           
-                                                                            <div class="row form-group">
-                                                                                <div class="col-3">&nbsp;</div>
-                                                                                <div class="col-6">
-                                                                                    <div class="input-group mb-3">
-                                                                                        <input type="text" name="firstname"
-                                                                                            class="form-control"
-                                                                                            placeholder="Enter Name"
-                                                                                            value="'. $data['firstname'].'"
-                                                                                            required>
-                                                                                    </div>
-                                                                                </div>
-                                                                                <div class="col-3">&nbsp;</div>
-                                                                            </div>
-                                                                            <div class="row form-group">
-                                                                                <div class="col-3">&nbsp;</div>
-                                                                                <div class="col-6">
-                                                                                    <div class="input-group mb-3">
-                                                                                        <input type="text" name="lastname"
-                                                                                            class="form-control"
-                                                                                            placeholder="Enter Name"
-                                                                                            value="'. $data['lastname'].'"
-                                                                                            required>
-                                                                                    </div>
-                                                                                </div>
-                                                                                <div class="col-3">&nbsp;</div>
-                                                                            </div>
-                                                                            <div class="row form-group">
-                                                                                <div class="col-3">&nbsp;</div>
-                                                                                <div class="col-6">
-                                                                                    <div class="input-group mb-3">
-                                                                                        <input disabled readonly type="text"
-                                                                                            name="email"
-                                                                                            class="form-control"
-                                                                                            placeholder="Enter Email"
-                                                                                            value="'. $data['email'].'"
-                                                                                            required>
-                                                                                    </div>
-                                                                                </div>
-                                                                                <div class="col-3">&nbsp;</div>
-                                                                            </div>
-                                                                            <div class="row form-group">
-                                                                            <div class="col-3">&nbsp;</div>
-                                                                            <div class="col-6">
-                                                                                <div class="input-group mb-3">
-                                                                                    <input type="text"
-                                                                                        name="mobileno"
-                                                                                        class="form-control"
-                                                                                        placeholder="Mobile No."
-                                                                                        value="'. $data['mobileno'].'"
-                                                                                        required>
-                                                                                </div>
-                                                                            </div>
-                                                                            <div class="col-3">&nbsp;</div>
-                                                                            </div>
-                                                                            <div class="row form-group">
-                                                                            <div class="col-3">&nbsp;</div>
-                                                                            <div class="col-6">
-                                                                                <div class="input-group mb-3">
-                                                                                    <input  type="text" name="phone" class="form-control" placeholder="Phone No." value="'. $data['phone'].'" required>
-                                                                                </div>
-                                                                            </div>
-                                                                            <div class="col-3">&nbsp;</div>
-                                                                            </div>
-                                                                            <div class="row form-group">
-                                                                            <div class="col-3">&nbsp;</div>
-                                                                            <div class="col-6">
-                                                                                <div class="input-group mb-3">
-                                                                                    <input  type="text" name="business_name" class="form-control" placeholder="Business Name" value="'. $data['business_name'].'" required>
-                                                                                </div>
-                                                                            </div>
-                                                                            <div class="col-3">&nbsp;</div>
-                                                                            </div>
-                                                                            <div class="row form-group">
-                                                                            <div class="col-3">&nbsp;</div>
-                                                                            <div class="col-6">
-                                                                                <div class="input-group mb-3">
-                                                                                    <input  type="text" name="business_address" class="form-control" placeholder="Business address" value="'. $data['business_address'].'" required>
-                                                                                </div>
-                                                                            </div>
-                                                                            <div class="col-3">&nbsp;</div>
-                                                                            </div>
-                                                                            <div class="row form-group">
-                                                                            <div class="col-3">&nbsp;</div>
-                                                                            <div class="col-6">
-                                                                                <div class="input-group mb-3">
-                                                                                    <input type="text" name="business_mobile"class="form-control" placeholder="Business Mobile No." value="'. $data['business_mobile'].'" required>
-                                                                                </div>
-                                                                            </div>
-                                                                            <div class="col-3">&nbsp;</div>
-                                                                            </div>
-                                                                            <div class="row form-group">
-                                                                            <div class="col-3">&nbsp;</div>
-                                                                            <div class="col-6">
-                                                                                <div class="input-group mb-3">
-                                                                                    <input  type="text" name="business_phone" class="form-control" placeholder="Business Phone No." value="'. $data['business_phone'].'" required>
-                                                                                </div>
-                                                                            </div>
-                                                                            <div class="col-3">&nbsp;</div>
-                                                                            </div>
-                                                                            <div class="row form-group">
-                                                                                <div class="col-3">&nbsp;</div>
-                                                                                <div class="col-6">
-                                                                                    <div class="input-group mb-3">
-                                                                                    <select id="city" onChange="changeCity()" name="city" class="form-control select2bs4" placeholder="Select Venue Group">'.getCitiesOptions().'</select>
-                                                                                    </div>
-                                                                                </div>
-                                                                                <div class="col-3">&nbsp;</div>
-                                                                            </div>
-                                                                            <div id="othercity"></div>
-                                                                            <div class="row form-group">
-                                                                            <div class="col-3">&nbsp;</div>
-                                                                            <div class="col-6">
-                                                                                <div class="input-group mb-3">
-                                                                                    <input  type="text" name="subject" class="form-control" placeholder="Subject" value="'. $data['subject'].'" required>
-                                                                                </div>
-                                                                            </div>
-                                                                            <div class="col-3">&nbsp;</div>
-                                                                            </div>
-                                                                            <div class="row form-group">
-                                                                            <div class="col-3">&nbsp;</div>
-                                                                            <div class="col-6">
-                                                                                <div class="input-group mb-3">
-                                                                                    <textarea rows="10"  name="message" class="form-control" placeholder="Write your message..." required>'. $data['message'].'</textarea>
-                                                                                </div>
-                                                                            </div>
-                                                                            <div class="col-3">&nbsp;</div>
-                                                                            </div>
-                                                                            <div class="row form-group">
-                                                                                <div class="col-4">&nbsp;</div>
-                                                                                <div class="col-4">
-                                                                                    <button type="submit"
-                                                                                        class="btn btn-outline-success btn-block btn-lg"><i
-                                                                                            class="fa fa-save"></i>
-                                                                                        Add to Customer</button>
-                                                                                </div>
-                                                                                <div class="col-4">&nbsp;</div>
-
-                                                                            </div>
-                                                                        </form>';
-            $dataArray['formdata']=$formHtml;
-        }
       
         echo json_encode($dataArray);
         die;

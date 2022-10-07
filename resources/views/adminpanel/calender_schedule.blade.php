@@ -3,6 +3,7 @@
     <title>Calender Schedule | {{ config('constants.app_name') }}</title>
 @endpush
 @section('main-section')
+
 <!-- Content Wrapper. Contains page content -->
 <div class="content-wrapper">
     <!-- Content Header (Page header) -->
@@ -26,7 +27,7 @@
      <section class="content">
         <div class="container-fluid">
           <div class="row">
-            <div class="col-md-3">
+            <div class="col-md-3" style="display: none;">
               <div class="sticky-top mb-3">
                 <div class="card">
                   <div class="card-header">
@@ -80,7 +81,7 @@
               </div>
             </div>
             <!-- /.col -->
-            <div class="col-md-9">
+            <div class="col-md-12">
               <div class="card card-primary">
                 <div class="card-body p-0">
                   <!-- THE CALENDAR -->
@@ -147,7 +148,7 @@
       var d    = date.getDate(),
           m    = date.getMonth(),
           y    = date.getFullYear()
-  
+      
       var Calendar = FullCalendar.Calendar;
       var Draggable = FullCalendar.Draggable;
   
@@ -178,52 +179,31 @@
         },
         themeSystem: 'bootstrap',
         //Random default events
-        events: [
-          {
-            title          : 'All Day Event',
-            start          : new Date(y, m, 1),
-            backgroundColor: '#f56954', //red
-            borderColor    : '#f56954', //red
+        events: [ 
+          @foreach ($quotesData as $data )
+          { 
+            @php
+            $pickup_date=strtotime($data['pickup_date']);
+            @endphp
+            
+
+            title          : 'PO#:{{$data["po_number"]}} having pick-up address: {{$data["pickup_street_address"]}} and drop-off address:{{$data["drop_off_street_address"]}}',
+            start          : '@php echo date("Y-m-d",$pickup_date);@endphp',
+            url            : '@php echo route("deliveries.view",$data['id']);@endphp',
+            backgroundColor: '##670D0D', //red
+            borderColor    : '#fffff', //red
+            classNames    : 'wasimclass', //red
             allDay         : true
           },
-          {
-            title          : 'Long Event',
-            start          : new Date(y, m, d - 5),
-            end            : new Date(y, m, d - 2),
-            backgroundColor: '#f39c12', //yellow
-            borderColor    : '#f39c12' //yellow
-          },
-          {
-            title          : 'Meeting',
-            start          : new Date(y, m, d, 10, 30),
-            allDay         : false,
-            backgroundColor: '#0073b7', //Blue
-            borderColor    : '#0073b7' //Blue
-          },
-          {
-            title          : 'Lunch',
-            start          : new Date(y, m, d, 12, 0),
-            end            : new Date(y, m, d, 14, 0),
-            allDay         : false,
-            backgroundColor: '#00c0ef', //Info (aqua)
-            borderColor    : '#00c0ef' //Info (aqua)
-          },
-          {
-            title          : 'Birthday Party',
-            start          : new Date(y, m, d + 1, 19, 0),
-            end            : new Date(y, m, d + 1, 22, 30),
-            allDay         : false,
-            backgroundColor: '#00a65a', //Success (green)
-            borderColor    : '#00a65a' //Success (green)
-          },
-          {
-            title          : 'Click for Google',
-            start          : new Date(y, m, 28),
-            end            : new Date(y, m, 29),
-            url            : 'https://www.google.com/',
-            backgroundColor: '#3c8dbc', //Primary (light-blue)
-            borderColor    : '#3c8dbc' //Primary (light-blue)
-          }
+          @endforeach
+          // {
+          //   title          : 'Lunch',
+          //   start          : new Date(y, m, d, 12, 0),
+          //   end            : new Date(y, m, d, 14, 0),
+          //   allDay         : false,
+          //   backgroundColor: '#00c0ef', //Info (aqua)
+          //   borderColor    : '#00c0ef' //Info (aqua)
+          // }
         ],
         editable  : true,
         droppable : true, // this allows things to be dropped onto the calendar !!!
@@ -235,8 +215,9 @@
           }
         }
       });
+     
+  calendar.render();
   
-      calendar.render();
       // $('#calendar').fullCalendar()
   
       /* ADDING EVENTS */

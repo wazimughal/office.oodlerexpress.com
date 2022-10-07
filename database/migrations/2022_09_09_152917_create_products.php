@@ -27,6 +27,7 @@ return new class extends Migration
             $table->foreign('cat_id')->references('id')->on('product_categories');
             $table->unsignedBigInteger('user_id');
             $table->foreign('user_id')->references('id')->on('users');
+            $table->tinyInteger('added_by')->default(1)->nullable(); //1 is for admin, 2 is for other user
             $table->timestamps();
         });
          // Insert some stuff
@@ -38,6 +39,7 @@ return new class extends Migration
                 'is_active' => 1,
                 'cat_id' => 2,
                 'user_id' => 1,
+                'added_by' => 1,
                 ],
                 [
                 'name' => 'Wood Doors',
@@ -45,6 +47,7 @@ return new class extends Migration
                 'is_active' => 1,
                 'cat_id' => 2,
                 'user_id' => 1,
+                'added_by' => 1,
                 ],
                 [
                 'name' => 'Filters',
@@ -52,6 +55,7 @@ return new class extends Migration
                 'is_active' => 1,
                 'cat_id' => 1,
                 'user_id' => 1,
+                'added_by' => 1,
                 ],
                 [
                 'name' => 'Panels',
@@ -59,6 +63,7 @@ return new class extends Migration
                 'is_active' => 1,
                 'cat_id' => 1,
                 'user_id' => 1,
+                'added_by' => 1,
                 ],
                 
                 
