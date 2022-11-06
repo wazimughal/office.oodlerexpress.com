@@ -86,33 +86,63 @@
                                                             <div class="col-3">&nbsp;</div>
                                                         </div>
 
-                                                        <div class="row invoice-info">
+                                                        @php
+                                                        //p($quotesData['quote_products']);
+                                                        $pickup_dropoff_address=array();
+                                                        @endphp
+                                                        <div class="card" style="margin-top: 25px;">
+                                                            <div class="card-header p-2">
+                                                                <strong> Products List</strong>
+                                                            </div><!-- /.card-header -->
+                                                            <div class="table-responsive">
+                                                                <table class="table">
+                                                                    <tbody>
+                                                                     
+                                                                        @foreach ($quotesData['quote_products'] as $quote_product)
+                                                                        @if (!in_array($quote_product['pickup_dropoff_order_number'],$pickup_dropoff_address))
+                                                                        <tr>
+                                                                            <td colspan="2">
+                                                                                <strong>Pick Up Detail </strong> <br>
+                                                                                Date : {{ $quote_product['pickup_dropoff_address']['pickup_date'] }}<br>
+                                                                                Street Address
+                                                                                :{{ $quote_product['pickup_dropoff_address']['pickup_street_address'] }}<br>
+                                                                                Unit :{{ $quote_product['pickup_dropoff_address']['pickup_unit'] }}<br>
+                                                                                Contact No. :{{ $quote_product['pickup_dropoff_address']['pickup_contact_number'] }}<br>
+                                                                            </td>
+                                                                            <td colspan="2">
+                                                                                <strong>Drop-Off Detail </strong> <br>
+                                                                                Date : {{ $quote_product['pickup_dropoff_address']['drop_off_date'] }}<br>
+                                                                                Street Address
+                                                                                :{{ $quote_product['pickup_dropoff_address']['drop_off_street_address'] }}<br>
+                                                                                Unit :{{ $quote_product['pickup_dropoff_address']['drop_off_unit'] }}<br>
+                                                                                Contact No.
+                                                                                :{{ $quote_product['pickup_dropoff_address']['drop_off_contact_number'] }}<br>
+                                                                            </td>
+                                                                            
+                                                                        </tr> 
+                                                                        <tr>
+                                                                            <th>Prodcut Name</th>
+                                                                            <th>Quantity</th>
+                                                                            <th>Size</th>
+                                                                            <th>Description</th>
+                                                                        </tr>
+                                                                        @php
+                                                                            $pickup_dropoff_address[]=$quote_product['pickup_dropoff_order_number'];
+                                                                        @endphp
 
-                                                            <!-- /.col -->
-                                                            <div class="col-sm-4 invoice-col">
-                                                                <strong>Pick Up Detail </strong> <br>
-                                                                Date : {{ $quotesData['pickup_date'] }}<br>
-                                                                Time
-                                                                :{{ $quotesData['pickup_at_time'] == 1 ? 'AM' : 'PM' }}<br>
-                                                                Street Address
-                                                                :{{ $quotesData['pickup_street_address'] }}<br>
-                                                                Unit :{{ $quotesData['pickup_unit'] }}<br>
-                                                                Contact No. :{{ $quotesData['pickup_contact_number'] }}<br>
+                                                                        @endif   
+                                                                        <tr>
+                                                                                <td>{{ $quote_product['product_name'] }}
+                                                                                </td>
+                                                                                <td>{{ $quote_product['quantity'] }}</td>
+                                                                                <td>{{ $quote_product['size'] }}</td>
+                                                                                <td>{{ $quote_product['description'] }}
+                                                                                </td>
+                                                                            </tr>
+                                                                        @endforeach
+                                                                    </tbody>
+                                                                </table>
                                                             </div>
-                                                            <div class="col-sm-4 invoice-col">&nbsp;</div>
-                                                            <div class="col-sm-4 invoice-col">
-
-                                                                <strong>Drop-Off Detail </strong> <br>
-                                                                Date : {{ $quotesData['drop_off_date'] }}<br>
-                                                                Time
-                                                                :{{ $quotesData['drop_off_at_time'] == 1 ? 'AM' : 'PM' }}<br>
-                                                                Street Address
-                                                                :{{ $quotesData['drop_off_street_address'] }}<br>
-                                                                Unit :{{ $quotesData['drop_off_unit'] }}<br>
-                                                                Contact No.
-                                                                :{{ $quotesData['drop_off_contact_number'] }}<br>
-                                                            </div>
-
                                                         </div>
                                                         @if (isset($quotesData['driver']) && empty($quotesData['driver']))
                                                             <div style="height: 100px; width:100%">&nbsp;</div>
@@ -128,7 +158,7 @@
                                                                         <div class="input-group mb-3">
                                                                             <select placeholder="select Driver"
                                                                                 name="driver_id"
-                                                                                class="select2bs4 form-control @error('photographer_expense[]') is-invalid @enderror">
+                                                                                class="select2bs4 form-control @error('drivers') is-invalid @enderror">
                                                                                 {!! get_drivers_options() !!}
                                                                             </select>
                                                                             @error('driver_id')
@@ -162,54 +192,122 @@
 
 
                                         {{-- This section is for Comments --}}
-                                        @if ($user->group_id==config('constants.groups.admin') || $user->group_id==config('constants.groups.driver'))
-                                            
-                                        
-                                        <div class="card">
-                                            <div class="card-header p-2">
-                                                <strong> Notes Section </strong>
-                                            </div><!-- /.card-header -->
-                                            <div class="card-body">
-                                                <div id="submit_comment_replace">
-                                                    @php
-                                                        // p($quotesData['comments']);
-                                                    @endphp
-                                                    @foreach ($quotesData['comments'] as $key => $comment)
-                                                        <div class="row border">
-                                                            <div class="col-12">
-                                                                <strong>{{ $comment['user']['name'] }}</strong>({{ $comment['slug'] }})
-                                                                {{ date('d/m/Y H:i:s', strtotime($comment['created_at'])) }}<br>
-                                                                {{ $comment['comment'] }}
+                                        @if ($user->group_id == config('constants.groups.admin') || $user->group_id == config('constants.groups.driver'))
+                                            <div class="card">
+                                                <div class="card-header p-2">
+                                                    <strong> Proof of Delivery </strong>
+                                                </div><!-- /.card-header -->
+                                                <div class="row form-group">
+                                                    <div class="col-1">&nbsp;</div>
+                                                    <div class="col-10">
+                                                        <div class="row form-group">
+                                                            <?php
+                                                     $imagesTypes=array('jpg','jpeg','png','gif');
+                                                     $excelTypes=array('xls','xlsx');
+                                                     $docTypes=array('doc','docx');
+                                                        foreach($quotesData['delivery_proof'] as $data){
+                                                          if(in_array($data['otherinfo'],$imagesTypes))
+                                                            $thumb_img=$data['path'];
+                                                          else if(in_array($data['otherinfo'],$excelTypes))
+                                                            $thumb_img=url('adminpanel/dist/img/xls.jpeg');
+                                                          else if(in_array($data['otherinfo'],$docTypes))
+                                                            $thumb_img=url('adminpanel/dist/img/doxx.png');
+                                                          else if($data['otherinfo']=='pdf')
+                                                          $thumb_img=url('adminpanel/dist/img/pdf.png');
+                                                            ?>
+                                                            <div id="file_{{ $data['id'] }}" class="col-3 text-center"
+                                                                style="position: relative;">
+                                                                <label class="">{{ $data['name'] }}</label>
+                                                                <i onclick="removeFile({{ $data['id'] }})"
+                                                                    style="position: absolute; top:15px; right:0px; cursor:pointer"
+                                                                    class="fas fa-times"></i>
+                                                                <a href="{{ $data['path'] }}" target="_blank"><img
+                                                                        class="w-100 shadow-1-strong rounded mb-4 img-thumbnail"
+                                                                        src="{{ isset($thumb_img)?$thumb_img:'' }}" width="200" alt="Uploaded Image"></a>
                                                             </div>
+                
+                
+                                                            <?php 
+                                                          }
+                                                      ?>
+                
+                
+                
                                                         </div>
-                                                    @endforeach
+                                                        <div class="col-1">&nbsp;</div>
+                                                    </div>
+                                                </div>
+                                                <div class="row form-group">
+                                                    <div class="col-1">&nbsp;</div>
+                                                    <div class="col-10 card card-default">
+                                                      
+                                                        <form action="{{ route('delivery.upload_proof',$id) }}"
+                                                            method="post" enctype="multipart/form-data" id="image-upload"
+                                                            class="dropzone ">
+                                                            @csrf
+                                                            <div>
+                                                                <h4 class="form-label">Upload Multiple Files By Click On
+                                                                    Box</h4>
+                                                            </div>
+
+
+                                                        </form>
+                                                        <div class="card-footer">
+                                                            You can select multiple files (e.g images, .docx , .xls ,.csv,
+                                                            .pdf ) and upload
+
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-3">&nbsp;</div>
 
                                                 </div>
-                                                @php
-                                                    $userData = get_session_value();
-                                                    //p($userData);
-                                                @endphp
-                                                <div class="tab-content">
-                                                    <form method="post" id="submit_comment">
-                                                        <input type="hidden" name="group_id"
-                                                            value="{{ $user->group_id }}">
-                                                        <input type="hidden" name="action" value="submit_comment">
-                                                        <input type="hidden" name="slug"
-                                                            value="{{ $userData['get_groups']['slug'] }}">
-                                                        <input type="hidden" name="user_name"
-                                                            value="{{ $userData['name'] }}">
-                                                        <div class="form-group">
-                                                            <label for="inputDescription">Comment</label>
-                                                            <textarea id="comments" name="comment" placeholder="Write comment about the quote" class="form-control" rows="4"></textarea></br>
-                                                            <button
-                                                                onclick="do_action({{ $quotesData['id'] }},'submit_comment')"
-                                                                type="button" class="btn btn-success float-right"><i
-                                                                    class="far fa-credit-card"></i> Send</button>
-                                                        </div>
-                                                    </form>
+                                            </div>
+                                            <div class="card">
+                                                <div class="card-header p-2">
+                                                    <strong> Notes Section </strong>
+                                                </div><!-- /.card-header -->
+                                                <div class="card-body">
+                                                    <div id="submit_comment_replace">
+                                                        @php
+                                                            // p($quotesData['comments']);
+                                                        @endphp
+                                                        @foreach ($quotesData['comments'] as $key => $comment)
+                                                            <div class="row border">
+                                                                <div class="col-12">
+                                                                    <strong>{{ $comment['user']['name'] }}</strong>({{ $comment['slug'] }})
+                                                                    {{ date('d/m/Y H:i:s', strtotime($comment['created_at'])) }}<br>
+                                                                    {{ $comment['comment'] }}
+                                                                </div>
+                                                            </div>
+                                                        @endforeach
+
+                                                    </div>
+                                                    @php
+                                                        $userData = get_session_value();
+                                                        //p($userData);
+                                                    @endphp
+                                                    <div class="tab-content">
+                                                        <form method="post" id="submit_comment">
+                                                            <input type="hidden" name="group_id"
+                                                                value="{{ $user->group_id }}">
+                                                            <input type="hidden" name="action" value="submit_comment">
+                                                            <input type="hidden" name="slug"
+                                                                value="{{ $userData['get_groups']['slug'] }}">
+                                                            <input type="hidden" name="user_name"
+                                                                value="{{ $userData['name'] }}">
+                                                            <div class="form-group">
+                                                                <label for="inputDescription">Comment</label>
+                                                                <textarea id="comments" name="comment" placeholder="Write comment about the quote" class="form-control"
+                                                                    rows="4"></textarea></br>
+                                                                <button
+                                                                    onclick="do_action({{ $quotesData['id'] }},'submit_comment')"
+                                                                    type="button" class="btn btn-success float-right"><i
+                                                                        class="far fa-credit-card"></i> Send</button>
+                                                            </div>
+                                                        </form>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
                                         @endif
                                     </div>
 
@@ -217,98 +315,102 @@
 
                                     <div class="col-md-4">
                                         @php
-                                            $driver_activities=driver_activities();
+                                            $driver_activities = driver_activities();
                                             
                                         @endphp
-                                        @if ($user->group_id==config('constants.groups.customer'))
-                                        <div class="card-header alert-secondary">
-                                            <h3 class="card-title">Delivery Status</h3>
-                                        </div>
-                                        <div class="table-responsive">
-                                            <table class="table">
-                                                <form method="post" id="driver_activity">
-                                                    <input type="hidden" name="action" value="driver_activity_update">
-                                                    <input type="hidden" name="uid"
-                                                        value="{{ $quotesData['driver']['id'] }}">
-                                                    <tbody>
-                                                        <?php
+                                        @if ($user->group_id == config('constants.groups.customer'))
+                                            <div class="card-header alert-secondary">
+                                                <h3 class="card-title">Delivery Status</h3>
+                                            </div>
+                                            <div class="table-responsive">
+                                                <table class="table">
+                                                    <form method="post" id="driver_activity">
+                                                        <input type="hidden" name="action"
+                                                            value="driver_activity_update">
+                                                        <input type="hidden" name="uid"
+                                                            value="{{ $quotesData['driver']['id'] }}">
+                                                        <tbody>
+                                                            <?php
                                                             
                                                             foreach ($driver_activities as $key => $value) {
                                                                 
                                                              ?>
-                                                        <tr>
-                                                            <th style="width:50%"><label>{{ $value }}
-                                                                </label>&nbsp;
-                                                            </th>
-                                                            <td>
+                                                            <tr>
+                                                                <th style="width:50%"><label>{{ $value }}
+                                                                    </label>&nbsp;
+                                                                </th>
+                                                                <td>
 
-                                                                <div class="icheck-primary d-inline">
-                                                                    <input type="radio" id="{{ $key }}"
-                                                                        value="{{ $key }}"
-                                                                        name="{{ $key }}" disabled
-                                                                        {{ $quotesData[$key] != '' ? 'checked' : '' }}>
-                                                                    <label for="{{ $key }}"></label>
-                                                                </div>
-                                                            </td>
-                                                            <td id="{{ $key }}_time">{!! $quotesData[$key] != '' ? date('d/m/Y h:i:s',$quotesData[$key]) : '' !!}</td>
-                                                        </tr>
-                                                        <?php
+                                                                    <div class="icheck-primary d-inline">
+                                                                        <input type="radio" id="{{ $key }}"
+                                                                            value="{{ $key }}"
+                                                                            name="{{ $key }}" disabled
+                                                                            {{ $quotesData[$key] != '' ? 'checked' : '' }}>
+                                                                        <label for="{{ $key }}"></label>
+                                                                    </div>
+                                                                </td>
+                                                                <td id="{{ $key }}_time">{!! $quotesData[$key] != '' ? date('d/m/Y h:i:s', $quotesData[$key]) : '' !!}
+                                                                </td>
+                                                            </tr>
+                                                            <?php
                                                             }
                                                         ?>
 
 
-                                                    </tbody>
-                                                </form>
+                                                        </tbody>
+                                                    </form>
 
-                                            </table>
-                                        </div>
+                                                </table>
+                                            </div>
                                         @endif
 
-                                        @if ($user->group_id==config('constants.groups.admin') || $user->group_id==config('constants.groups.driver') && !empty($quotesData['driver']))
-                                       
-                                        <div class="card-header alert-secondary">
-                                            <h3 class="card-title">Driver Activities</h3>
-                                        </div>
-                                        <div class="table-responsive">
-                                            <table class="table">
-                                                <form method="post" id="driver_activity">
-                                                    <input type="hidden" name="action" value="driver_activity_update">
-                                                    <input type="hidden" name="uid"
-                                                        value="{{ $quotesData['driver']['id'] }}">
-                                                    <tbody>
-                                                        <?php
+                                        @if ($user->group_id == config('constants.groups.admin') ||
+                                            ($user->group_id == config('constants.groups.driver') && !empty($quotesData['driver'])))
+                                            <div class="card-header alert-secondary">
+                                                <h3 class="card-title">Driver Activities</h3>
+                                            </div>
+                                            <div class="table-responsive">
+                                                <table class="table">
+                                                    <form method="post" id="driver_activity">
+                                                        <input type="hidden" name="action"
+                                                            value="driver_activity_update">
+                                                        <input type="hidden" name="uid"
+                                                            value="{{ $quotesData['driver']['id'] }}">
+                                                        <tbody>
+                                                            <?php
                                                             $driver_activities=driver_activities();
                                                             foreach ($driver_activities as $key => $value) {
                                                                 
                                                              ?>
-                                                        <tr>
-                                                            <th style="width:50%"><label>{{ $value }}
-                                                                </label>&nbsp;
-                                                            </th>
-                                                            <td>
+                                                            <tr>
+                                                                <th style="width:50%"><label>{{ $value }}
+                                                                    </label>&nbsp;
+                                                                </th>
+                                                                <td>
 
-                                                                <div class="icheck-primary d-inline">
-                                                                    <input
-                                                                        onclick="driver_activity('{{ $key }}','dirver_activity')"
-                                                                        type="radio" id="{{ $key }}"
-                                                                        value="{{ $key }}"
-                                                                        name="{{ $key }}"
-                                                                        {{ $quotesData[$key] != '' ? 'checked disabled' : '' }}>
-                                                                    <label for="{{ $key }}"></label>
-                                                                </div>
-                                                            </td>
-                                                            <td id="{{ $key }}_time">{!! $quotesData[$key] != '' ? date('d/m/Y h:i:s',$quotesData[$key]) : '&nbsp;' !!}</td>
-                                                        </tr>
-                                                        <?php
+                                                                    <div class="icheck-primary d-inline">
+                                                                        <input
+                                                                            onclick="driver_activity('{{ $key }}','dirver_activity')"
+                                                                            type="radio" id="{{ $key }}"
+                                                                            value="{{ $key }}"
+                                                                            name="{{ $key }}"
+                                                                            {{ $quotesData[$key] != '' ? 'checked disabled' : '' }}>
+                                                                        <label for="{{ $key }}"></label>
+                                                                    </div>
+                                                                </td>
+                                                                <td id="{{ $key }}_time">{!! $quotesData[$key] != '' ? date('d/m/Y h:i:s', $quotesData[$key]) : '&nbsp;' !!}
+                                                                </td>
+                                                            </tr>
+                                                            <?php
                                                             }
                                                         ?>
 
 
-                                                    </tbody>
-                                                </form>
+                                                        </tbody>
+                                                    </form>
 
-                                            </table>
-                                        </div>
+                                                </table>
+                                            </div>
                                         @endif
                                         @if (isset($quotesData['driver']) && !empty($quotesData['driver']))
                                             <div class="card-header alert-secondary">
@@ -404,7 +506,12 @@
                                                         </tr>
                                                         <tr>
                                                             <th>Shiping </th>
-                                                            <td>{{ $quotesData['customer']['shipping_cat'] }}</td>
+                                                            <td>
+                                                                @php
+                                                                $car_names=cat_name_by_ids(json_decode($quotesData['customer']['shipping_cat'],true)) ;   
+                                                                echo implode('<br>',$car_names);
+                                                                @endphp
+                                                            </td>
                                                         </tr>
 
                                                     </tbody>
@@ -450,52 +557,106 @@
                 theme: 'bootstrap4'
             });
         });
+        function removeFile(id) {
 
+
+if (confirm('Are you sure? you want to delete this file?')) {
+
+    var sendInfo = {
+        action: 'delteFile',
+        file_id: id
+    };
+
+    $.ajax({
+        url: "{{ route('quotes.ajaxcall',$id) }}",
+        data: sendInfo,
+        contentType: 'application/json',
+        error: function() {
+            alert('There is Some Error, Please try again !');
+        },
+        type: 'GET',
+        dataType: 'json',
+        success: function(data) {
+            if (data.error == 'No') {
+                $('#file_' + id).remove();
+                $(document).Toasts('create', {
+                    class: 'bg-success',
+                    title: data.title,
+                    subtitle: 'record',
+                    body: data.msg
+                });
+
+
+            } else {
+                $(document).Toasts('create', {
+                    class: 'bg-danger',
+                    title: data.title,
+                    subtitle: 'record',
+                    body: data.msg
+                });
+            }
+
+        }
+
+    });
+
+}
+
+}
         function driver_activity(activity, action_name = '') {
-            id={{ $quotesData['id'] }};
+            id = {{ $quotesData['id'] }};
             var sendInfo = {
                 activity: activity,
                 action: action_name,
                 id: id
             };
             alertMsg = 'Are you sure you want to log this activity?';
-        if(confirm(alertMsg)){
-            $('#_loader').show();
-            $.ajax({
-                url: "{{ url('/admin/quotes/ajaxcall/') }}/" +id,
-                data: sendInfo,
-                contentType: 'application/json',
-                error: function() {
-                    alert('There is Some Error, Please try again !');
-                },
-                type: 'GET',
-                dataType: 'json',
-                success: function(data) {
+            if (confirm(alertMsg)) {
+                $('#_loader').show();
+                $.ajax({
+                    url: "{{ url('/admin/quotes/ajaxcall/') }}/" + id,
+                    data: sendInfo,
+                    contentType: 'application/json',
+                    error: function() {
+                        alert('There is Some Error, Please try again !');
+                    },
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function(data) {
 
-                    $('#' + activity + '_time').html(data._datetime);
+                        $('#' + activity + '_time').html(data._datetime);
+                       
+                        if (data.error == 'Yes'){
+                            $("#" + activity).prop('checked', false);
+                            alert(data.title);
+                            $('#_loader').hide();
+                        }
+                        
 
-                    if (data.error == 'No') {
-                        $('#file_' + id).remove();
-                        $(document).Toasts('create', {
-                            class: 'bg-success',
-                            title: data.title,
-                            subtitle: 'record',
-                            body: data.msg
-                        });
-                    } else {
-                        $(document).Toasts('create', {
-                            class: 'bg-danger',
-                            title: data.title,
-                            subtitle: 'record',
-                            body: data.msg
-                        });
+                        if (data.error == 'No') {
+                            $('#file_' + id).remove();
+                            $(document).Toasts('create', {
+                                class: 'bg-success',
+                                title: data.title,
+                                subtitle: 'record',
+                                body: data.msg
+                            });
+                            window.location = "";
+
+                        } else {
+                            $(document).Toasts('create', {
+                                class: 'bg-danger',
+                                title: data.title,
+                                subtitle: 'record',
+                                body: data.msg
+                            });
+                        }
+                       
                     }
-                    window.location = "";
-                }
-            });
-        }else{
-            $("#"+activity).prop('checked', false);;
-        }
+                });
+            } else {
+                $("#" + activity).prop('checked', false);
+            }
 
         }
 

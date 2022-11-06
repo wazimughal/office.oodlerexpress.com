@@ -86,36 +86,120 @@
                                                             <div class="col-3">&nbsp;</div>
                                                         </div>
 
-                                                        <div class="row invoice-info">
-
-                                                            <!-- /.col -->
-                                                            <div class="col-sm-4 invoice-col">
-                                                                <strong>Pick Up Detail </strong> <br>
-                                                                Date : {{ $quotesData['pickup_date'] }}<br>
-                                                                Time
-                                                                :{{ $quotesData['pickup_at_time'] == 1 ? 'AM' : 'PM' }}<br>
-                                                                Street Address
-                                                                :{{ $quotesData['pickup_street_address'] }}<br>
-                                                                Unit :{{ $quotesData['pickup_unit'] }}<br>
-                                                                Contact No. :{{ $quotesData['pickup_contact_number'] }}<br>
-                                                            </div>
-                                                            <div class="col-sm-4 invoice-col">&nbsp;</div>
-                                                            <div class="col-sm-4 invoice-col">
-
-                                                                <strong>Drop-Off Detail </strong> <br>
-                                                                Date : {{ $quotesData['drop_off_date'] }}<br>
-                                                                Time
-                                                                :{{ $quotesData['drop_off_at_time'] == 1 ? 'AM' : 'PM' }}<br>
-                                                                Street Address
-                                                                :{{ $quotesData['drop_off_street_address'] }}<br>
-                                                                Unit :{{ $quotesData['drop_off_unit'] }}<br>
-                                                                Contact No.
-                                                                :{{ $quotesData['drop_off_contact_number'] }}<br>
-                                                            </div>
-
-                                                        </div>
-                                                     
+                                                        
+                                                        @php
+                                                        //p($quotesData['quote_products']);
+                                                        $pickup_dropoff_address=array();
+                                                        @endphp
+                                                        <div class="card" style="margin-top: 25px;">
+                                                            <div class="card-header p-2">
+                                                                <strong> Products List</strong>
+                                                            </div><!-- /.card-header -->
                                                        
+                                                            <div class="table-responsive">
+                                                                <table class="table">
+                                                                    <tbody>
+                                                                  
+                                                                        @foreach ($quotesData['quote_products'] as $quote_product)
+                                                                        @if (!in_array($quote_product['pickup_dropoff_order_number'],$pickup_dropoff_address))
+                                                                        <tr>
+                                                                            <td colspan="2">
+                                                                                <strong>Pick Up Detail </strong> <br>
+                                                                                Date : {{ $quote_product['pickup_dropoff_address']['pickup_date'] }}<br>
+                                                                                Street Address
+                                                                                :{{ $quote_product['pickup_dropoff_address']['pickup_street_address'] }}<br>
+                                                                                Unit :{{ $quote_product['pickup_dropoff_address']['pickup_unit'] }}<br>
+                                                                                Contact No. :{{ $quote_product['pickup_dropoff_address']['pickup_contact_number'] }}<br>
+                                                                            </td>
+                                                                            <td colspan="2">
+                                                                                <strong>Drop-Off Detail </strong> <br>
+                                                                                Date : {{ $quote_product['pickup_dropoff_address']['drop_off_date'] }}<br>
+                                                                                Street Address
+                                                                                :{{ $quote_product['pickup_dropoff_address']['drop_off_street_address'] }}<br>
+                                                                                Unit :{{ $quote_product['pickup_dropoff_address']['drop_off_unit'] }}<br>
+                                                                                Contact No.
+                                                                                :{{ $quote_product['pickup_dropoff_address']['drop_off_contact_number'] }}<br>
+                                                                            </td>
+                                                                            
+                                                                        </tr> 
+                                                                        <tr>
+                                                                            <th>Prodcut Name</th>
+                                                                            <th>Quantity</th>
+                                                                            <th>Size</th>
+                                                                            <th>Description</th>
+                                                                        </tr>
+                                                                        @php
+                                                                            $pickup_dropoff_address[]=$quote_product['pickup_dropoff_order_number'];
+                                                                        @endphp
+
+                                                                        @endif
+                                                                        <tr>
+                                                                            <td>{{ $quote_product['product_name'] }}</td>
+                                                                            <td>{{ $quote_product['quantity'] }}</td>
+                                                                            <td>{{ $quote_product['size'] }}</td>
+                                                                            <td>{{ $quote_product['description'] }}</td>
+                                                                        </tr> 
+                                                                        @endforeach
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                        
+                                                        </div>
+                                                        <div class="card">
+                                                            <div class="card-header p-2">
+                                                                <strong> Quotes Sent </strong>
+                                                            </div><!-- /.card-header -->
+                                                        <?php if($quotesData['quote_prices']){  $k=1;?>
+                                                            <div class="form-group row">
+                                                                <div class="col-sm-12">
+                                                                    <div class="table-responsive">
+                                                                        <table class="table">
+                                                                            <tr>
+                                                                                <td>Price</td>
+                                                                                <td>Extra</td>
+                                                                                <td>Reason</td>
+                                                                                <td>Description</td>
+                                                                                <td>Sent On</td>
+                                                                                <td>Status</td>
+                                                                            </tr>
+                                                                            <?php foreach ($quotesData['quote_prices'] as $key=>$data){ ?>
+                                                                            <tr>
+                                                                                <td>${{ $data['quoted_price'] }}</td>
+                                                                                <td>${{ $data['extra_charges'] != '' ? $data['extra_charges'] : 0 }}
+                                                                                </td>
+                                                                                <td>{{ $data['reason_for_extra_charges'] }}</td>
+                                                                                <td>{{ $data['description'] }}</td>
+                                                                                <td>{{ date('d/m/Y H:i:s', strtotime($data['created_at'])) }}
+                                                                                </td>
+                                                                                <td>
+                                                                                    @if ($data['status'] == 1)
+                                                                                        <span
+                                                                                            class="btn btn-success btn-block btn-sm"><i
+                                                                                                class="fas fa-chart-line"></i>
+                                                                                            Active</span>
+                                                                                    @else
+                                                                                        <span
+                                                                                            class="btn btn-primary btn-block btn-sm"><i
+                                                                                                class="fas fa-chart-line"></i>
+                                                                                            Previous</span>
+                                                                                    @endif
+                                                                                </td>
+                                                                            </tr>
+        
+                                                                            <?php }?>
+                                                                        </table>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+        
+                                                            <?php }else{?>
+                                                            <div class="form-group row">
+                                                                <div class="col-sm-12 text-center">
+                                                                    No quote sent yet!
+                                                                </div>
+                                                            </div>
+                                                            <?php }?>
+                                                        </div>
                                                         @if (empty($quotesData['driver']))
                                                         <div style="height: 100px; width:100%">&nbsp;</div>
                                                         <div class="row">
@@ -171,56 +255,7 @@
                                                 <!-- /.tab-content -->
                                             </div><!-- /.card-body -->
                                         </div>
-                                        <!-- /.card -->
-
                                         
-                                        {{-- This section is for Comments --}}
-                                        {{-- <div class="card">
-                                            <div class="card-header p-2">
-                                                <strong> Notes Section </strong>
-                                            </div><!-- /.card-header -->
-                                            <div class="card-body">
-                                                <div id="submit_comment_replace">
-                                                    @php
-                                                        // p($quotesData['comments']);
-                                                    @endphp
-                                                    @foreach ($quotesData['comments'] as $key => $comment)
-                                                        <div class="row border">
-                                                            <div class="col-12">
-                                                                <strong>({{ $comment['slug'] }}) </strong>
-                                                                {{ date('d/m/Y H:i:s', strtotime($comment['created_at'])) }}<br>
-                                                                {{ $comment['comment'] }}
-                                                            </div>
-                                                        </div>
-                                                    @endforeach
-
-                                                </div>
-                                                @php
-                                                    $userData = get_session_value();
-                                                    //p($userData);
-                                                @endphp
-                                                <div class="tab-content">
-                                                    <form method="post" id="submit_comment">
-                                                        <input type="hidden" name="group_id"
-                                                            value="{{ $user->group_id }}">
-                                                        <input type="hidden" name="action" value="submit_comment">
-                                                        <input type="hidden" name="slug"
-                                                            value="{{ $userData['get_groups']['slug'] }}">
-                                                        <input type="hidden" name="user_name"
-                                                            value="{{ $userData['name']}}">
-                                                        <div class="form-group">
-                                                            <label for="inputDescription">Comment</label>
-                                                            <textarea id="comments" name="comment" placeholder="Write comment about the Booking" class="form-control"
-                                                                rows="4"></textarea></br>
-                                                            <button
-                                                                onclick="do_action({{ $quotesData['id'] }},'submit_comment')"
-                                                                type="button" class="btn btn-success float-right"><i
-                                                                    class="far fa-credit-card"></i> Send</button>
-                                                        </div>
-                                                    </form>
-                                                </div>
-                                            </div>
-                                        </div> --}}
 
                                     </div>
 
@@ -321,7 +356,12 @@
                                                         </tr>
                                                         <tr>
                                                             <th>Shiping </th>
-                                                            <td>{{ $quotesData['customer']['shipping_cat'] }}</td>
+                                                            <td>@php
+                                                            $car_names=cat_name_by_ids(json_decode($quotesData['customer']['shipping_cat'],true)) ;   
+                                                            
+                                                            echo implode('<br>',$car_names);
+                                                            @endphp
+                                                            </td>
                                                         </tr>
 
                                                     </tbody>

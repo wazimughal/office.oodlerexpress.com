@@ -27,7 +27,7 @@ class LeadsController extends Controller
        $user=Auth::user(); 
         return view('adminpanel/add_leads',compact('user'));
     }
-    public function SaveUsersData(Request $request){
+    public function save_new_lead(Request $request){
        
         $validator=$request->validate([
             'firstname'=>'required',
@@ -38,6 +38,7 @@ class LeadsController extends Controller
             'business_phone'=>'required',
             'business_address'=>'required',
             'business_email'=>'required',
+            'shipping_cat'=>'required',
             
         ]);
         
@@ -59,42 +60,24 @@ class LeadsController extends Controller
         $this->users->street=$request['street'];
         $this->users->how_often_shipping=$request['how_often_shipping']; //
         $this->users->is_active=1;
-        
-
         $this->users->created_at=time();
         $this->users->group_id=config('constants.groups.subscriber');
-        
-        if(isset($request['othercity']) && !empty($request['othercity']))
-        $cityId = getOtherCity($request['othercity']);
-        else
-        $cityId=$request['city'];
 
-        if(isset($request['otherstate']) && !empty($request['otherstate']))
-        $state_id = getOtherstate($request['otherstate']);
-        else
-        $state_id=$request['state_id'];
-        $this->users->state_id=$state_id;
-
-        if(isset($request['otherzipcode']) && !empty($request['otherzipcode']))
-        $zipcode = getOtherZipCode($request['otherzipcode']);
-        else
-        $zipcode=$request['zipcode_id'];
-        $this->users->zipcode_id=$zipcode;
-
+        $this->users->city=$this->users->city=$request['city'];
+        $this->users->state=$this->users->state=$request['state'];
+        $this->users->zipcode= $this->users->zipcode=$request['zipcode'];
+        $this->users->shipping_cat=json_encode($request['shipping_cat']);
         $this->users->business_address=$request['business_address'];
 
-        if(isset($request['othershipping']) && !empty($request['othershipping']))
-        $shipping_cat = getOtherCategory($request['othershipping']);
-        else
-        $shipping_cat=$request['shipping_cat'];
-        
-
-        $this->users->shipping_cat=$shipping_cat;
-
+       
 
         $mailData['body_message']='Welcome To Oodler Express . A lead have been genrated by Oodler Express, Contact us for User Name and Password';
         $mailData['subject']='Welcom to Oodler Express (New Lead added)';
-        if(Mail::to("waximarshad@outlook.com")->send(new EmailTemplate($mailData)))
+        $toEmail=[
+            config('constants.admin_email'),
+            $request['email']
+        ];
+        if(Mail::to($toEmail)->send(new EmailTemplate($mailData)))
         $request->session()->flash('alert-info', 'Email Notification also sent  ');
 
         $request->session()->flash('alert-success', 'Lead Added! Please Check in Leads Tab');
@@ -134,7 +117,8 @@ class LeadsController extends Controller
             'business_phone'=>'required',
             'business_address'=>'required',
             'business_email'=>'required',
-            
+            'shipping_cat'=>'required',
+
         ]);
         
         // User Information
@@ -152,35 +136,11 @@ class LeadsController extends Controller
        $data_to_update['years_in_business']=$this->users->years_in_business=$request['years_in_business'];
        $data_to_update['street']=$this->users->street=$request['street'];
        $data_to_update['how_often_shipping']=$this->users->how_often_shipping=$request['how_often_shipping']; //
-       
-        
-        
-        if(isset($request['othercity']) && !empty($request['othercity']))
-        $data_to_update['city_id']=$cityId = getOtherCity($request['othercity']);
-        else
-        $data_to_update['city_id']=$cityId=$request['city'];
-
-        if(isset($request['otherstate']) && !empty($request['otherstate']))
-        $state_id = getOtherstate($request['otherstate']);
-        else
-        $state_id=$request['state_id'];
-        $data_to_update['state_id']=$this->users->state_id=$state_id;
-
-        if(isset($request['otherzipcode']) && !empty($request['otherzipcode']))
-        $zipcode = getOtherZipCode($request['otherzipcode']);
-        else
-        $zipcode=$request['zipcode_id'];
-        $data_to_update['zipcode_id']= $this->users->zipcode_id=$zipcode;
-
-        $data_to_update['business_address']=$this->users->business_address=$request['business_address'];
-
-        if(isset($request['othershipping']) && !empty($request['othershipping']))
-        $shipping_cat = getOtherCategory($request['othershipping']);
-        else
-        $shipping_cat=$request['shipping_cat'];
-        
-
-        $data_to_update['shipping_cat']=$this->users->shipping_cat=$shipping_cat;
+       $data_to_update['city']=$this->users->city=$request['city'];
+       $data_to_update['state']=$this->users->state=$request['state'];
+       $data_to_update['zipcode']= $this->users->zipcode=$request['zipcode'];
+       $data_to_update['business_address']=$this->users->business_address=$request['business_address'];
+       $data_to_update['shipping_cat']=$this->users->shipping_cat=json_encode($request['shipping_cat']);
 
         $mailData['body_message']='Welcome To Oodler Express . A lead have been genrated by Oodler Express, Contact us for User Name and Password';
         $mailData['subject']='Welcom to Oodler Express (New Lead added)';
@@ -250,35 +210,14 @@ class LeadsController extends Controller
        
         
         
-        if(isset($request['othercity']) && !empty($request['othercity']))
-        $data_to_update['city_id']=$cityId = getOtherCity($request['othercity']);
-        else
-        $data_to_update['city_id']=$cityId=$request['city'];
+       $data_to_update['city']=$this->users->city=$request['city'];
+       $data_to_update['state']=$this->users->state=$request['state'];
+       $data_to_update['zipcode']= $this->users->zipcode=$request['zipcode'];
+       $data_to_update['business_address']=$this->users->business_address=$request['business_address'];
+       $data_to_update['shipping_cat']=$this->users->shipping_cat=json_encode($request['shipping_cat']);
 
-        if(isset($request['otherstate']) && !empty($request['otherstate']))
-        $state_id = getOtherstate($request['otherstate']);
-        else
-        $state_id=$request['state_id'];
-        $data_to_update['state_id']=$this->users->state_id=$state_id;
-
-        if(isset($request['otherzipcode']) && !empty($request['otherzipcode']))
-        $zipcode = getOtherZipCode($request['otherzipcode']);
-        else
-        $zipcode=$request['zipcode_id'];
-        $data_to_update['zipcode_id']= $this->users->zipcode_id=$zipcode;
-
-        $data_to_update['business_address']=$this->users->business_address=$request['business_address'];
-
-        if(isset($request['othershipping']) && !empty($request['othershipping']))
-        $shipping_cat = getOtherCategory($request['othershipping']);
-        else
-        $shipping_cat=$request['shipping_cat'];
-        
-
-        $data_to_update['shipping_cat']=$this->users->shipping_cat=$shipping_cat;
-
-        $mailData['body_message']='Welcome To Oodler Express . A lead have been genrated by Oodler Express, and you are added as customer in oodler express. You can login to oodler CRM using password <strong>'.$request['password'].'</strong> and your email '.$customerData['email'].' as user name.';
-        $mailData['subject']='Welcom to Oodler Express (You are added as a customer in Oodler Express)';
+        $mailData['body_message']='Welcome to Oodler Express. We are happy to serve your business!. Please note that you have been assigned access to our Online Portal. Use your email '.$customerData['email'].' as your username and the following password <strong>'.$request['password'].'</strong>';
+        $mailData['subject']='New Account Details - Oodler Express';
          $toEmail=[
             $customerData['email']
          ];

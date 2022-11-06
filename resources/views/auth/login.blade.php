@@ -107,9 +107,9 @@
                 </div> --}}
                 <!-- /.social-auth-links -->
 
-                {{-- <p class="mb-1">
+                <p class="mb-1">
                     <a href="forgot-password.html">I forgot my password</a>
-                </p> --}}
+                </p>
 
                 <span class="mb-0">
                     <a href="{{url('/admin/register')}}" class="text-center">Register a new membership</a>

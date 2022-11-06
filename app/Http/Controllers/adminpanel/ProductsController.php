@@ -95,16 +95,18 @@ class ProductsController extends Controller
 
         
      }
-     public function SaveproductsData(Request $request){
+     public function add_new_product(Request $request){
        
         $validator=$request->validate([
             'name'=>'required',
+            'sizes'=>'required',
             'cat_id'=>'required',
         ]);
         
         
         $this->products->name=$request['name'];
         $this->products->slug=phpslug($request['name']);
+        $this->products->sizes=($request['sizes']);
         $this->products->additional_notes=($request['additional_notes']);
         $this->products->is_active=1;
         $this->products->user_id=get_session_value('id');
@@ -338,6 +340,7 @@ class ProductsController extends Controller
 
             $dataArray['name']=$req['name'];
             $dataArray['id']=$req['product_id'];
+            $dataArray['sizes']=$req['sizes'];
             $dataArray['additional_notes']=$req['additional_notes'];
             $dataArray['catname']=$req['catname'];
             
@@ -351,6 +354,7 @@ class ProductsController extends Controller
             $this->products->where('id', $req['product_id'])->update(
                 array(
                     'name'=>$req['name'],
+                    'sizes'=>$req['sizes'],
                     'additional_notes'=>$req['additional_notes'],
                     'cat_id'=>$cat_id,
                     
@@ -407,6 +411,17 @@ $formHtml='<form id="EditproductForm"
                                                                                 <div class="col-3">&nbsp;</div>
                                                                                 <div class="col-6">
                                                                                     <div class="input-group mb-3">
+                                                                                        <textarea type="text" name="sizes" class="form-control"
+                                                                                            placeholder="Prodcut Sizes (e.g Size 1, Size 2, Size 3)"
+                                                                                            >'. $data['sizes'].'</textarea>
+                                                                                    </div>
+                                                                                </div>
+                                                                                <div class="col-3">&nbsp;</div>
+                                                                            </div>
+                                                                            <div class="row form-group">
+                                                                                <div class="col-3">&nbsp;</div>
+                                                                                <div class="col-6">
+                                                                                    <div class="input-group mb-3">
                                                                                         <textarea type="text" name="additional_notes" class="form-control"
                                                                                             placeholder=" Any additional Notes"
                                                                                             >'. $data['additional_notes'].'</textarea>
@@ -419,7 +434,7 @@ $formHtml='<form id="EditproductForm"
                                                                                 <div class="col-3">&nbsp;</div>
                                                                                 <div class="col-6">
                                                                                     <div class="input-group mb-3">
-                                                                                    <select id="cat_id" onChange="changeProCategory()" name="cat_id" class="form-control select2bs4" placeholder="Select Category">'.getProductCatOptions($data['cat_id']).'</select>
+                                                                                    <select id="cat_id" onChange="changeProCategory()" name="cat_id" class="form-control select2bs4" placeholder="Select Category">'.get_product_cat_Options($data['cat_id']).'</select>
                                                                                     </div>
                                                                                 </div>
                                                                                 <div class="col-3">&nbsp;</div>

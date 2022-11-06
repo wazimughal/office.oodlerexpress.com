@@ -50,7 +50,7 @@
                                 </div>
                                 @php
                                     $userData = $userData[0];
-                                    //p($userData);
+                                    
                                 @endphp
                                 <div class="row form-group">
                                     <div class="col-3">&nbsp;</div>
@@ -93,16 +93,18 @@
                                     <div class="col-3">{{ $userData['address'] }}</div>
                                 </div>
                                 <div class="row form-group">
-                                  <div class="col-1">&nbsp;</div>
-                                  <div class="col-10"><hr></div>
+                                    <div class="col-1">&nbsp;</div>
+                                    <div class="col-10">
+                                        <hr>
+                                    </div>
                                 </div>
-                                
+
 
                                 <div class="row form-group">
-                                  <div class="col-1">&nbsp;</div>
-                                  <div class="col-10">
-                                    <div class="row form-group">
-                                     <?php
+                                    <div class="col-1">&nbsp;</div>
+                                    <div class="col-10">
+                                        <div class="row form-group">
+                                            <?php
                                      $imagesTypes=array('jpg','jpeg','png','gif');
                                      $excelTypes=array('xls','xlsx');
                                      $docTypes=array('doc','docx');
@@ -116,22 +118,27 @@
                                           else if($data['otherinfo']=='pdf')
                                           $thumb_img=url('adminpanel/dist/img/pdf.png');
                                             ?>
-                                          <div id="file_{{$data['id']}}" class="col-3 text-center" style="position: relative;">
-                                            <label class="">{{$data['name']}}</label>
-                                            <i onclick="removeFile({{$data['id']}})" style="position: absolute; top:15px; right:0px; cursor:pointer" class="fas fa-times"></i>
-                                            <a href="{{$data['path']}}" target="_blank"><img class="w-100 shadow-1-strong rounded mb-4 img-thumbnail" src="{{$thumb_img}}" width="200" alt="Uploaded Image"></a>
-                                          </div>
+                                            <div id="file_{{ $data['id'] }}" class="col-3 text-center"
+                                                style="position: relative;">
+                                                <label class="">{{ $data['name'] }}</label>
+                                                <i onclick="removeFile({{ $data['id'] }})"
+                                                    style="position: absolute; top:15px; right:0px; cursor:pointer"
+                                                    class="fas fa-times"></i>
+                                                <a href="{{ $data['path'] }}" target="_blank"><img
+                                                        class="w-100 shadow-1-strong rounded mb-4 img-thumbnail"
+                                                        src="{{ isset($thumb_img)?$thumb_img:'' }}" width="200" alt="Uploaded Image"></a>
+                                            </div>
 
 
-                                          <?php 
+                                            <?php 
                                           }
                                       ?>
-                                  
-                                 
-                                  
-                                </div>
-                                  <div class="col-1">&nbsp;</div>
-                                </div>
+
+
+
+                                        </div>
+                                        <div class="col-1">&nbsp;</div>
+                                    </div>
                                 </div>
                                 <div class="row form-group">
                                     <div class="col-1">&nbsp;</div>
@@ -140,7 +147,8 @@
                                             <h3 class="card-title">Upload Documents: <small> <em> <strong>Click!</strong> in
                                                         box and upload files.</small></h3>
                                         </div>
-                                        <form action="{{ url('/admin/drivers/upload-documents/') . '/' . $userData['id'] }}"
+                                        <form
+                                            action="{{ url('/admin/drivers/upload-documents/') . '/' . $userData['id'] }}"
                                             method="post" enctype="multipart/form-data" id="image-upload"
                                             class="dropzone ">
                                             @csrf
@@ -191,51 +199,51 @@
         });
 
 
-function removeFile(id) {
+        function removeFile(id) {
 
 
-if (confirm('Are you sure? you want to delete this file?')) {
+            if (confirm('Are you sure? you want to delete this file?')) {
 
-    var sendInfo = {
-        action: 'delteFile',
-        id: id
-    };
+                var sendInfo = {
+                    action: 'delteFile',
+                    id: id
+                };
 
-    $.ajax({
-        url: "{{ url('/admin/drivers/ajaxcall/') }}/" + id,
-        data: sendInfo,
-        contentType: 'application/json',
-        error: function() {
-            alert('There is Some Error, Please try again !');
-        },
-        type: 'GET',
-        dataType: 'json',
-        success: function(data) {
-            if (data.error == 'No') {
-                $('#file_' + id).remove();
-                $(document).Toasts('create', {
-                    class: 'bg-success',
-                    title: data.title,
-                    subtitle: 'record',
-                    body: data.msg
+                $.ajax({
+                    url: "{{ url('/admin/drivers/ajaxcall/') }}/" + id,
+                    data: sendInfo,
+                    contentType: 'application/json',
+                    error: function() {
+                        alert('There is Some Error, Please try again !');
+                    },
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function(data) {
+                        if (data.error == 'No') {
+                            $('#file_' + id).remove();
+                            $(document).Toasts('create', {
+                                class: 'bg-success',
+                                title: data.title,
+                                subtitle: 'record',
+                                body: data.msg
+                            });
+
+
+                        } else {
+                            $(document).Toasts('create', {
+                                class: 'bg-danger',
+                                title: data.title,
+                                subtitle: 'record',
+                                body: data.msg
+                            });
+                        }
+
+                    }
+
                 });
 
-
-            } else {
-                $(document).Toasts('create', {
-                    class: 'bg-danger',
-                    title: data.title,
-                    subtitle: 'record',
-                    body: data.msg
-                });
             }
-            
+
         }
-
-    });
-
-}
-
-}
     </script>
 @endsection

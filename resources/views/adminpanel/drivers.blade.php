@@ -76,10 +76,10 @@
                                                 {{ $data['license_no'] }} </td>
                                             <td id="address_{{ $data['id'] }}">
                                                 {{ $data['address'] }}</td>
-                                            <td id="zipcode_{{ $data['id'] }}">
-                                                {{ $data['ZipCode']['code'] }}</td>
+                                            <td id="state_{{ $data['id'] }}">
+                                                {{ $data['state'] }}</td>
                                             <td id="city_{{ $data['id'] }}">
-                                                {{ $data['City']['name'] }}</td>
+                                                {{ $data['city'] }}</td>
 
 
                                             <td>
@@ -88,10 +88,12 @@
                                                 {{-- <button onClick="viewLeadData({{ $data['id'] }},{{ $counter }})"
                                                     class="btn btn-primary btn-block btn-sm"><i class="fas fa-eye"></i>
                                                     View</button> --}}
-                                                @if ($data['is_active'] == 1)
-                                                <a href="{{ url('/admin/drivers/add-documents/' . $data['id']) }}"
+                                                    <a href="{{ url('/admin/drivers/add-documents/' . $data['id']) }}"
                                                     class="btn btn-success btn-block btn-sm"><i class="fas fa-plus"></i>
                                                     Attach documents</a>
+
+                                                @if ($data['is_active'] == 1 && $user->group_id==config('constants.groups.admin'))
+                                               
                                                 <a href="{{route('drivers.open_edit_form',$data['id'])}}"
                                                     class="btn btn-info btn-block btn-sm"><i class="fas fa-edit"></i>
                                                     Edit</a>
@@ -100,7 +102,7 @@
                                                         type="button" class="btn btn-danger btn-block btn-sm"><i
                                                             class="fas fa-trash"></i>
                                                         Delete</button>
-                                                @elseif ($data['is_active'] == 2)
+                                                @elseif ($data['is_active'] == 2 && $user->group_id==config('constants.groups.admin'))
                                                 <button
                                                         onClick="do_action({{ $data['id'] }},{{ $counter }},'restore')"
                                                         type="button" class="btn btn-warning btn-block btn-sm"><i

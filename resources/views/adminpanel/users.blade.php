@@ -44,7 +44,6 @@
                                             <th>Name</th>
                                             <th>Email</th>
                                             <th>Phone</th>
-                                            <th>Address</th>
                                             <th>Group</th>
                                             <th>Role</th>
                                             <th>Status</th>
@@ -62,8 +61,7 @@
                                                 <td id="email_{{ $data['id'] }}">{{ $data['email'] }}</td>
                                                 <td id="phone_{{ $data['id'] }}">
                                                     {{$data['phone']}}</td>
-                                                <td id="address_{{ $data['id'] }}">
-                                                    {{$data['homeaddress']}}</td>
+                                                
                                                 <td id="group_title_{{ $data['id'] }}">
                                                     {{ $data['getGroups']['title'] }}</td>
                                                 <td id="group_role_{{ $data['id'] }}">
@@ -75,8 +73,7 @@
                                                     <a @disabled(true) class="btn bg-gradient-secondary btn-flat btn-sm"><i class="fas fa-chart-line"></i> In-Active</a>
                                                     @endif</td>
 
-                                                <td><a class="btn btn-info btn-block btn-sm" data-toggle="modal"
-                                                        data-target="#modal-xl-{{ $counter }}"><i
+                                                <td><a class="btn btn-info btn-block btn-sm" href="{{route('admin.edit_user_form',$data['id'])}}" ><i
                                                             class="fas fa-edit"></i> Edit</a><a data-toggle="modal"
                                                         data-target="#modal-lg-{{ $counter }}"
                                                         class="btn btn-primary btn-block btn-sm"><i
@@ -271,8 +268,7 @@
                                         <tr>
                                             <th>Name</th>
                                             <th>Email</th>
-                                            <th>Organization Name</th>
-                                            <th>Address</th>
+                                            <th>Phone</th>
                                             <th>Group</th>
                                             <th>Role</th>
                                             <th>Status</th>

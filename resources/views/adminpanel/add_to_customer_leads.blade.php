@@ -36,14 +36,14 @@
                                     <div class="col-3">&nbsp;</div>
                                     <div class="col-6">
                                         @if ($errors->any())
-<div class="alert alert-danger">
-    <ul class="list-unstyled">
-        @foreach ($errors->all() as $error)
-        <li>{{ $error }}</li>
-        @endforeach
-    </ul>
-</div>
-@endif
+                                            <div class="alert alert-danger">
+                                                <ul class="list-unstyled">
+                                                    @foreach ($errors->all() as $error)
+                                                        <li>{{ $error }}</li>
+                                                    @endforeach
+                                                </ul>
+                                            </div>
+                                        @endif
                                         <!-- flash-message -->
                                         <div class="flash-message">
                                             @foreach (['danger', 'warning', 'success', 'info'] as $msg)
@@ -58,16 +58,16 @@
                                     <div class="col-3">&nbsp;</div>
                                 </div>
                                 @php
-                                   // p($userData);
+                                    // p($userData);
                                 @endphp
-                                <form method="POST" action="{{ route('admin.save_add_to_customer',$id) }}">
+                                <form method="POST" action="{{ route('admin.save_add_to_customer', $id) }}">
                                     @csrf
                                     <div class="row form-group">
                                         <div class="col-1">&nbsp;</div>
                                         <div class="col-5">
                                             <h3 class="title-form">Customer information: </h3>
                                         </div>
-                                        
+
                                     </div>
                                     <div class="row form-group">
                                         <div class="col-1">&nbsp;</div>
@@ -176,7 +176,8 @@
                                             <div class="input-group mb-3">
                                                 <input type="text" name="designation"
                                                     class="form-control @error('designation') is-invalid @enderror"
-                                                    placeholder="Position in Business" value="{{ $userData['designation'] }}">
+                                                    placeholder="Position in Business"
+                                                    value="{{ $userData['designation'] }}">
                                                 <div class="input-group-append">
                                                     <div class="input-group-text">
                                                         <span class="fas fa-address-card"></span>
@@ -198,7 +199,7 @@
                                         <div class="col-5">
                                             <h3 class="title-form">Business information: </h3>
                                         </div>
-                                        
+
                                     </div>
                                     <div class="row form-group">
                                         <div class="col-1">&nbsp;</div>
@@ -221,102 +222,12 @@
                                             </div>
                                         </div>
                                         <div class="col-5">
-                                            <span>City</span>
-                                            <div class="input-group mb-3">
-                                                 <select onchange="changeCity()" id="city" name="city_id"
-                                                    class="form-control select2bs4">
-                                                    {!! getCitiesOptions($userData['city_id']) !!}
-                                                </select>
-                                                <div id="othercity"></div>
-                                                <div class="input-group-append">
-                                                    <div class="input-group-text">
-                                                        <span class="fas fa-address-card"></span>
-                                                    </div>
-                                                </div>
-                                                @error('city_id')
-                                                    <div class="invalid-feedback">
-                                                        {{ $message }}
-                                                    </div>
-                                                @enderror
-                                            </div>
-                                        </div>
-                                        <div class="col-1">&nbsp;</div>
-                                    </div>
-
-
-                                    <div class="row form-group">
-                                        <div class="col-1">&nbsp;</div>
-                                        <div class="col-5">
-                                            <span>State</span>
-                                            <div class="input-group mb-3">
-                                                <select onchange="change_state()" name="state_id" id="state_id"
-                                                    class="form-control select2bs4">
-                                                    {!! getStatesOptions($userData['state_id']) !!}
-                                                </select>
-                                                <div id="otherstate"></div>
-                                                <div class="input-group-append">
-                                                    <div class="input-group-text">
-                                                        <span class="fas fa-address-card"></span>
-                                                    </div>
-                                                </div>
-                                                @error('state_id')
-                                                    <div class="invalid-feedback">
-                                                        {{ $message }}
-                                                    </div>
-                                                @enderror
-                                            </div>
-                                        </div>
-                                        <div class="col-5">
-                                            <span>Zip Code</span>
-                                            <div class="input-group mb-3">
-                                                <select onchange="changezipcode()" id="zipcode_id" name="zipcode_id"
-                                                    class="form-control select2bs4">
-                                                    {!! getZipCodeOptions($userData['zipcode_id']) !!}
-                                                </select>
-                                                <div id="otherzipcode"></div>
-                                                <div class="input-group-append">
-                                                    <div class="input-group-text">
-                                                        <span class="fas fa-address-card"></span>
-                                                    </div>
-                                                </div>
-
-                                                @error('zipcode_id')
-                                                    <div class="invalid-feedback">
-                                                        {{ $message }}
-                                                    </div>
-                                                @enderror
-                                                <div id="otherzipcode"></div>
-                                            </div>
-
-                                        </div>
-                                        <div class="col-1">&nbsp;</div>
-                                    </div>
-                                    <div class="row form-group">
-                                        <div class="col-1">&nbsp;</div>
-                                        <div class="col-5">
-                                            <span>Street</span>
-                                            <div class="input-group mb-3">
-                                                <input type="text" name="street"
-                                                    class="form-control @error('street') is-invalid @enderror"
-                                                    placeholder="Street" value="{{ $userData['street'] }}">
-                                                <div class="input-group-append">
-                                                    <div class="input-group-text">
-                                                        <span class="fas fa-address-card"></span>
-                                                    </div>
-                                                </div>
-                                                @error('street')
-                                                    <div class="invalid-feedback">
-                                                        {{ $message }}
-                                                    </div>
-                                                @enderror
-                                            </div>
-                                        </div>
-                                        <div class="col-5">
                                             <span>Business Address</span>
                                             <div class="input-group mb-3">
                                                 <input type="text" name="business_address"
                                                     class="form-control @error('business_address') is-invalid @enderror"
-                                                    placeholder="business_address" value="{{ $userData['business_address'] }}">
+                                                    placeholder="business_address"
+                                                    value="{{ $userData['business_address'] }}">
                                                 <div class="input-group-append">
                                                     <div class="input-group-text">
                                                         <span class="fas fa-address-card"></span>
@@ -329,17 +240,78 @@
                                                 @enderror
                                             </div>
                                         </div>
+                                        <div class="col-1">&nbsp;</div>
+                                    </div>
 
+
+                                    <div class="row form-group">
+                                        <div class="col-1">&nbsp;</div>
+                                        <div class="col-5">
+                                            <span>City</span>
+                                            <div class="input-group mb-3">
+                                                <input type="text" name="city"
+                                                    class="form-control @error('city') is-invalid @enderror"
+                                                    placeholder="City Name" value="{{ $userData['city'] }}">
+                                                
+                                                <div class="input-group-append">
+                                                    <div class="input-group-text">
+                                                        <span class="fas fa-address-card"></span>
+                                                    </div>
+                                                </div>
+                                                @error('city')
+                                                    <div class="invalid-feedback">
+                                                        {{ $message }}
+                                                    </div>
+                                                @enderror
+                                            </div>
+                                        </div>
+                                        <div class="col-5">
+                                            <span>State</span>
+                                            <div class="input-group mb-3">
+                                                <input type="text" name="state"
+                                                class="form-control @error('state') is-invalid @enderror"
+                                                placeholder="State Name" value="{{ $userData['state'] }}">
+                                                <div class="input-group-append">
+                                                    <div class="input-group-text">
+                                                        <span class="fas fa-address-card"></span>
+                                                    </div>
+                                                </div>
+                                                @error('state')
+                                                    <div class="invalid-feedback">
+                                                        {{ $message }}
+                                                    </div>
+                                                @enderror
+                                            </div>
+                                        </div>
                                         <div class="col-1">&nbsp;</div>
                                     </div>
                                     <div class="row form-group">
                                         <div class="col-1">&nbsp;</div>
                                         <div class="col-5">
+                                            <span>Zip Code</span>
+                                            <div class="input-group mb-3">
+                                                <input type="text" name="zipcode"
+                                                class="form-control @error('zipcode') is-invalid @enderror"
+                                                placeholder="Zip Code" value="{{ $userData['zipcode'] }}">
+                                                <div class="input-group-append">
+                                                    <div class="input-group-text">
+                                                        <span class="fas fa-address-card"></span>
+                                                    </div>
+                                                </div>
+                                                @error('zipcode')
+                                                    <div class="invalid-feedback">
+                                                        {{ $message }}
+                                                    </div>
+                                                @enderror
+                                            </div>
+                                        </div>
+                                        <div class="col-5">
                                             <span>Business Email</span>
                                             <div class="input-group mb-3">
                                                 <input type="email" name="business_email"
                                                     class="form-control @error('business_email') is-invalid @enderror"
-                                                    placeholder="Business Email" value="{{ $userData['business_email'] }}">
+                                                    placeholder="Business Email"
+                                                    value="{{ $userData['business_email'] }}">
                                                 <div class="input-group-append">
                                                     <div class="input-group-text">
                                                         <span class="fas fa-envelope"></span>
@@ -352,12 +324,17 @@
                                                 @enderror
                                             </div>
                                         </div>
+                                        <div class="col-1">&nbsp;</div>
+                                    </div>
+                                    <div class="row form-group">
+                                        <div class="col-1">&nbsp;</div>
                                         <div class="col-5">
                                             <span>Business Phone</span>
                                             <div class="input-group mb-3">
                                                 <input type="text" name="business_phone"
                                                     class="form-control @error('business_phone') is-invalid @enderror"
-                                                    placeholder="Business Phone No" value="{{ $userData['business_phone'] }}">
+                                                    placeholder="Business Phone No"
+                                                    value="{{ $userData['business_phone'] }}">
                                                 <div class="input-group-append">
                                                     <div class="input-group-text">
                                                         <span class="fas fa-address-card"></span>
@@ -370,16 +347,13 @@
                                                 @enderror
                                             </div>
                                         </div>
-                                        <div class="col-1">&nbsp;</div>
-                                    </div>
-                                    <div class="row form-group">
-                                        <div class="col-1">&nbsp;</div>
                                         <div class="col-5">
                                             <span>How many years in Business?</span>
                                             <div class="input-group mb-3">
                                                 <input type="number" name="years_in_business"
                                                     class="form-control @error('years_in_business') is-invalid @enderror"
-                                                    placeholder="How Many Years in Business" value="{{ $userData['years_in_business'] }}">
+                                                    placeholder="How Many Years in Business"
+                                                    value="{{ $userData['years_in_business'] }}">
                                                 <div class="input-group-append">
                                                     <div class="input-group-text">
                                                         <span class="fas fa-envelope"></span>
@@ -392,20 +366,17 @@
                                                 @enderror
                                             </div>
                                         </div>
+                                        
+                                        <div class="col-1">&nbsp;</div>
+                                    </div>
+                                    <div class="row form-group">
+                                        <div class="col-1">&nbsp;</div>
                                         <div class="col-5">
                                             <span>What do you Ship?</span>
                                             <div class="input-group mb-3">
-                                                <select onchange="change_shiping_cat()" name="shipping_cat" id="shipping_cat"
-                                                    class="form-control select2bs4 @error('shipping_cat') is-invalid @enderror"
-                                                    placeholder="What do you Ship" value="{{ $userData['shipping_cat'] }}">
+                                                    <select name="shipping_cat[]" id="shipping_cat" class="form-control select2bs4 @error('shipping_cat') is-invalid @enderror" multiple="multiple" data-placeholder="What do you Ship" style="width: 100%;">
                                                     {!! getProductCatOptions($userData['shipping_cat'])!!}
                                                 </select>
-                                                <div id="othershipping"></div>
-                                                <div class="input-group-append">
-                                                    <div class="input-group-text">
-                                                        <span class="fas fa-address-card"></span>
-                                                    </div>
-                                                </div>
                                                 @error('shipping_cat')
                                                     <div class="invalid-feedback">
                                                         {{ $message }}
@@ -413,19 +384,20 @@
                                                 @enderror
                                             </div>
                                         </div>
-                                        <div class="col-1">&nbsp;</div>
-                                    </div>
-                                    <div class="row form-group">
-                                        <div class="col-1">&nbsp;</div>
                                         <div class="col-5">
                                             <span>How often you ship?</span>
                                             <div class="input-group mb-3">
-                                                <select  name="how_often_shipping"
+                                                <select name="how_often_shipping"
                                                     class="form-control select2bs4 @error('how_often_shipping') is-invalid @enderror"
-                                                    placeholder="How Often do you ship" value="{{ $userData['how_often_shipping'] }}">
-                                                    <option {{($userData['how_often_shipping']=='daily')?'selected':''}} value="daily">Daily</option>
-                                                    <option {{($userData['how_often_shipping']=='weekly')?'selected':''}} value="weekly">Weekly</option>
-                                                    <option {{($userData['how_often_shipping']=='monthly')?'selected':''}} value="monthly">Monthly</option>
+                                                    placeholder="How Often do you ship"
+                                                    value="{{ $userData['how_often_shipping'] }}">
+                                                    <option {{ $userData['how_often_shipping'] == 'daily' ? 'selected' : '' }}
+                                                        value="daily">Daily</option>
+                                                    <option {{ $userData['how_often_shipping'] == 'weekly' ? 'selected' : '' }}
+                                                        value="weekly">Weekly</option>
+                                                    <option
+                                                        {{ $userData['how_often_shipping'] == 'monthly' ? 'selected' : '' }}
+                                                        value="monthly">Monthly</option>
                                                 </select>
                                                 <div class="input-group-append">
                                                     <div class="input-group-text">
@@ -439,7 +411,6 @@
                                                 @enderror
                                             </div>
                                         </div>
-                                        <div class="col-6">&nbsp;</div>
                                     </div>
 
 
@@ -526,8 +497,9 @@
                 $('#otherzipcode').html('');
             }
         };
+
         function change_shiping_cat() {
-         
+
             selectOption = $('#shipping_cat option:selected').text();
             //$('#other_shipping').val(selectOption);
             if (selectOption == 'Other') {

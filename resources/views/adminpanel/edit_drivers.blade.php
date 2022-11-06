@@ -179,7 +179,18 @@
                                         <div class="col-3">&nbsp;</div>
                                         <div class="col-6">
                                             <div class="input-group mb-3">
-                                            <select id="city" onChange="changeCity()" name="city" class="form-control select2bs4 @error('city') is-invalid @enderror" placeholder="Select City">@php echo getCitiesOptions($driverData['city_id']); @endphp</select>
+                                                <input type="text" name="city" class="form-control @error('city') is-invalid @enderror"
+                                                placeholder="City" value="{{$driverData['city']}}">
+                                                <div class="input-group-append">
+                                                    <div class="input-group-text">
+                                                        <span class="fas fa-address-card"></span>
+                                                    </div>
+                                                </div>
+                                                @error('city')
+                                                    <div class="invalid-feedback">
+                                                        {{ $message }}
+                                                    </div>
+                                                @enderror
                                             </div>
                                         </div>
                                         <div class="col-3">&nbsp;</div>
@@ -189,7 +200,18 @@
                                         <div class="col-3">&nbsp;</div>
                                         <div class="col-6">
                                             <div class="input-group mb-3">
-                                            <select id="zipcode" onChange="changezipcode()" name="zipcode" class="form-control select2bs4" placeholder="Select Zip Code">@php echo getZipCodeOptions($driverData['zipcode_id']); @endphp</select>
+                                                <input type="text" name="state" class="form-control @error('state') is-invalid @enderror"
+                                                placeholder="City" value="{{$driverData['state']}}">
+                                                <div class="input-group-append">
+                                                    <div class="input-group-text">
+                                                        <span class="fas fa-address-card"></span>
+                                                    </div>
+                                                </div>
+                                                @error('state')
+                                                    <div class="invalid-feedback">
+                                                        {{ $message }}
+                                                    </div>
+                                                @enderror
                                             </div>
                                         </div>
                                         <div class="col-3">&nbsp;</div>

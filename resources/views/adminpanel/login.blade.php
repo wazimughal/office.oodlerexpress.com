@@ -98,9 +98,16 @@
                 {{-- <p class="mb-1">
                     <a href="forgot-password.html">I forgot my password</a>
                 </p> --}}
-                <p class="mb-0">
+                {{-- <p class="mb-0">
                     <a href="{{url('/admin/register')}}" class="text-center">Register a new membership</a>
-                </p>
+                </p> --}}
+                @if (Route::has('password.request'))
+                <span class="mb-0">
+                <a class="btn btn-link" href="{{ route('password.request') }}">
+                    {{ __('Forgot Your Password?') }}
+                </a>
+                </span>
+                @endif
             </div>
             <!-- /.card-body -->
         </div>

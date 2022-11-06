@@ -90,7 +90,13 @@
 
                                              
                                             @if ($user->group_id==config('constants.groups.admin'))
-                                                
+                                            <a href="{{route('quotes.request_quotes_form',$data['id']) }}"
+                                            class="btn btn-success btn-block btn-sm"><i class="fas fa-plus"></i>
+                                            Request quote</a>
+                                            <a href="{{route('customer.quotes',$data['id']) }}"
+                                            class="btn btn-primary btn-block btn-sm"><i class="fas fa-eye"></i>
+                                            View all quotes</a>
+
                                                 @if ($data['is_active']==2)
                                                 <button
                                                 onClick="do_action({{ $data['id'] }},'restore',{{ $counter }})"
@@ -220,14 +226,14 @@
             $('.select2bs4').select2({
                 theme: 'bootstrap4'
             });
-            $("#example1").DataTable({
-                "responsive": true,
-                "lengthChange": false,
-                "paging": false,
-                "autoWidth": false,
-                "info": false,
-                "buttons": ["copy", "csv", "excel", "pdf", "print", "colvis"]
-            }).buttons().container().appendTo('#example1_wrapper .col-md-6:eq(0)');
+            // $("#example1").DataTable({
+            //     "responsive": true,
+            //     "lengthChange": false,
+            //     "paging": false,
+            //     "autoWidth": false,
+            //     "info": false,
+            //     "buttons": ["copy", "csv", "excel", "pdf", "print", "colvis"]
+            // }).buttons().container().appendTo('#example1_wrapper .col-md-6:eq(0)');
 
         });
 

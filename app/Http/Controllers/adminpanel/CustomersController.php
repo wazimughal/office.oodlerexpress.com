@@ -37,8 +37,10 @@ class CustomersController extends Controller
             'business_phone'=>'required',
             'business_address'=>'required',
             'business_email'=>'required',
+            'shipping_cat'=>'required',
             
         ]);
+       
         
         // User Information
         $this->users->name=$request['firstname'].' '.$request['lastname'];
@@ -58,39 +60,25 @@ class CustomersController extends Controller
         $this->users->street=$request['street'];
         $this->users->how_often_shipping=$request['how_often_shipping']; //
         $this->users->is_active=1;
+        $this->users->city=$request['city'];
+        $this->users->state=$request['state'];;
+        $this->users->zipcode=$request['zipcode'];
         
 
         $this->users->created_at=time();
         $this->users->group_id=config('constants.groups.customer');
-        
-        if(isset($request['othercity']) && !empty($request['othercity']))
-        $cityId = getOtherCity($request['othercity']);
-        else
-        $cityId=$request['city'];
-
-        if(isset($request['otherstate']) && !empty($request['otherstate']))
-        $state_id = getOtherstate($request['otherstate']);
-        else
-        $state_id=$request['state_id'];
-        $this->users->state_id=$state_id;
-
-        if(isset($request['otherzipcode']) && !empty($request['otherzipcode']))
-        $zipcode = getOtherZipCode($request['otherzipcode']);
-        else
-        $zipcode=$request['zipcode_id'];
-        $this->users->zipcode_id=$zipcode;
 
         $this->users->business_address=$request['business_address'];
 
         if(isset($request['othershipping']) && !empty($request['othershipping']))
         $shipping_cat = getOtherCategory($request['othershipping']);
         else
-        $shipping_cat=$request['shipping_cat'];
+        $shipping_cat=json_encode($request['shipping_cat']);
         
 
         $this->users->shipping_cat=$shipping_cat;
 
-
+  
         $mailData['body_message']='Welcome To Oodler Express . You are added as Customer in Oodler Express, Please login to our CRM using email '.$request['email'].' and the password <strong>'.$request['password'].'</strong>';
         $mailData['subject']='Welcom to Oodler Express (New Customer added)';
         $toEmail=[
@@ -169,6 +157,7 @@ class CustomersController extends Controller
             'business_phone'=>'required',
             'business_address'=>'required',
             'business_email'=>'required',
+            'shipping_cat'=>'required',
         ]);
         
         // User Information
@@ -189,32 +178,16 @@ class CustomersController extends Controller
        $data_to_update['years_in_business']=$this->users->years_in_business=$request['years_in_business'];
        $data_to_update['street']=$this->users->street=$request['street'];
        $data_to_update['how_often_shipping']=$this->users->how_often_shipping=$request['how_often_shipping']; //
-       
-        
-        
-        if(isset($request['othercity']) && !empty($request['othercity']))
-        $data_to_update['city_id']=$cityId = getOtherCity($request['othercity']);
-        else
-        $data_to_update['city_id']=$cityId=$request['city'];
-
-        if(isset($request['otherstate']) && !empty($request['otherstate']))
-        $state_id = getOtherstate($request['otherstate']);
-        else
-        $state_id=$request['state_id'];
-        $data_to_update['state_id']=$this->users->state_id=$state_id;
-
-        if(isset($request['otherzipcode']) && !empty($request['otherzipcode']))
-        $zipcode = getOtherZipCode($request['otherzipcode']);
-        else
-        $zipcode=$request['zipcode_id'];
-        $data_to_update['zipcode_id']= $this->users->zipcode_id=$zipcode;
+       $data_to_update['city']=$request['city'];
+       $data_to_update['state']=$request['state'];;
+       $data_to_update['zipcode']=$request['zipcode'];
 
         $data_to_update['business_address']=$this->users->business_address=$request['business_address'];
 
         if(isset($request['othershipping']) && !empty($request['othershipping']))
         $shipping_cat = getOtherCategory($request['othershipping']);
         else
-        $shipping_cat=$request['shipping_cat'];
+        $shipping_cat=json_encode($request['shipping_cat']);
         
 
         $data_to_update['shipping_cat']=$this->users->shipping_cat=$shipping_cat;

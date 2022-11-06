@@ -47,7 +47,7 @@
                                 </div>
                                 <div class="col-3">&nbsp;</div>
                               </div>
-                                <form method="POST" action="{{ url('/admin/users/add') }}">
+                                <form method="POST" action="{{ route('admin.users.save') }}">
                                     @csrf
                                    
                                     <div class="row form-group">
@@ -112,7 +112,7 @@
                                         </div>
                                         <div class="col-3">&nbsp;</div>
                                     </div>
-                                    <div class="row form-group">
+                                    {{-- <div class="row form-group">
                                         <div class="col-3">&nbsp;</div>
                                         <div class="col-6">
                                         <div class="input-group mb-3">
@@ -131,7 +131,7 @@
                                       </div>
                                         </div>
                                         <div class="col-3">&nbsp;</div>
-                                    </div>
+                                    </div> --}}
                                     <div class="row form-group">
                                         <div class="col-3">&nbsp;</div>
                                         <div class="col-6">
@@ -153,7 +153,7 @@
                                         <div class="col-3">&nbsp;</div>
                                     </div>
                                     
-                                    <div class="row form-group">
+                                    {{-- <div class="row form-group">
                                         <div class="col-3">&nbsp;</div>
                                         <div class="col-6">
                                             <div class="input-group mb-3">
@@ -178,14 +178,15 @@
                                             </div>
                                         </div>
                                         <div class="col-3">&nbsp;</div>
-                                    </div>
+                                    </div> --}}
                                     
                                     <div class="row form-group">
                                         <div class="col-3">&nbsp;</div>
                                         <div class="col-6">
+                                            <label>Password</label>
                                           <div class="input-group mb-3">
                                             <input type="password" name="password"
-                                                class="form-control @error('password') is-invalid @enderror" placeholder="Password" value="123">
+                                                class="form-control @error('password') is-invalid @enderror" placeholder="Password" >
                                             <div class="input-group-append">
                                                 <div class="input-group-text">
                                                     <span class="fas fa-lock"></span>
@@ -203,10 +204,11 @@
                                     <div class="row form-group">
                                         <div class="col-3">&nbsp;</div>
                                         <div class="col-6">
+                                            <label>Confirm Password</label>
                                           <div class="input-group mb-3">
                                             <input type="password" name="password_confirmation"
                                                 class="form-control @error('password_confirmation') is-invalid @enderror"
-                                                placeholder="Retype password" value="123">
+                                                placeholder="Retype password" >
                                             <div class="input-group-append">
                                                 <div class="input-group-text">
                                                     <span class="fas fa-lock"></span>

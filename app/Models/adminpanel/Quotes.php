@@ -12,7 +12,7 @@ class Quotes extends Model
     protected $primaryKey='id';
     public function quote_products()
        {
-           return $this->hasMany(quote_products::class, 'quote_id', 'id')->with('category');
+           return $this->hasMany(quote_products::class, 'quote_id', 'id')->with('category')->with('pickup_dropoff_address');
        }
     public function customer()
        {
@@ -29,6 +29,18 @@ class Quotes extends Model
     public function quote_prices()
        {
            return $this->hasMany(quote_prices::class,'quote_id','id');
+       }
+    public function delivery_proof()
+       {
+           return $this->hasMany(files::class,'quote_id','id')->where('slug','proof_of_delivery');
+       }
+    public function files()
+       {
+           return $this->hasMany(files::class,'quote_id','id');
+       }
+    public function greaterthanPending()
+       {
+           return $this->status >= config('constants.quote_status.pending');
        }
 
        //return $this->hasOne(User::class, 'foreign_key', 'local_key');

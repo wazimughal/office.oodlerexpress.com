@@ -1,3 +1,9 @@
+@if(Auth::check())
+<script>
+    // your "Imaginary javascript"
+     window.location.href = '{{route("admin.dashboard")}}?resetpassword=1';
+    </script>
+@endif
 @extends('layouts.app')
 
 @section('content')

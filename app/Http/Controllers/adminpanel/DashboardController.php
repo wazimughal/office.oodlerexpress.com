@@ -19,21 +19,19 @@ class DashboardController extends Controller
       }
 
     public function index($id=NULL){
-        $user=Auth::user();
-        $leads_info = DB::table('users')
-                 ->select('status', DB::raw('count(*) as total'))
-                 ->groupBy('status')
-                 ->where('group_id',config('constants.groups.subscriber'))
-                 ->orderBy('status', 'asc')
-                 ->get()->toArray();
-        $user_info = DB::table('users')
-                 ->select('group_id', DB::raw('count(*) as total'))
-                 ->groupBy('group_id')
-                 ->where('is_active',1)
-                 ->orderBy('group_id', 'asc')
-                 ->get();
+        
 
-        return view('adminpanel/home'.$id,compact('user','leads_info','user_info'));
+        if(isset($_GET['resetpassword']) && $_GET['resetpassword']==1) 
+        return redirect()->route('admin.logout');
+
+         $user=Auth::user();
+        // if ($user->group_id!=config('constants.groups.admin')){
+        //     abort(403, sprintf('Only admin are allowed '));
+        // }
+        
+        
+        $record_count=get_record_count();
+        return view('adminpanel.home'.$id, get_defined_vars());
         
     }
 }

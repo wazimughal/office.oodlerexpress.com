@@ -47,7 +47,7 @@
                                 </div>
                                 <div class="col-3">&nbsp;</div>
                               </div>
-                                <form method="POST" action="{{ url('/admin/products/add') }}">
+                                <form method="POST" action="{{ route('products.add') }}">
                                     @csrf
                                     <div class="row form-group">
                                         <div class="col-3">&nbsp;</div>
@@ -61,6 +61,27 @@
                                                 </div>
                                             </div>
                                             @error('name')
+                                                <div class="invalid-feedback">
+                                                    {{ $message }}
+                                                </div>
+                                            @enderror
+                    
+                                        </div>
+                                        </div>
+                                        <div class="col-3">&nbsp;</div>
+                                    </div>
+                                    <div class="row form-group">
+                                        <div class="col-3">&nbsp;</div>
+                                        <div class="col-6">
+                                          <div class="input-group mb-3">
+                                            <textarea type="text" name="sizes" class="form-control @error('sizes') is-invalid @enderror"
+                                                placeholder="Product Sizes (e.g:  Size 1 Feet, 3 Feet ,9 Feet  )" >{{ old('sizes');}}</textarea>
+                                            <div class="input-group-append">
+                                                <div class="input-group-text">
+                                                    <span class="fas fa-building"></span>
+                                                </div>
+                                            </div>
+                                            @error('sizes')
                                                 <div class="invalid-feedback">
                                                     {{ $message }}
                                                 </div>

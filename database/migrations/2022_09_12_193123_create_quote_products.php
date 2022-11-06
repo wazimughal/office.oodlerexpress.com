@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('product_id')->nullable();
             $table->string('quantity')->nullable();
             $table->string('size')->nullable();
+            $table->string('size_slug')->nullable();
             $table->string('size_unit')->nullable();
             $table->text('description')->nullable();
 
@@ -26,6 +27,11 @@ return new class extends Migration
             $table->foreign('cat_id')->references('id')->on('product_categories');
             $table->unsignedBigInteger('quote_id');
             $table->foreign('quote_id')->references('id')->on('quotes');
+            
+            $table->unsignedBigInteger('pickup_dropoff_id');
+            $table->foreign('pickup_dropoff_id')->references('id')->on('pickup_dropoff_address');
+            $table->tinyInteger('pickup_dropoff_order_number')->default(1)->nullable();
+
             $table->timestamps();
         });
     }

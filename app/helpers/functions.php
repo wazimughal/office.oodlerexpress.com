@@ -94,22 +94,7 @@ if(!function_exists('getUsersByGroupId')){
         return array();
     }
 }
-if(!function_exists('getTypesOfLeads')){
-    function getTypesOfLeads(){
-        $leads=config('constants.lead_types');
-        return $leads;
-    }
-}
-if(!function_exists('getLeadByType')){
-    function getLeadByType($lead_type, $status=0){
-        $userData = App\Models\adminpanel\Users::orderBy('created_at', 'desc')->where('lead_type','=',$lead_type)->where('status','=',$status)->get();
-        if($userData){
-            $userData=$userData->toArray();
-            return $userData;
-        }
-        return array();
-    }
-}
+
 if(!function_exists('getAllGroups')){
     function getAllGroups(){
         $userGroups = App\Models\adminpanel\Groups::orderBy('created_at', 'desc')->get();
@@ -157,28 +142,9 @@ if(!function_exists('log_activity')){
         
     }
 }
-if(!function_exists('getAllTestsByOrg')){
-    function getAllTestsByOrg($org_id){
-        $allTestData = App\Models\adminpanel\LabTests::with('getParams')->where('organization_id',$org_id)->orderBy('created_at', 'desc')->get();
-        if($allTestData)
-        return $allTestData->toArray();
-        
-        return array();
-    }
-}
-if(!function_exists('getAdvisedTestsNames')){
-    function getAdvisedTestsNames($ids){
-        //return $ids;
-        $allTestData = App\Models\adminpanel\LabTests::whereIn('id',$ids)->orderBy('created_at', 'desc')->get('test_name');
-        if($allTestData)
-        return $allTestData->toArray();
-        
-        return array();
-    }
-}
 
 
-// Get Options of States
+// Get Options of Drivers
 if(!function_exists('get_drivers_options')){
     function get_drivers_options($selectID=NULL){
     
@@ -189,8 +155,69 @@ if(!function_exists('get_drivers_options')){
          
         foreach($userData as $key=>$data){
             $selected='';
-            if($selectID==$data['id']) $selected='selected';
+            if(is_array($selectID)){
+                if(in_array($data['id'],$selectID))
+                $selected='selected';
+            }
+            elseif($selectID==$data['id']){
+                $selected='selected';
+            }
             $options .='<option '.$selected.' value="'.$data['id'].'">'.$data['name'].'</option>';
+        }
+        
+     return $options;   
+    }
+}
+// Get Options of Customers
+if(!function_exists('get_customers_options')){
+    function get_customers_options($selectID=NULL){
+    
+        $userData = App\Models\adminpanel\users::where('is_active',1)->where('group_id',config('constants.groups.customer'))->orderBy('id', 'desc')->get();
+        if($userData)
+         $userData=$userData->toArray();
+         $options='';
+         
+        foreach($userData as $key=>$data){
+            $selected='';
+            if(is_array($selectID)){
+                if(in_array($data['id'],$selectID))
+                $selected='selected';
+            }
+            elseif($selectID==$data['id']){
+                $selected='selected';
+            } 
+
+            $options .='<option '.$selected.' value="'.$data['id'].'">'.$data['name'].'</option>';
+        }
+        
+     return $options;   
+    }
+}
+// Get Options of States
+if(!function_exists('get_quote_status_options')){
+    function get_quote_status_options($selectID=NULL, $all=false){
+    $quote_status[0]=['id'=>0,'slug'=>'pending','title'=>'Pending'];
+    $quote_status[1]=['id'=>1,'slug'=>'quote_submitted','title'=>'Quote Submitted'];
+    $quote_status[2]=['id'=>2,'slug'=>'approved','title'=>'Approved'];
+    $quote_status[3]=['id'=>3,'slug'=>'declined','title'=>'Declined'];
+    if($all){
+        $quote_status[4]=['id'=>4,'slug'=>'trashed','title'=>'Trashed'];
+        $quote_status[5]=['id'=>5,'slug'=>'delivery','title'=>'Delivery'];
+        $quote_status[6]=['id'=>6,'slug'=>'complete','title'=>'Complete'];
+    }
+       
+         $options='';
+         
+        foreach($quote_status as $key=>$data){
+            $selected='';
+            if(is_array($selectID)){
+                if(in_array($data['id'],$selectID))
+                $selected='selected';
+            }
+            elseif($selectID==$data['id']){
+                $selected='selected';
+            } 
+            $options .='<option '.$selected.' value="'.$data['id'].'">'.$data['title'].'</option>';
         }
         
      return $options;   
@@ -229,7 +256,7 @@ if(!function_exists('getOtherstate')){
     }
 }
 
-// Get Options of States
+// Get Options of Sizes
 if(!function_exists('getItemSizeUnitsOptions')){
     function getItemSizeUnitsOptions($selectID=NULL){
     
@@ -243,6 +270,20 @@ if(!function_exists('getItemSizeUnitsOptions')){
             $selected='';
             if($selectID==$data['name']) $selected='selected';
             $options .='<option '.$selected.' value="'.phpslug($data['name']).'">'.$data['name'].'</option>';
+        }
+        
+     return $options;   
+    }
+}
+// Get Options of Prodcut Sizes
+if(!function_exists('get_product_sizes')){
+    function get_product_sizes($sizes,$selectID=NULL){
+    $product_sizes=explode(',',$sizes);
+         $options='';
+        foreach($product_sizes as $value){
+            $selected='';
+            if($selectID==phpslug($value)) $selected='selected';
+            $options .='<option '.$selected.' value="'.($value).'">'.$value.'</option>';
         }
         
      return $options;   
@@ -265,19 +306,53 @@ if(!function_exists('getOtherCategory')){
 }
 // Get Options of Prodcut Categories
 if(!function_exists('getProductCatOptions')){
-    function getProductCatOptions($selectID=NULL){
+    function getProductCatOptions($selectIDs=NULL){
     
         $categoryData = App\Models\adminpanel\product_categories::where('is_active',1)->orderBy('id', 'asc')->get();
         if($categoryData)
          $categoryData=$categoryData->toArray();
          $options='';
-         
+
+         $selectIDs=json_decode($selectIDs,true);
+         if(is_null($selectIDs) || $selectIDs=='')
+         $selectIDs=array();
         foreach($categoryData as $key=>$data){
             $selected='';
-            if($selectID==$data['id']) $selected='selected';
+            if(in_array($data['id'],$selectIDs))
+            $selected='selected';
+
             $options .='<option '.$selected.' value="'.$data['id'].'">'.$data['name'].'</option>';
         }
-        $options .='<option  value="other">Other</option>';
+        //$options .='<option  value="other">Other</option>';
+     return $options;   
+    }
+}
+if(!function_exists('cat_name_by_ids')){
+    function cat_name_by_ids($cat_ids=array()){
+        $categoryData = App\Models\adminpanel\product_categories::where('is_active',1)->wherein('id',$cat_ids)->orderBy('id', 'asc')->get('name')->toArray();
+        foreach($categoryData as $cat){
+            $retData[]=$cat['name'];
+        }
+        
+        return $retData;
+    }
+}
+
+// Get Options of Prodcut Categories
+if(!function_exists('get_product_cat_Options')){
+    function get_product_cat_Options($selectIDs=NULL){
+        $categoryData = App\Models\adminpanel\product_categories::where('is_active',1)->orderBy('id', 'asc')->get();
+        if($categoryData)
+         $categoryData=$categoryData->toArray();
+         $options='';
+
+        foreach($categoryData as $key=>$data){
+            $selected='';
+            if($data['id']==$selectIDs)
+            $selected='selected';
+
+            $options .='<option '.$selected.' value="'.$data['id'].'">'.$data['name'].'</option>';
+        }
      return $options;   
     }
 }
@@ -328,6 +403,442 @@ if(!function_exists('driver_activities')){
         ];
        return $driver_activities;
 
+    }
+}
+
+
+if(!function_exists('get_product_pickup_dropoff')){
+    function get_product_pickup_dropoff($quote_id,$pickup_dropoff_order_number){
+        
+        $where_clause['quote_id']=$quote_id;
+        $where_clause['pickup_dropoff_order_number']=$pickup_dropoff_order_number;
+        $quote_products = App\Models\adminpanel\quote_products::where($where_clause)->with('pickup_dropoff_address')->orderBy('id', 'asc')->get()->toArray();
+        if(count($quote_products)>0)
+        return $quote_products[0];
+        return array();
+
+    }
+}
+
+if(!function_exists('get_selected_product')){
+    function get_selected_product($product_id,$quote_id,$pickup_dropoff_order_number,$proData=array()){
+        $where_clause['product_id']=$product_id;
+        $where_clause['quote_id']=$quote_id;
+        $where_clause['pickup_dropoff_order_number']=$pickup_dropoff_order_number;
+        //p($where_clause);
+        $quote_products = App\Models\adminpanel\quote_products::where($where_clause)->with('pickup_dropoff_address')->orderBy('id', 'asc')->get()->toArray();
+        //p($quote_products);
+        if(isset($quote_products[0]['pickup_dropoff_address']) && !empty($quote_products[0]['pickup_dropoff_address']))
+        $retData['pickup_dropoff_address']=$quote_products[0]['pickup_dropoff_address'];
+        
+        $retData['product_list']='';
+        if(empty($quote_products)){
+        $retData['product_list']= '<div id="item_row'.$pickup_dropoff_order_number.'_'.$proData['id'].'">
+                                         <div class="row form-group">
+                                          <div class="col-1">&nbsp;</div>
+                                          <div class="col-4">
+                                              <div class="form-group clearfix">
+                                                  <div class="icheck-primary d-inline">
+                                                      <input type="hidden" name="product_details'.$pickup_dropoff_order_number.'['.$proData['id'].'][cat_id][]" value="'.$proData['cat_id'].'">
+                                                      <input type="hidden" value="'.$proData['id'].'" name="product_details'.$pickup_dropoff_order_number.'['.$proData['id'].'][product_id][]">
+                                                      <input type="checkbox" value="'.$proData['name'].'" name="product_details'.$pickup_dropoff_order_number.'['.$proData['id'].'][product_name][]" id="'.$proData['slug'].'_'.$proData['id'].'">
+                                                      <label for="'.$proData['slug'].'_'.$proData['id'].'">
+                                                          '.$proData['name'].'
+                                                      </label>
+                                                  </div>
+                                              </div>
+  
+                                          </div>
+                                          <div class="col-1">
+                                              <div class="input-group mb-3">
+                                                  <input placeholder="Quantity" value="1" type="number" name="product_details'.$pickup_dropoff_order_number.'['.$proData['id'].'][item_quantity][]" class=" form-control" required>
+                                              </div>
+                                          </div>
+                                          <div class="col-1">
+                                              <div class="input-group mb-3">
+                                                  <select name="product_details'.$pickup_dropoff_order_number.'['.$proData['id'].'][product_sizes][]"  class="form-control">'.get_product_sizes($proData['sizes']).'</select>
+                                              </div>
+                                          </div>
+                                          <div class="col-3">
+                                              <div class="input-group mb-3">
+                                                  <input placeholder="Description" type="text" name="product_details'.$pickup_dropoff_order_number.'['.$proData['id'].'][item_description][]"  class=" form-control">
+                                              </div>
+                                          </div>
+                                          <div class="col-1"><div style="width: 90px; float:right;" onclick="addmore_items'.$pickup_dropoff_order_number.'('.$proData['id'].',\''.$proData['slug'].'\')"
+                                            class="btn btn-success btn-block btn-sm"><i class="fas fa-plus"></i> Add
+                                            more</div></div>
+                                      </div>
+                                    </div>
+                                      <div id="duplicate_row'.$pickup_dropoff_order_number.'_'.$proData['id'].'"></div>';
+                                      return $retData;
+        }
+        else{
+
+                foreach($quote_products as $key=>$product_data){
+
+            $html_id=phpslug($product_data['product_name']).$pickup_dropoff_order_number.'_'.rand();
+
+            $retData['product_list'] .= '<div id="item_row'.$pickup_dropoff_order_number.'_'.$product_data['product_id'].'">
+                <div class="row form-group">
+                <div class="col-1">&nbsp;</div>
+                <div class="col-4">
+                    <div class="form-group clearfix">
+                        <div class="icheck-primary d-inline">
+                            <input type="hidden" name="product_details'.$pickup_dropoff_order_number.'['.$product_data['product_id'].'][cat_id][]" value="'.$product_data['cat_id'].'">
+                            <input type="hidden" value="'.$product_data['product_id'].'" name="product_details'.$pickup_dropoff_order_number.'['.$product_data['product_id'].'][product_id][]">
+                            <input type="checkbox" checked value="'.$product_data['product_name'].'" name="product_details'.$pickup_dropoff_order_number.'['.$product_data['product_id'].'][product_name][]" id="'.$html_id.'">
+                            <label for="'.$html_id.'">
+                                '.$product_data['product_name'].'
+                            </label>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="col-1">
+                    <div class="input-group mb-3">
+                        <input placeholder="Quantity" value="'.$product_data['quantity'].'" type="number" name="product_details'.$pickup_dropoff_order_number.'['.$product_data['product_id'].'][item_quantity][]" class=" form-control" required>
+                    </div>
+                </div>
+                <div class="col-1">
+                    <div class="input-group mb-3">
+                        <select name="product_details'.$pickup_dropoff_order_number.'['.$product_data['product_id'].'][product_sizes][]"  class="form-control">'.get_product_sizes($proData['sizes'],$product_data['size']).'</select>
+                    </div>
+                </div>
+                <div class="col-3">
+                    <div class="input-group mb-3">
+                        <input value="'.$product_data['description'].'" placeholder="Description" type="text" name="product_details'.$pickup_dropoff_order_number.'['.$product_data['product_id'].'][item_description][]"  class=" form-control">
+                    </div>
+                </div>
+                <div class="col-1"><div style="width: 90px; float:right;" onclick="addmore_items'.$pickup_dropoff_order_number.'('.$product_data['product_id'].',\''.$proData['slug'].'\')"
+                class="btn btn-success btn-block btn-sm"><i class="fas fa-plus"></i> Add
+                more</div></div>
+            </div>
+        </div>
+            <div id="duplicate_row'.$pickup_dropoff_order_number.'_'.$product_data['product_id'].'"></div>';
+            }
+
+        }
+        return $retData;
+    }
+}
+if(!function_exists('get_record_count')){
+    function get_record_count(){
+
+        $retData=[
+            'office'=>0,
+            'web'=>0,
+            'admin'=>0,
+            'customer'=>0,
+            'driver'=>0,
+            'pending_quotes'=>0,
+            'submitted_quotes'=>0,
+            'approved_quotes'=>0,
+            'declined_quotes'=>0,
+            'trashed_quotes'=>0,
+            'deliverable_quotes'=>0,
+            'delivered_quotes'=>0,
+            'total_leads'=>0,
+            'total_users'=>0,
+            'total_customers'=>0,
+            'total_drivers'=>0,
+            'total_quotes'=>0,
+            'total_deliverable'=>0,
+            'total_delivered'=>0,
+            'total_products'=>0,
+            'total_product_categories'=>0,
+            ];
+
+        $product_info = DB::table('products')
+                 ->select('is_active', DB::raw('count(*) as total'))
+                 ->groupBy('is_active')
+                 ->get()->toArray();
+                 $product_info=$product_info[0];
+       
+       $product_cat_info = DB::table('product_categories')
+                 ->select('is_active', DB::raw('count(*) as total'))
+                 ->groupBy('is_active')
+                 ->get()->toArray();
+                 $product_cat_info=$product_cat_info[0];
+
+
+        $quoteWhere=array();
+        $leadsWhere['group_id']=config('constants.groups.subscriber');                 
+        if(get_session_value('group_id')!=config('constants.groups.admin')){
+            $leadsWhere['id']=get_session_value('id');  
+ 
+        }
+        if(get_session_value('group_id')==config('constants.groups.customer')){
+            $quoteWhere['customer_id']=get_session_value('id');     
+        }
+        if(get_session_value('group_id')==config('constants.groups.driver')){
+            $quoteWhere['driver_id']=get_session_value('id');  
+        }
+
+
+        $leads_info = DB::table('users')
+                 ->select('lead_by', DB::raw('count(*) as total'))
+                 ->groupBy('lead_by')
+                 ->orderBy('lead_by', 'asc')
+                 ->where($leadsWhere)
+                 ->get()->toArray();
+
+                 $quote_info = DB::table('quotes')
+                 ->select('status', DB::raw('count(*) as total'))
+                 ->groupBy('status')
+                 ->where($quoteWhere)
+                 ->orderBy('status', 'asc')
+                 ->get()->toArray();                 
+                 
+        $user_info = DB::table('users')
+                 ->select('group_id', DB::raw('count(*) as total'))
+                 ->groupBy('group_id')
+                 ->where('is_active',1)
+                 ->orderBy('group_id', 'asc')
+                 ->get();
+                 
+                
+
+                    // total Product Count
+                    if(isset($product_info) && !empty($product_info))
+                    $retData['total_products']=$product_info->total;
+                    // Total Product Category Count
+                    if(isset($product_cat_info) && !empty($product_cat_info))
+                    $retData['total_product_categories']=$product_cat_info->total;
+                    
+                  foreach($quote_info as $key=>$quote){
+                    
+                    if($quote->status==config('constants.quote_status.pending')){
+                        $retData['total_quotes']=$retData['total_quotes']+$quote->total;
+                        $retData['pending_quotes']=$quote->total;
+                    }
+                    elseif($quote->status==config('constants.quote_status.quote_submitted')){
+                        $retData['submitted_quotes']=$quote->total;
+                        $retData['total_quotes']=$retData['total_quotes']+$quote->total;
+                    }
+                    elseif($quote->status==config('constants.quote_status.approved')){
+                        $retData['approved_quotes']=$quote->total;
+                        $retData['total_quotes']=$retData['total_quotes']+$quote->total;
+                    }
+                    elseif($quote->status==config('constants.quote_status.declined')){
+                        $retData['declined_quotes']=$quote->total;
+                        $retData['total_quotes']=$retData['total_quotes']+$quote->total;
+                    }
+                    elseif($quote->status==config('constants.quote_status.trashed')){
+                        $retData['trashed_quotes']=$quote->total;
+                        $retData['total_quotes']=$retData['total_quotes']+$quote->total;
+                    }
+                    elseif($quote->status==config('constants.quote_status.delivery')){
+                        $retData['deliverable_quotes']=$quote->total;
+                        $retData['total_deliverable']=$retData['total_deliverable']+$quote->total;
+                    }
+                    elseif($quote->status==config('constants.quote_status.complete')){
+                        $retData['delivered_quotes']=$quote->total;
+                        $retData['total_delivered']=$retData['total_delivered']+$quote->total;
+                    }
+                   
+                   
+                  }
+
+                  // Lead Data
+              
+                  //p($leads_info); die;
+                  foreach($leads_info as $key=>$leadData){
+                    $retData['total_leads']=$retData['total_leads']+$leadData->total;
+
+                    if($leadData->lead_by==0)
+                    $retData['office']=$leadData->total;
+                    else if($leadData->lead_by==1)
+                    $retData['web']=$leadData->total;
+                  }
+                    
+               // Users count
+                    foreach($user_info as $key=>$userData){
+
+                        $retData['total_users']=$retData['total_users']+$userData->total;
+
+                        if($userData->group_id==config('constants.groups.admin'))
+                        $retData['admin']=$userData->total;
+                        elseif($userData->group_id==config('constants.groups.customer'))
+                        $retData['customer']=$userData->total;
+                        elseif($userData->group_id==config('constants.groups.driver'))
+                        $retData['driver']=$userData->total;
+                        elseif($userData->group_id==config('constants.groups.subscriber'))
+                        $retData['total_leads']=$userData->total;
+                     
+                    }
+                       
+                    
+               
+                 return $retData;
+    }
+}
+
+if(!function_exists('quote_data_for_mail')){
+    function quote_data_for_mail($id){
+        $zipcodeData = App\Models\adminpanel\zipcode::where('is_active',1)->orderBy('id', 'asc')->get();
+        $quotesData=App\Models\adminpanel\quotes::with('quote_products')
+       ->with('customer')
+       ->with('quote_prices')
+       ->with('comments')
+       ->where('id', $id)
+       ->orderBy('created_at', 'desc')->get()->toArray();
+       $quotesData=$quotesData[0];
+       // p($quotesData); die;
+      
+       
+        $quote_price='';
+        $pickup_dropoff_address=array();
+
+      if(!empty($quotesData['quote_prices'])){
+        $quote_price='<tr><th colspan="2">Quoted Price</th></tr>
+        <tr><td colspan="2"><table width="100%" border="1">
+        <tr>
+            <td>Price</td>
+            <td>Extra</td>
+            <td>Reason</td>
+            <td>Description</td>
+            <td>Sent On</td>
+            <td>Status</td>
+        </tr>';
+            foreach ($quotesData['quote_prices'] as $key=>$data){
+            $quote_price .='<tr>
+            <td>$'.$data['quoted_price'].'</td>
+            <td>$'.(($data['extra_charges'] != '') ? $data['extra_charges'] : 0 ).'
+            </td>
+            <td>'.$data['reason_for_extra_charges'].'</td>
+            <td>'.$data['description'].'</td>
+            <td>'.date('d/m/Y', strtotime($data['created_at'])).'</td>
+            <td>';
+                if ($data['status'] == 1){
+                $quote_price .='<span
+                        class="btn btn-success btn-block btn-sm"><i
+                            class="fas fa-chart-line"></i>
+                        Active</span>';
+                }else{
+                    $quote_price .='<span
+                        class="btn btn-primary btn-block btn-sm"><i
+                            class="fas fa-chart-line"></i>
+                        Previous</span>';
+                }
+                $quote_price .=' </td></tr>';
+                    }
+                    $quote_price .='</table>
+                    </td><tr>';
+    }
+
+$bodymsg='<table width="100%" border=1>
+       <tr><th colspan="2">Quote Information</th></tr>
+       <tr><td colspan="2">
+           <table border="1" width="100%">
+               <tbody>';
+                   foreach ($quotesData['quote_products'] as $quote_product){
+                    
+                    if (!in_array($quote_product['pickup_dropoff_order_number'],$pickup_dropoff_address)){
+                        $bodymsg .=' <tr>
+                        <td colspan="2">
+                            <strong>Pick Up Detail </strong> <br>
+                            Date : '.$quote_product['pickup_dropoff_address']['pickup_date'].'<br>
+                            Street Address
+                            :'.$quote_product['pickup_dropoff_address']['pickup_street_address'].'<br>
+                            Unit :'.$quote_product['pickup_dropoff_address']['pickup_unit'].'<br>
+                            Contact No. :'.$quote_product['pickup_dropoff_address']['pickup_contact_number'].'<br>
+                        </td>
+                        <td colspan="2">
+                            <strong>Drop-Off Detail </strong> <br>
+                            Date :'.$quote_product['pickup_dropoff_address']['drop_off_date'].'<br>
+                            Street Address
+                            :'.$quote_product['pickup_dropoff_address']['drop_off_street_address'].'<br>
+                            Unit :'.$quote_product['pickup_dropoff_address']['drop_off_unit'].'<br>
+                            Contact No.
+                            :'.$quote_product['pickup_dropoff_address']['drop_off_contact_number'].'<br>
+                        </td>
+                        
+                    </tr> 
+                    <tr>
+                        <th>Prodcut Name</th>
+                        <th>Quantity</th>
+                        <th>Size</th>
+                        <th>Description</th>
+                    </tr>';
+                        $pickup_dropoff_address[]=$quote_product['pickup_dropoff_order_number'];
+                    }
+                    
+                    
+
+                   $bodymsg .='<tr>
+                       <td>'.$quote_product['product_name'].'</td>
+                       <td>'.$quote_product['quantity'].'</td>
+                       <td>'.$quote_product['size'].'</td>
+                       <td>'.$quote_product['description'].'</td>
+                   </tr>'; 
+
+                       }
+
+                       $car_names=cat_name_by_ids(json_decode($quotesData['customer']['shipping_cat'],true)) ;
+
+            $bodymsg .='</tbody>
+           </table>    
+       </td></tr>
+       '.$quote_price.'
+       <tr><th colspan="2">Customer Information</th></tr>
+       <tr><td colspan="2">
+           <table width="100%" border="1">
+               
+                   <tbody>
+                       <tr>
+                           <th style="width:50%">Name</th>
+                           <td>'.$quotesData['customer']['firstname'].' '.$quotesData['customer']['lastname'].'</td>
+                       </tr>
+                       <tr>
+                           <th>Email</th>
+                           <td>'.$quotesData['customer']['email'].'</td>
+                       </tr>
+                       <tr>
+                           <th>Phone</th>
+                           <td>'.$quotesData['customer']['phone'].'</td>
+                       </tr>
+                       <tr>
+                           <th>Business Name</th>
+                           <td>'.$quotesData['customer']['business_name'].'</td>
+                       </tr>
+                       <tr>
+                           <th>Designation</th>
+                           <td>'.$quotesData['customer']['designation'].'</td>
+                       </tr>
+                       <tr>
+                           <th>Business Email</th>
+                           <td>'.$quotesData['customer']['business_email'].'</td>
+                       </tr>
+                       <tr>
+                           <th>Business Mobile</th>
+                           <td>'.$quotesData['customer']['business_mobile'].'</td>
+                       </tr>
+                       <tr>
+                           <th>Business Phone</th>
+                           <td>'.$quotesData['customer']['business_phone'].'</td>
+                       </tr>
+                       <tr>
+                           <th>Business Age</th>
+                           <td>'.$quotesData['customer']['years_in_business'].' years
+                           </td>
+                       </tr>
+                       <tr>
+                           <th>How Often Shiping</th>
+                           <td>'.$quotesData['customer']['how_often_shipping'].'</td>
+                       </tr>
+                       <tr>
+                           <th>Shiping </th>
+                           <td>'.implode('<br>',$car_names).'</td>
+                       </tr>
+
+                   </tbody>
+               
+
+           </table>    
+       </td></tr>
+      </table>';
+
+      return $bodymsg;
     }
 }
 

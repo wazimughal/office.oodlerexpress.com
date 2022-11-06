@@ -27,6 +27,7 @@
   <div id="_loader" style="position: absolute; width:100%;text-align:center;min-height:100%;background-color:rgba(0, 0, 0, 0.3); z-index:9999; display:none">
     <img style="top:30%; position: fixed;" src="{{url('/adminpanel/dist/img/loader.gif')}}">
   </div>
+
 <div class="wrapper">
 
   <!-- Preloader -->

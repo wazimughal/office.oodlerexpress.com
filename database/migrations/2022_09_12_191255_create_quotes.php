@@ -21,31 +21,27 @@ return new class extends Migration
             $table->string('no_of_appartments')->nullable();
             $table->text('list_of_floors')->nullable();
             $table->string('po_number');
+
+            
             $table->string('pickup_street_address')->nullable();
             $table->string('pickup_unit')->nullable();
-            $table->unsignedBigInteger('pickup_state_id')->default(1);
-            $table->foreign('pickup_state_id')->references('id')->on('states');
-            $table->unsignedBigInteger('pickup_city_id')->default(1);
-            $table->foreign('pickup_city_id')->references('id')->on('cities');
-            $table->unsignedBigInteger('pickup_zipcode_id')->default(1);
-            $table->foreign('pickup_zipcode_id')->references('id')->on('zipcode');
+            $table->string('pickup_state')->nullable();
+            $table->string('pickup_city')->nullable();
+            $table->string('pickup_zipcode')->nullable();
             $table->string('pickup_contact_number')->nullable();
             $table->text('pickup_date')->nullable();
-            $table->tinyInteger('pickup_at_time')->default(1);
+            //$table->tinyInteger('pickup_at_time')->default(1);
             
             $table->string('drop_off_street_address')->nullable();
             $table->string('drop_off_unit')->nullable();
-            $table->unsignedBigInteger('drop_off_state_id')->default(1);
-            $table->foreign('drop_off_state_id')->references('id')->on('states');
-            $table->unsignedBigInteger('drop_off_city_id')->default(1);
-            $table->foreign('drop_off_city_id')->references('id')->on('cities');
-            $table->unsignedBigInteger('drop_off_zipcode_id')->default(1);
-            $table->foreign('drop_off_zipcode_id')->references('id')->on('zipcode');
+            $table->string('drop_off_state')->nullable();
+            $table->string('drop_off_city')->nullable();
+            $table->string('drop_off_zipcode')->nullable();
             $table->string('drop_off_contact_number')->nullable();
-            $table->text('drop_off_instructions')->nullable();
             $table->text('drop_off_date')->nullable();
-            $table->tinyInteger('drop_off_at_time')->default(1);
+            //$table->tinyInteger('drop_off_at_time')->default(1);
 
+            $table->text('drop_off_instructions')->nullable();
             // Driver Activity
             $table->string('reached_at_pickup')->nullable();
             $table->string('picked_up')->nullable();

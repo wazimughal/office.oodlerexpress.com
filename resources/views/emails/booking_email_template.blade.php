@@ -421,7 +421,7 @@ table, td { color: #000000; } #u_body a { color: #0000ee; text-decoration: under
     </tr>
   </tbody>
 </table>
-
+{{-- 
 <table style="font-family:'Montserrat',sans-serif;" role="presentation" cellpadding="0" cellspacing="0" width="100%" border="0">
   <tbody>
     <tr>
@@ -480,7 +480,7 @@ table, td { color: #000000; } #u_body a { color: #0000ee; text-decoration: under
       </td>
     </tr>
   </tbody>
-</table>
+</table> --}}
 
 <table style="font-family:'Montserrat',sans-serif;" role="presentation" cellpadding="0" cellspacing="0" width="100%" border="0">
   <tbody>
@@ -488,8 +488,8 @@ table, td { color: #000000; } #u_body a { color: #0000ee; text-decoration: under
       <td class="v-container-padding-padding" style="overflow-wrap:break-word;word-break:break-word;padding:10px 10px 80px;font-family:'Montserrat',sans-serif;" align="left">
         
   <div class="v-line-height" style="line-height: 160%; text-align: center; word-wrap: break-word;">
-    <p style="font-size: 14px; line-height: 160%;">2261 Market Street #4667 San Francisco, CA 94114 All</p>
-<p style="font-size: 14px; line-height: 160%;">All rights reserved. thegraphicmemories.com</p>
+    <p style="font-size: 14px; line-height: 160%;">Servicing NY & NJ, 718-218-5239 .</p>
+<p style="font-size: 14px; line-height: 160%;">All rights reserved. oodlerexpress.com</p>
 
   </div>
 

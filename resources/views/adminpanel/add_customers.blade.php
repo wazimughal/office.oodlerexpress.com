@@ -218,97 +218,7 @@
                                                 @enderror
                                             </div>
                                         </div>
-                                        <div class="col-5">
-                                            <span>City</span>
-                                            <div class="input-group mb-3">
-                                                 <select onchange="changeCity()" id="city" name="city_id"
-                                                    class="form-control select2bs4">
-                                                    {!! getCitiesOptions() !!}
-                                                </select>
-                                                <div id="othercity"></div>
-                                                <div class="input-group-append">
-                                                    <div class="input-group-text">
-                                                        <span class="fas fa-address-card"></span>
-                                                    </div>
-                                                </div>
-                                                @error('city_id')
-                                                    <div class="invalid-feedback">
-                                                        {{ $message }}
-                                                    </div>
-                                                @enderror
-                                            </div>
-                                        </div>
-                                        <div class="col-1">&nbsp;</div>
-                                    </div>
-
-
-                                    <div class="row form-group">
-                                        <div class="col-1">&nbsp;</div>
-                                        <div class="col-5">
-                                            <span>State</span>
-                                            <div class="input-group mb-3">
-                                                <select onchange="change_state()" name="state_id" id="state_id"
-                                                    class="form-control select2bs4">
-                                                    {!! getStatesOptions() !!}
-                                                </select>
-                                                <div id="otherstate"></div>
-                                                <div class="input-group-append">
-                                                    <div class="input-group-text">
-                                                        <span class="fas fa-address-card"></span>
-                                                    </div>
-                                                </div>
-                                                @error('street')
-                                                    <div class="invalid-feedback">
-                                                        {{ $message }}
-                                                    </div>
-                                                @enderror
-                                            </div>
-                                        </div>
-                                        <div class="col-5">
-                                            <span>Zip Code</span>
-                                            <div class="input-group mb-3">
-                                                <select onchange="changezipcode()" id="zipcode_id" name="zipcode_id"
-                                                    class="form-control select2bs4">
-                                                    {!! getZipCodeOptions() !!}
-                                                </select>
-                                                <div id="otherzipcode"></div>
-                                                <div class="input-group-append">
-                                                    <div class="input-group-text">
-                                                        <span class="fas fa-address-card"></span>
-                                                    </div>
-                                                </div>
-
-                                                @error('zipcode_id')
-                                                    <div class="invalid-feedback">
-                                                        {{ $message }}
-                                                    </div>
-                                                @enderror
-                                                <div id="otherzipcode"></div>
-                                            </div>
-
-                                        </div>
-                                        <div class="col-1">&nbsp;</div>
-                                    </div>
-                                    <div class="row form-group">
-                                        <div class="col-1">&nbsp;</div>
-                                        <div class="col-5">
-                                            <span>Street</span>
-                                            <div class="input-group mb-3">
-                                                <input type="text" name="street"
-                                                    class="form-control @error('street') is-invalid @enderror"
-                                                    placeholder="Street" value="{{ old('street') }}">
-                                                <div class="input-group-append">
-                                                    <div class="input-group-text">
-                                                        <span class="fas fa-address-card"></span>
-                                                    </div>
-                                                </div>
-                                                @error('street')
-                                                    <div class="invalid-feedback">
-                                                        {{ $message }}
-                                                    </div>
-                                                @enderror
-                                            </div>
-                                        </div>
+                                        
                                         <div class="col-5">
                                             <span>Business Address</span>
                                             <div class="input-group mb-3">
@@ -327,11 +237,76 @@
                                                 @enderror
                                             </div>
                                         </div>
+                                        
+                                        <div class="col-1">&nbsp;</div>
+                                    </div>
 
+
+                                    <div class="row form-group">
+                                        <div class="col-1">&nbsp;</div>
+                                        <div class="col-5">
+                                            <span>City</span>
+                                            <div class="input-group mb-3">
+                                                <input type="text" name="city"
+                                                    class="form-control @error('city') is-invalid @enderror"
+                                                    placeholder="City" value="{{ old('city') }}">
+                                                <div class="input-group-append">
+                                                    <div class="input-group-text">
+                                                        <span class="fas fa-address-card"></span>
+                                                    </div>
+                                                </div>
+                                                @error('city')
+                                                    <div class="invalid-feedback">
+                                                        {{ $message }}
+                                                    </div>
+                                                @enderror
+                                            </div>
+                                        </div>
+                                        <div class="col-5">
+                                            <span>State</span>
+                                            <div class="input-group mb-3">
+                                                <input type="text" name="state"
+                                                    class="form-control @error('state') is-invalid @enderror"
+                                                    placeholder="State" value="{{ old('state') }}">
+                                               
+                                                <div class="input-group-append">
+                                                    <div class="input-group-text">
+                                                        <span class="fas fa-address-card"></span>
+                                                    </div>
+                                                </div>
+                                                @error('state')
+                                                    <div class="invalid-feedback">
+                                                        {{ $message }}
+                                                    </div>
+                                                @enderror
+                                            </div>
+                                        </div>
+                                        
                                         <div class="col-1">&nbsp;</div>
                                     </div>
                                     <div class="row form-group">
                                         <div class="col-1">&nbsp;</div>
+                                        <div class="col-5">
+                                            <span>Zip Code</span>
+                                            <div class="input-group mb-3">
+                                                <input type="text" name="zipcode"
+                                                    class="form-control @error('zipcode') is-invalid @enderror"
+                                                    placeholder="Zip Code" value="{{ old('zipcode') }}">
+                                                <div class="input-group-append">
+                                                    <div class="input-group-text">
+                                                        <span class="fas fa-address-card"></span>
+                                                    </div>
+                                                </div>
+
+                                                @error('zipcode')
+                                                    <div class="invalid-feedback">
+                                                        {{ $message }}
+                                                    </div>
+                                                @enderror
+                                                
+                                            </div>
+
+                                        </div>
                                         <div class="col-5">
                                             <span>Business Email</span>
                                             <div class="input-group mb-3">
@@ -350,6 +325,11 @@
                                                 @enderror
                                             </div>
                                         </div>
+                                        
+                                        <div class="col-1">&nbsp;</div>
+                                    </div>
+                                    <div class="row form-group">
+                                        <div class="col-1">&nbsp;</div>
                                         <div class="col-5">
                                             <span>Business Phone</span>
                                             <div class="input-group mb-3">
@@ -368,10 +348,6 @@
                                                 @enderror
                                             </div>
                                         </div>
-                                        <div class="col-1">&nbsp;</div>
-                                    </div>
-                                    <div class="row form-group">
-                                        <div class="col-1">&nbsp;</div>
                                         <div class="col-5">
                                             <span>How many years in Business?</span>
                                             <div class="input-group mb-3">
@@ -390,15 +366,17 @@
                                                 @enderror
                                             </div>
                                         </div>
+                                        <div class="col-1">&nbsp;</div>
+                                    </div>
+                                    <div class="row form-group">
+                                        <div class="col-1">&nbsp;</div>
                                         <div class="col-5">
                                             <span>What do you Ship?</span>
                                             <div class="input-group mb-3">
-                                                <select onchange="change_shiping_cat()" name="shipping_cat" id="shipping_cat"
-                                                    class="form-control select2bs4 @error('shipping_cat') is-invalid @enderror"
-                                                    placeholder="What do you Ship" value="{{ old('shipping_cat') }}">
+                                                <select name="shipping_cat[]"  class="form-control select2bs4 @error('shipping_cat') is-invalid @enderror" multiple="multiple" data-placeholder="What do you Ship" >
                                                     {!! getProductCatOptions()!!}
                                                 </select>
-                                                <div id="othershipping"></div>
+                                                
                                                 <div class="input-group-append">
                                                     <div class="input-group-text">
                                                         <span class="fas fa-address-card"></span>
@@ -411,10 +389,6 @@
                                                 @enderror
                                             </div>
                                         </div>
-                                        <div class="col-1">&nbsp;</div>
-                                    </div>
-                                    <div class="row form-group">
-                                        <div class="col-1">&nbsp;</div>
                                         <div class="col-5">
                                             <span>How often you ship?</span>
                                             <div class="input-group mb-3">
@@ -437,17 +411,15 @@
                                                 @enderror
                                             </div>
                                         </div>
-                                        <div class="col-6">&nbsp;</div>
+                                        <div class="col-1">&nbsp;</div>
                                     </div>
-
-
-
+                                    
                                     {{-- New Row Button --}}
                                     <div class="row form-group">
                                         <div class="col-5">&nbsp;</div>
                                         <div class="col-2">
                                             <button type="submit" class="btn btn-outline-success btn-block btn-lg"><i
-                                                    class="fa fa-save"></i> Save</button>
+                                                    class="fa fa-save"></i> Submit</button>
                                         </div>
                                         <div class="col-5">&nbsp;</div>
 
@@ -477,6 +449,8 @@
     <script src="{{ url('adminpanel/plugins/select2/js/select2.full.min.js') }}"></script>
     <script>
         $(function() {
+            $('.select2').select2();
+
             $('.select2bs4').select2({
                 theme: 'bootstrap4'
             });

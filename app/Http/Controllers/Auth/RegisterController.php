@@ -80,8 +80,6 @@ class RegisterController extends Controller
             'email' => $data['email'],
             'group_id' => $data['group_id'],
             'is_active' => 1,
-            'city_id' => 1,
-            'zipcode_id' => 1,
             'password' => Hash::make($data['password']),
         ]);
     }

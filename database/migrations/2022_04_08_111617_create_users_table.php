@@ -35,17 +35,14 @@ return new class extends Migration
             $table->string('years_in_business')->nullable();
             $table->string('designation')->nullable();
             $table->string('shipping')->nullable();
-            $table->unsignedBigInteger('shipping_cat')->nullable();
+            $table->text('shipping_cat')->nullable();
             $table->string('how_often_shipping')->nullable()->default('monthly');
             $table->string('license_no')->nullable();
             $table->string('country')->default('USA');
             $table->string('street')->nullable();
-            $table->unsignedBigInteger('state_id')->nullable();
-            $table->foreign('state_id')->references('id')->on('states');
-            $table->unsignedBigInteger('city_id')->nullable();
-            $table->foreign('city_id')->references('id')->on('cities');
-            $table->unsignedBigInteger('zipcode_id')->nullable();
-            $table->foreign('zipcode_id')->references('id')->on('zipcode');
+            $table->string('state')->nullable();
+            $table->string('city')->nullable();
+            $table->string('zipcode')->nullable();
             $table->string('password')->nullable();
             $table->tinyInteger('lead_by')->default(0); //0: By Office , 1: by Website
             $table->string('profile_pic')->nullable();
@@ -69,8 +66,7 @@ return new class extends Migration
                 'cnic' => '3660327946615',
                 'phone' => '03007731712',
                 'password' => Hash::make('1234'),
-                'zipcode_id' => 1,
-                'city_id' => 1,
+                'shipping_cat' => json_encode(array(1,2,3)),
                 'is_active' => 1,
                 'group_id' => 1,
                 ]

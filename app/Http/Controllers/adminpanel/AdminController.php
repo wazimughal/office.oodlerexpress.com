@@ -53,12 +53,18 @@ class AdminController extends Controller
     public function addUser(){
        $user=Auth::user(); 
         
-        if($user->group_id==config('constants.groups.admin'))
-            $userGroups = getAllGroups();
-        else
-            $userGroups = getGroups();
+        // if($user->group_id==config('constants.groups.admin'))
+        //     $userGroups = getAllGroups();
+        // else
+        //     $userGroups = getGroups();
         
-        return view('adminpanel/add_users',compact('user','userGroups'));
+        return view('adminpanel/add_users',get_defined_vars());
+    }
+    public function edit_user_form($id){
+       $user=Auth::user(); 
+       $userData=$this->users->where('id',$id)->get()->toArray();
+       $userData=$userData[0];
+        return view('adminpanel/edit_user',get_defined_vars());
     }
 
     public function authenticate(Request $request)
@@ -69,8 +75,17 @@ class AdminController extends Controller
                
        ]);
        
-       if(Auth::check())
-        return redirect('/admin/dashboard');
+       if(Auth::check()){
+        $user=Auth::user();
+        if ($user->group_id==config('constants.groups.admin'))
+        return redirect()->route('admin.dashboard');
+        else if ($user->group_id==config('constants.groups.driver'))
+        return redirect()->route('admin.deliveries');
+        else
+        return redirect('/admin/quote/requested');
+
+       }
+        
  
         if (Auth::attempt(['email' => $request['email'], 'password' => $request['password'], 'is_active' => 1])) {
 
@@ -91,7 +106,16 @@ class AdminController extends Controller
             // The user is active, not suspended, and exists.
             //$request->session()->flash('alert-success', 'Successfully Logged in');
             //return redirect()->intended('/admin/dashboard');
-            return redirect('/admin/dashboard');
+            if(Auth::check()){
+                $user=Auth::user();
+                if ($user->group_id==config('constants.groups.admin'))
+                return redirect()->route('admin.dashboard');
+                else if ($user->group_id==config('constants.groups.driver'))
+                return redirect()->route('admin.deliveries');
+                else
+                return redirect('/admin/quote/requested');
+        
+               }
         }
         else{
             
@@ -170,8 +194,7 @@ class AdminController extends Controller
         $this->users->phone=$request['phone'];
         $this->users->password=Hash::make($request['password']);
         $this->users->is_active=0;
-        $this->users->zipcode_id=1;
-        $this->users->city_id=1;
+       
         $this->users->created_at=time();
         $this->users->group_id=$groupsData[0]['id'];
         $request->session()->flash('alert-success', 'Successfully Registered! Please login');
@@ -179,7 +202,7 @@ class AdminController extends Controller
 
         return redirect()->back();
     }
-    public function SaveUsersData(Request $request){
+    public function add_user_data(Request $request){
        
         $validator=$request->validate([
             'firstname'=>'required',
@@ -188,7 +211,6 @@ class AdminController extends Controller
             'phone'=>'required',
             'password'=>'required|',
             'password_confirmation'=>'required|same:password',
-            'group_id'=>'required',
             
         ]);
         
@@ -197,16 +219,43 @@ class AdminController extends Controller
         $this->users->lastname=$request['lastname'];
         $this->users->name=$request['firstname'].' '.$request['lastname'];
         $this->users->email=$request['email'];
-        $this->users->cnic=$request['cnic'];
         $this->users->phone=$request['phone'];
         $this->users->password=Hash::make($request['password']);
         $this->users->is_active=1;
-        $this->users->zipcode_id=1;
-        $this->users->city_id=1;
+       
         $this->users->created_at=time();
-        $this->users->group_id=$request['group_id'];
+        $this->users->group_id=config('constants.groups.admin');
         $request->session()->flash('alert-success', 'Successfully Registered! Please login');
         $this->users->save();
+        return redirect()->back();
+        
+    }
+    public function update_user_data($id,Request $request){
+       
+        $rules=[
+            'firstname'=>'required',
+            'lastname'=>'required',
+            'phone'=>'required',
+        ];
+
+       if(!empty($request['email'])){
+        $data['email']=$request['email'];
+        $rules['email']='required|email|distinct|unique:users|min:5';
+       }
+        
+
+        $validator=$request->validate($rules);
+        
+        $data['firstname']=$request['firstname'];
+        $data['lastname']=$request['lastname'];
+        $data['name']=$request['firstname'].' '.$request['lastname'];
+        
+        $data['phone']=$request['phone'];
+        if(!empty($request['password']))
+        $data['password']=Hash::make($request['password']);
+        
+        $request->session()->flash('alert-success', 'Successfully updated! Please login');
+        $this->users->where('id',$id)->update($data);
         return redirect()->back();
         
     }
@@ -216,7 +265,8 @@ class AdminController extends Controller
 
         $user=Auth::user();
         
-        $usersData=$this->users->with('getGroups')->where('is_active','<',3)->orderBy('created_at', 'desc')->paginate(config('constants.per_page'));
+        //$usersData=$this->users->with('getGroups')->where('is_active','<',3)->orderBy('created_at', 'desc')->paginate(config('constants.per_page'));
+        $usersData=$this->users->with('getGroups')->where('is_active','<',3)->where('group_id',config('constants.groups.admin'))->orderBy('created_at', 'desc')->paginate(config('constants.per_page'));
         //$usersData=$usersData->toArray();
         return view('adminpanel/users',compact('usersData','user'));
     }

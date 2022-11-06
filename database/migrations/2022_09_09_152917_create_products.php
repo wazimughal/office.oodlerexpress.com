@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('slug');
             $table->string('image')->nullable();
+            $table->text('sizes')->nullable();
             $table->string('size')->nullable();
             $table->string('size_unit')->nullable();
             $table->string('weight')->nullable();
@@ -37,6 +38,7 @@ return new class extends Migration
                 'name' => 'welded frames',
                 'slug' => phpslug('welded frames'),
                 'is_active' => 1,
+                'sizes' => 'size 1, size 2, size 3',
                 'cat_id' => 2,
                 'user_id' => 1,
                 'added_by' => 1,
@@ -45,6 +47,7 @@ return new class extends Migration
                 'name' => 'Wood Doors',
                 'slug' => phpslug('wood doors'),
                 'is_active' => 1,
+                'sizes' => 'size 1, size 2, size 3',
                 'cat_id' => 2,
                 'user_id' => 1,
                 'added_by' => 1,
@@ -52,6 +55,7 @@ return new class extends Migration
                 [
                 'name' => 'Filters',
                 'slug' => phpslug('Filters'),
+                'sizes' => 'size 1, size 2, size 3',
                 'is_active' => 1,
                 'cat_id' => 1,
                 'user_id' => 1,
@@ -60,6 +64,7 @@ return new class extends Migration
                 [
                 'name' => 'Panels',
                 'slug' => phpslug('Panels'),
+                'sizes' => 'size 1, size 2, size 3',
                 'is_active' => 1,
                 'cat_id' => 1,
                 'user_id' => 1,

@@ -46,6 +46,7 @@
                                             <th>Pick-up Phone</th>
                                             <th>Drop-off Street Address</th>
                                             <th>Drop-off Phone</th>
+                                            <th>Customer</th>
                                             <th>Status</th>
                                             <th>Action</th>
                                         </tr>
@@ -53,6 +54,7 @@
                                     <tbody>
                                         <?php 
                                             $counter = 1;
+                                            
                                             foreach ($quotesData as $data){
                                             ?>
                                         <tr id="row_{{ $data['id'] }}">
@@ -71,6 +73,9 @@
                                             </td>
                                             <td id="drop_off_contact_number_{{ $data['id'] }}">
                                                {{$data['drop_off_contact_number']}}
+                                            </td>
+                                            <td id="drop_off_contact_number_{{ $data['id'] }}">
+                                               {{$data['customer']['name']}}
                                             </td>
                                             <td id="status{{ $data['id'] }}">
                                                 @if ($data['status']==config('constants.quote_status.pedning'))
@@ -101,6 +106,9 @@
                                                 <a href="{{route('deliveries.view',$data['id']) }}"
                                                 class="btn btn-info btn-block btn-sm"><i class="fas fa-eye"></i>
                                                 View</a>
+                                                @if ($user->group_id==config('constants.groups.admin'))
+                                                    
+                                                
                                                 @if ($data['is_active']==1)
                                                 <button
                                                 onClick="do_action({{ $data['id'] }},'delete',{{ $counter }})"
@@ -114,6 +122,8 @@
                                                     class="fas fa-trash"></i>
                                                 Restore</button>
                                                     @endif
+                                                @endif
+                                                
                                             </td>
 
                                             </td>
@@ -137,11 +147,12 @@
                                             <th>Pick-up Phone</th>
                                             <th>Drop-off Street Address</th>
                                             <th>Drop-off Phone</th>
+                                            <th>Customer</th>
                                             <th>Status</th>
                                             <th>Action</th>
                                         </tr>
                                         <tr>
-                                            <td colspan="8">
+                                            <td colspan="10">
                                                 <div class="text-right"> {{ $quotesData->links() }}</div>
                                             </td>
                                         </tr>

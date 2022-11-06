@@ -1,22 +1,24 @@
 @php
-
-if (isset($mailData['body_message']) && !empty($mailData['body_message'])) {
-    $body_message = $mailData['body_message'];
-} else {
-    $body_message = 'Welcome To Oodler Express .You have been assigned a new password to your online portal. Your password is: _______ please use your email as your username.';
-}
-
-if (isset($mailData['button_title']) && !empty($mailData['button_title'])) {
-    $button_title = $mailData['button_title'];
-} else {
-    $button_title = 'Login';
-}
-
-if (isset($mailData['button_link']) && !empty($mailData['button_link'])) {
-    $button_link = $mailData['button_link'];
-} else {
-    $button_link = url('/');
-}
+    
+    if (isset($mailData['body_message']) && !empty($mailData['body_message'])) {
+        $body_message = $mailData['body_message'];
+    } else {
+        $body_message = 'Welcome To Oodler Express .You have been assigned a new password to your online portal. Your password is: _______ please use your email as your username.';
+    }
+    
+    if (isset($mailData['button_title']) && !empty($mailData['button_title'])) {
+        $button_title = $mailData['button_title'];
+    } else {
+        $button_title = 'Login';
+    }
+    
+    if (isset($mailData['button_link']) && !empty($mailData['button_link'])) {
+        $button_link = $mailData['button_link'];
+    } else {
+        $button_link = url('/');
+    }
+    //$body_message=quote_data_for_mail(4);
+    //$body_message=$msg;
 @endphp
 
 <!DOCTYPE HTML
@@ -226,8 +228,7 @@ if (isset($mailData['button_link']) && !empty($mailData['button_link'])) {
                                                                 <tr>
                                                                     <td style="padding-right: 0px;padding-left: 0px;"
                                                                         align="center">
-                                                                        <a href="{{url('/')}}"
-                                                                            target="_blank">
+                                                                        <a href="{{ url('/') }}" target="_blank">
                                                                             <img align="center" border="0"
                                                                                 src="{{ url('adminpanel/dist/img/logo_oodler.png') }}"
                                                                                 alt="image" title="image"
@@ -276,6 +277,7 @@ if (isset($mailData['button_link']) && !empty($mailData['button_link'])) {
                                                             <div class="v-color v-line-height"
                                                                 style="line-height: 180%; text-align: center; word-wrap: break-word;">
                                                                 <p style="font-size: 14px; line-height: 180%;">
+
                                                                     {!! $body_message !!}</p>
                                                             </div>
 
@@ -295,7 +297,7 @@ if (isset($mailData['button_link']) && !empty($mailData['button_link'])) {
 
                                                                 <!--[if mso]><style>.v-button {background: transparent !important;}</style><![endif]-->
                                                                 <div align="center">
-                                                                    <!--[if mso]><v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="https://thephotographicmemories.com" style="height:37px; v-text-anchor:middle; width:203px;" arcsize="13.5%"  stroke="f" fillcolor="#cf0818"><w:anchorlock/><center style="color:#FFFFFF;font-family:Open Sans,sans-serif;"><![endif]-->
+                                                                    <!--[if mso]><v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="https://oodlerexpress.com.com" style="height:37px; v-text-anchor:middle; width:203px;" arcsize="13.5%"  stroke="f" fillcolor="#cf0818"><w:anchorlock/><center style="color:#FFFFFF;font-family:Open Sans,sans-serif;"><![endif]-->
                                                                     <a href="{{ $button_link }}" target="_blank"
                                                                         class="v-button v-size-width" style="">
                                                                         <span class="v-line-height v-padding"
@@ -361,14 +363,17 @@ if (isset($mailData['button_link']) && !empty($mailData['button_link'])) {
                                                                 style="color: #000000; line-height: 140%; text-align: center; word-wrap: break-word;">
                                                                 <p style="font-size: 14px; line-height: 140%;">if you
                                                                     have any questions, please email us at
-                                                                    joel@thephotographicmemories.com or visit our FAQS.     </p>
+                                                                    <a
+                                                                        href="mailto:sales@oodlerexpress.com">sales@oodlerexpress.com</a>
+                                                                    or visit our website.
+                                                                </p>
                                                             </div>
 
                                                         </td>
                                                     </tr>
                                                 </tbody>
                                             </table>
-
+                                            {{-- 
                                             <table style="font-family:Open Sans,sans-serif;" role="presentation"
                                                 cellpadding="0" cellspacing="0" width="100%" border="0">
                                                 <tbody>
@@ -486,7 +491,7 @@ if (isset($mailData['button_link']) && !empty($mailData['button_link'])) {
                                                         </td>
                                                     </tr>
                                                 </tbody>
-                                            </table>
+                                            </table> --}}
 
                                             <table id="u_content_menu_1" style="font-family:Open Sans,sans-serif;"
                                                 role="presentation" cellpadding="0" cellspacing="0" width="100%"
@@ -502,8 +507,7 @@ if (isset($mailData['button_link']) && !empty($mailData['button_link'])) {
 
                                                                 <!--[if (mso)|(IE)]><td style="padding:5px 15px"><![endif]-->
 
-                                                                <a href="https://thephotographicmemories.com"
-                                                                    target="_self"
+                                                                <a href="https://oodlerexpress.com.com" target="_self"
                                                                     style="padding:5px 15px;display:inline-block;color:#000000;font-family:arial,helvetica,sans-serif;font-size:14px;text-decoration:none"
                                                                     class="v-padding v-font-size">
                                                                     Home
@@ -526,7 +530,7 @@ if (isset($mailData['button_link']) && !empty($mailData['button_link'])) {
 
                                                                 <!--[if (mso)|(IE)]><td style="padding:5px 15px"><![endif]-->
 
-                                                                <a href="https://thephotographicmemories.com"
+                                                                <a href="https://oodlerexpress.com/about-us/"
                                                                     target="_self"
                                                                     style="padding:5px 15px;display:inline-block;color:#000000;font-family:arial,helvetica,sans-serif;font-size:14px;text-decoration:none"
                                                                     class="v-padding v-font-size">
@@ -546,7 +550,7 @@ if (isset($mailData['button_link']) && !empty($mailData['button_link'])) {
 
                                                                 <!--[if (mso)|(IE)]><td style="padding:5px 15px"><![endif]-->
 
-                                                                <a href="https://thephotographicmemories.com"
+                                                                <a href="https://oodlerexpress.com/contact-us/"
                                                                     target="_self"
                                                                     style="padding:5px 15px;display:inline-block;color:#000000;font-family:arial,helvetica,sans-serif;font-size:14px;text-decoration:none"
                                                                     class="v-padding v-font-size">
@@ -576,18 +580,17 @@ if (isset($mailData['button_link']) && !empty($mailData['button_link'])) {
                                                                 style="color: #000000; line-height: 140%; text-align: center; word-wrap: break-word;">
                                                                 <p style="font-size: 14px; line-height: 140%;">you have
                                                                     received this email as a registered user of <a
-                                                                        rel="noopener"
-                                                                        href="{{url('/')}}"
-                                                                        target="_blank">{{config('app.name')}}</a>
+                                                                        rel="noopener" href="{{ url('/') }}"
+                                                                        target="_blank">{{ config('app.name') }}</a>
                                                                 </p>
-                                                                <p style="font-size: 14px; line-height: 140%;">can <a
+                                                                {{-- <p style="font-size: 14px; line-height: 140%;">can <a
                                                                         rel="noopener"
                                                                         href="{{url('/')}}"
                                                                         target="_blank">unsubscribe</a> from these
-                                                                    emails here.</p>
+                                                                    emails here.</p> --}}
                                                                 <p style="font-size: 14px; line-height: 140%;"> </p>
-                                                                <p style="font-size: 14px; line-height: 140%;">2261
-                                                                    Market Street #4667 San Francisco, CA 94114 All
+                                                                <p style="font-size: 14px; line-height: 140%;">
+                                                                    Servicing NY & NJ, 718-218-5239 . All
                                                                     rights reserved</p>
                                                             </div>
 

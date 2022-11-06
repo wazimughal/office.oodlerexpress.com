@@ -101,10 +101,11 @@
                                             </td>
                                             <td>
                                                 @if ($user->group_id==config('constants.groups.admin'))
+
                                                 <a href="{{route('quotes.send_quote_form',$data['id']) }}"
                                                 class="btn btn-success btn-block btn-sm"><i class="fas fa-edit"></i>
                                                 Send Quote</a>
-                                                @endif
+                                                
                                                 @if(isset($type) && $type=='requested')
                                                 <a href="{{route('quotes.quoteeditform',$data['id']) }}"
                                                 class="btn btn-info btn-block btn-sm"><i class="fas fa-edit"></i>
@@ -123,6 +124,11 @@
                                                     class="fas fa-undo"></i>
                                                 Restore</button>
                                                     @endif
+                                                @else
+                                                <a href="{{route('quotes.view',$data['id']) }}"
+                                                class="btn btn-primary btn-block btn-sm"><i class="fas fa-edit"></i>
+                                                View</a>
+                                                @endif
                                             </td>
 
                                             </td>

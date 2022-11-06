@@ -44,7 +44,7 @@
                                                 aria-hidden="true">&times;</button>
                                             <h5><i class="icon fa fa-user"></i>
                                                 Quote Status!</h5>
-                                                {{quote_status_msg($quotesData['status'])}}
+                                            {{ quote_status_msg($quotesData['status']) }}
 
                                         </div>
                                     </div>
@@ -86,36 +86,68 @@
                                                             <div class="col-3">&nbsp;</div>
                                                         </div>
 
-                                                        <div class="row invoice-info">
+                                                        
+                                                        @php
+                                                            //p($quotesData['quote_products']);
+                                                            $pickup_dropoff_address=array();
+                                                        @endphp
+                                                        <div class="card" style="margin-top: 25px;">
+                                                            <div class="card-header p-2">
+                                                                <strong> Products List</strong>
+                                                            </div><!-- /.card-header -->
+                                                       
+                                                            <div class="table-responsive">
+                                                                <table class="table">
+                                                                    <tbody>
+                                                                       
+                                                                        @foreach ($quotesData['quote_products'] as $quote_product)
+                                                                        
+                                                                        @if (!in_array($quote_product['pickup_dropoff_order_number'],$pickup_dropoff_address))
+                                                                        <tr>
+                                                                            <td colspan="2">
+                                                                                <strong>Pick Up Detail </strong> <br>
+                                                                                Date : {{ $quote_product['pickup_dropoff_address']['pickup_date'] }}<br>
+                                                                                Street Address
+                                                                                :{{ $quote_product['pickup_dropoff_address']['pickup_street_address'] }}<br>
+                                                                                Unit :{{ $quote_product['pickup_dropoff_address']['pickup_unit'] }}<br>
+                                                                                Contact No. :{{ $quote_product['pickup_dropoff_address']['pickup_contact_number'] }}<br>
+                                                                            </td>
+                                                                            <td colspan="2">
+                                                                                <strong>Drop-Off Detail </strong> <br>
+                                                                                Date : {{ $quote_product['pickup_dropoff_address']['drop_off_date'] }}<br>
+                                                                                Street Address
+                                                                                :{{ $quote_product['pickup_dropoff_address']['drop_off_street_address'] }}<br>
+                                                                                Unit :{{ $quote_product['pickup_dropoff_address']['drop_off_unit'] }}<br>
+                                                                                Contact No.
+                                                                                :{{ $quote_product['pickup_dropoff_address']['drop_off_contact_number'] }}<br>
+                                                                            </td>
+                                                                            
+                                                                        </tr> 
+                                                                        <tr>
+                                                                            <th>Prodcut Name</th>
+                                                                            <th>Quantity</th>
+                                                                            <th>Size</th>
+                                                                            <th>Description</th>
+                                                                        </tr>
+                                                                        @php
+                                                                            $pickup_dropoff_address[]=$quote_product['pickup_dropoff_order_number'];
+                                                                        @endphp
 
-                                                            <!-- /.col -->
-                                                            <div class="col-sm-4 invoice-col">
-                                                                <strong>Pick Up Detail </strong> <br>
-                                                                Date : {{ $quotesData['pickup_date'] }}<br>
-                                                                Time
-                                                                :{{ $quotesData['pickup_at_time'] == 1 ? 'AM' : 'PM' }}<br>
-                                                                Street Address
-                                                                :{{ $quotesData['pickup_street_address'] }}<br>
-                                                                Unit :{{ $quotesData['pickup_unit'] }}<br>
-                                                                Contact No. :{{ $quotesData['pickup_contact_number'] }}<br>
+                                                                        @endif
+                                                                        <tr>
+                                                                            <td>{{ $quote_product['product_name'] }}</td>
+                                                                            <td>{{ $quote_product['quantity'] }}</td>
+                                                                            <td>{{ $quote_product['size'] }}</td>
+                                                                            <td>{{ $quote_product['description'] }}</td>
+                                                                        </tr> 
+                                                                        
+
+                                                                        @endforeach
+                                                                    </tbody>
+                                                                </table>
                                                             </div>
-                                                            <div class="col-sm-4 invoice-col">&nbsp;</div>
-                                                            <div class="col-sm-4 invoice-col">
-
-                                                                <strong>Drop-Off Detail </strong> <br>
-                                                                Date : {{ $quotesData['drop_off_date'] }}<br>
-                                                                Time
-                                                                :{{ $quotesData['drop_off_at_time'] == 1 ? 'AM' : 'PM' }}<br>
-                                                                Street Address
-                                                                :{{ $quotesData['drop_off_street_address'] }}<br>
-                                                                Unit :{{ $quotesData['drop_off_unit'] }}<br>
-                                                                Contact No.
-                                                                :{{ $quotesData['drop_off_contact_number'] }}<br>
-                                                            </div>
-
                                                         </div>
-
-
+                                                        
                                                     </div>
                                                     <!-- /.tab-pane -->
 
@@ -132,33 +164,33 @@
                                             <div class="card-body">
                                                 <div class="tab-content">
                                                     <div class="row">
-                                                            <div class="col-3">&nbsp;</div>
-                                                            <div class="col-6">
+                                                        <div class="col-3">&nbsp;</div>
+                                                        <div class="col-6">
 
+                                                            @if ($errors->any())
+                                                                {{ implode('', $errors->all('<div>:message</div>')) }}
+                                                            @endif
+                                                            <!-- flash-message -->
+                                                            <div class="flash-message">
                                                                 @if ($errors->any())
                                                                     {{ implode('', $errors->all('<div>:message</div>')) }}
                                                                 @endif
-                                                                <!-- flash-message -->
-                                                                <div class="flash-message">
-                                                                    @if ($errors->any())
-                                                                        {{ implode('', $errors->all('<div>:message</div>')) }}
-                                                                    @endif
 
-                                                                    @foreach (['danger', 'warning', 'success', 'info'] as $msg)
-                                                                        @if (Session::has('alert-' . $msg))
-                                                                            <p class="alert alert-{{ $msg }}">
-                                                                                {{ Session::get('alert-' . $msg) }} <a
-                                                                                    href="#" class="close"
-                                                                                    data-dismiss="alert"
-                                                                                    aria-label="close">&times;</a></p>
-                                                                        @endif
-                                                                    @endforeach
-                                                                </div> <!-- end .flash-message -->
-                                                            </div>
-                                                            <div class="col-3">&nbsp;</div>
+                                                                @foreach (['danger', 'warning', 'success', 'info'] as $msg)
+                                                                    @if (Session::has('alert-' . $msg))
+                                                                        <p class="alert alert-{{ $msg }}">
+                                                                            {{ Session::get('alert-' . $msg) }} <a
+                                                                                href="#" class="close"
+                                                                                data-dismiss="alert"
+                                                                                aria-label="close">&times;</a></p>
+                                                                    @endif
+                                                                @endforeach
+                                                            </div> <!-- end .flash-message -->
                                                         </div>
+                                                        <div class="col-3">&nbsp;</div>
+                                                    </div>
                                                     <?php if($quotesData['quote_prices']){  $k=1;?>
-                                                        <div class="form-group row">
+                                                    <div class="form-group row">
                                                         <div class="col-sm-12">
                                                             <div class="table-responsive">
                                                                 <table class="table">
@@ -169,26 +201,32 @@
                                                                         <td>Description</td>
                                                                         <td>Sent On</td>
                                                                         <td>Status</td>
-                                                                        </tr>
+                                                                    </tr>
                                                                     <?php foreach ($quotesData['quote_prices'] as $key=>$data){ ?>
                                                                     <tr>
                                                                         <td>${{ $data['quoted_price'] }}</td>
-                                                                        <td>${{ $data['extra_charges']!=''?$data['extra_charges']:0 }}</td>
+                                                                        <td>${{ $data['extra_charges'] != '' ? $data['extra_charges'] : 0 }}
+                                                                        </td>
                                                                         <td>{{ $data['reason_for_extra_charges'] }}</td>
                                                                         <td>{{ $data['description'] }}</td>
-                                                                        <td>{{ date('d/m/Y H:i:s', strtotime($data['created_at'])) }}</td>
-                                                                        <td>
-                                                                            @if($data['status']==1)
-                                                                            <span class="btn btn-success btn-block btn-sm"><i class="fas fa-chart-line"></i>
-                                                                                Active</span>
-                                                                                @else
-                                                                                <span class="btn btn-primary btn-block btn-sm"><i class="fas fa-chart-line"></i>
-                                                                                    Previous</span>
-                                                                                    @endif
+                                                                        <td>{{ date('d/m/Y H:i:s', strtotime($data['created_at'])) }}
                                                                         </td>
-                                                                        </tr>
+                                                                        <td>
+                                                                            @if ($data['status'] == 1)
+                                                                                <span
+                                                                                    class="btn btn-success btn-block btn-sm"><i
+                                                                                        class="fas fa-chart-line"></i>
+                                                                                    Active</span>
+                                                                            @else
+                                                                                <span
+                                                                                    class="btn btn-primary btn-block btn-sm"><i
+                                                                                        class="fas fa-chart-line"></i>
+                                                                                    Previous</span>
+                                                                            @endif
+                                                                        </td>
+                                                                    </tr>
 
-                                                                            <?php }?>
+                                                                    <?php }?>
                                                                 </table>
                                                             </div>
                                                         </div>
@@ -209,32 +247,36 @@
                                                         <div class="form-group row">
                                                             <div class="col-sm-3">
                                                                 <label>TotaL Cost</label>
-                                                                <input type="number"
-                                                                        name="quoted_price" required value="{{ old('quoted_price') }}"
-                                                                        placeholder="Total Cost in USD" class="form-control">
-                                                                        @error('quoted_price')
-                                                                        <div class="invalid-feedback">
-                                                                            {{ $message }}
-                                                                        </div>
-                                                                    @enderror
+                                                                <input type="number" name="quoted_price" required
+                                                                    value="{{ old('quoted_price') }}"
+                                                                    placeholder="Total Cost in USD" class="form-control">
+                                                                @error('quoted_price')
+                                                                    <div class="invalid-feedback">
+                                                                        {{ $message }}
+                                                                    </div>
+                                                                @enderror
                                                             </div>
 
                                                             <div class="col-sm-3">
                                                                 <label>Extra Charges
                                                                 </label>
                                                                 <div class="input-group mb-2"><input type="number"
-                                                                        name="extra_charges" value="{{ old('extra_charges') }}"
-                                                                        placeholder="Any Extra Charges" class="form-control">
+                                                                        name="extra_charges"
+                                                                        value="{{ old('extra_charges') }}"
+                                                                        placeholder="Any Extra Charges"
+                                                                        class="form-control">
                                                                 </div>
                                                             </div>
                                                             <div class="col-sm-6">
                                                                 <label>Reason for Extra Charge</label>
                                                                 <div class="input-group mb-2"><input type="text"
-                                                                        name="reason_for_extra_charges" value="{{ old('reason_for_extra_charges') }}"
-                                                                        placeholder="Reason for extra Charge" class="form-control">
+                                                                        name="reason_for_extra_charges"
+                                                                        value="{{ old('reason_for_extra_charges') }}"
+                                                                        placeholder="Reason for extra Charge"
+                                                                        class="form-control">
                                                                 </div>
                                                             </div>
-                                                           
+
                                                         </div>
                                                         <div class="row form-group">
                                                             <div class="col-sm-12">
@@ -294,7 +336,7 @@
                                                         <input type="hidden" name="slug"
                                                             value="{{ $userData['get_groups']['slug'] }}">
                                                         <input type="hidden" name="user_name"
-                                                            value="{{ $userData['name']}}">
+                                                            value="{{ $userData['name'] }}">
                                                         <div class="form-group">
                                                             <label for="inputDescription">Comment</label>
                                                             <textarea id="comments" name="comment" placeholder="Write comment about the Booking" class="form-control"
@@ -314,7 +356,7 @@
                                     <!-- /.col -->
 
                                     <div class="col-md-4">
-                                        
+
                                         <div class="card-header alert-secondary">
                                             <h3 class="card-title">Customer/Business Info</h3>
                                         </div>
@@ -370,7 +412,12 @@
                                                         </tr>
                                                         <tr>
                                                             <th>Shiping </th>
-                                                            <td>{{ $quotesData['customer']['shipping_cat'] }}</td>
+                                                            <td>@php
+                                                            $car_names=cat_name_by_ids(json_decode($quotesData['customer']['shipping_cat'],true)) ;   
+                                                            
+                                                            echo implode('<br>',$car_names);
+                                                            @endphp
+                                                            </td>
                                                         </tr>
 
                                                     </tbody>

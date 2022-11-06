@@ -55,7 +55,7 @@ class DriverController extends Controller
                 'lastname'=>'required',
                 'phone'=>'required',
                 'city'=>'required',
-                'zipcode'=>'required',
+                'state'=>'required',
                 'address'=>'required',
             ]);
 
@@ -64,28 +64,17 @@ class DriverController extends Controller
             $dataArray['name']=$req['firstname'].' '.$req['lastname'];
             $dataArray['phone']=$req['phone'];
             $dataArray['address']=$req['address'];
-            $dataArray['city_id']=$req['city'];
-            $dataArray['zipcode_id']=$req['zipcode'];
+            $dataArray['city']=$req['city'];
+            $dataArray['state']=$req['state'];
 
             if(isset($req['license_no']) && !empty($req['license_no']))
             $dataArray['license_no']=$req['license_no'];
 
             if(isset($req['password']) && $req['password']!='')
             $dataArray['password']=$req['password'];
-            // Get The City ID from table Cities
-            if(isset($req['othercity']) && !empty($req['othercity'])){
-                $cityId = getOtherCity($req['othercity']);
-                $dataArray['city_id']=$req['othercity'];
-            } else
-            $dataArray['city_id']=$req['city'];
-
-            // Get the Zipcode id from the table zipcode
-            if(isset($req['otherzipcode']) && !empty($req['otherzipcode'])){
-                $zipcode_id = getOtherZipCode($req['otherzipcode']);
-                $dataArray['zipcode_id']=$req['otherzipcode'];
-            }
-            else
-            $dataArray['zipcode_id']=$req['zipcode'];                
+            
+            $dataArray['city']=$req['city'];
+            $dataArray['state']=$req['state'];                
 
                 $this->users->where('id', $id)->update( $dataArray);
            
@@ -128,8 +117,8 @@ class DriverController extends Controller
         $user=Auth::user(); 
         $userData=$this->users->where('id',$id)->with('files')->with('city')->with('ZipCode')->with('getGroups')->get()->toArray();
        
-         return view('adminpanel/uploadform',compact('user','userData'));
-         return view('adminpanel/add_driver_documents',compact('user','userData'));
+         return view('adminpanel/uploadform',get_defined_vars());
+         return view('adminpanel/add_driver_documents',get_defined_vars());
      }
     public function upload_documents($id,Request $request){
         $user=Auth::user();
@@ -138,8 +127,13 @@ class DriverController extends Controller
             $imageName = time().'.'.$imageExt;
 
      
+             //$uploadingPath=public_path('uploads');
+        $uploadingPath=base_path().'/public/uploads';
+        if(base_path()!='/Users/waximarshad/office.oodlerexpress.com')
+        $uploadingPath=base_path().'/public_html/uploads';
 
-            $image->move(public_path('uploads'),$imageName);
+
+            $image->move(($uploadingPath),$imageName);
             $orginalImageName=$image->getClientOriginalName();
         
         //return response()->json(['success'=>$imageName]);
@@ -203,17 +197,10 @@ class DriverController extends Controller
         $this->users->created_at=time();
         $this->users->group_id=config('constants.groups.driver');
        
-        if(isset($request['othercity']) && !empty($request['othercity']))
-        $cityId = getOtherCity($request['othercity']);
-        else
-        $cityId=$request['city'];
-        $this->users->city_id=$cityId;
-
-        if(isset($request['otherzipcode']) && !empty($request['otherzipcode']))
-        $zipcode = getOtherZipCode($request['otherzipcode']);
-        else
-        $zipcode=$request['zipcode'];
-        $this->users->zipcode_id=$zipcode;
+     
+        $this->users->city=$request['city'];
+        //$this->users->zipcode_id=$request['zipcode'];
+        $this->users->state=$request['state'];
   
         $request->session()->flash('alert-success', 'driver Added! Please Check in drivers list Tab');
         $this->users->save();

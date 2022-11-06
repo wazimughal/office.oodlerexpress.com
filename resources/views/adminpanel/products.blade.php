@@ -44,8 +44,8 @@
                                     <thead>
                                         <tr>
                                             <th>Name</th>
+                                            <th>Sizes</th>
                                             <th>Category</th>
-                                          
                                             <th>Product Description</th>
                                             <th>Action</th>
                                         </tr>
@@ -60,6 +60,7 @@
                                             ?>
                                         <tr id="row_{{ $data['id'] }}">
                                             <td><strong id="name_{{ $data['id'] }}">{{ $data['name'] }}</strong></td>
+                                           <td id="sizes_{{ $data['id'] }}">{{ $data['sizes'] }}</td>
                                            <td id="category_{{ $data['id'] }}">{{ $data['category']['name'] }}</td>
                                            <td id="additional_notes_{{ $data['id'] }}">{{ $data['additional_notes'] }}</td>
                                             
@@ -243,6 +244,7 @@
                         console.log(data);
 
                         $('#name_' + data.id).html(data.name);
+                        $('#sizes_' + data.id).html(data.sizes);
                         $('#additional_notes_' + data.id).html(data.additional_notes);
                         $('#category_' + data.id).html(data.catname);
 

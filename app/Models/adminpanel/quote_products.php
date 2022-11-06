@@ -19,5 +19,9 @@ class quote_products extends Model
     {
         return $this->hasOne(product_categories::class, 'id', 'cat_id');
     }
+    public function pickup_dropoff_address()
+    {
+        return $this->hasOne(pickup_dropoff_address::class, 'id', 'pickup_dropoff_id');
+    }
     //return $this->hasOne(User::class, 'foreign_key', 'local_key');
 }

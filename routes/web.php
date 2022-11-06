@@ -17,12 +17,12 @@ use App\Http\Controllers\adminpanel\LoginController;
 | contains the "web" middleware group. Now create something great!
 |
 */
-Auth::routes();
-// Route::group(['prefix' => 'admin'], function () {
+//Auth::routes();
+Route::group(['prefix' => 'admin'], function () {
 
-//     Auth::routes();
+    Auth::routes();
 
-// });
+});
 // Route::get('/clearroute', function () {
 
 //     $exitCode = Artisan::call('route:cache');
@@ -37,13 +37,15 @@ use Illuminate\Support\Facades\Mail;
 
 
 Route::get('sendemail', function(){
-    $mailData = [
-        "name" => "Test NAME",
-        "dob" => "12/12/1993",
-        
-    ];
+    $mailData['body_message'] = 'Body Message';
+    $mailData['subject'] = 'Subject here';
     
-    return view('emails.email_template');
+     $mailData['body_message'] = quote_data_for_mail(2);
+    
+    return view('emails.delivered', compact('mailData'));
+    return view('emails.email_template', compact('mailData'));
+    return view('emails.booking_email_template', compact('mailData'));
+    
     if(Mail::to("waximarshad@outlook.com")->send(new EmailTemplate($mailData)))
     dd("Mail Sent Successfully!");
     else
@@ -58,6 +60,11 @@ Route::get('clearcache', function () {
 
     return "View Cache Cleared!";
 });
+Route::get('migrate-fresh', function () {
+    $exitCode3 = Artisan::call('migrate:fresh');
+
+    return "data migrated";
+});
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
@@ -68,7 +75,7 @@ Route::post('/admin/register/', [AdminController::class,'register'])->name('admi
 Route::get('/admin/logout/', [AdminController::class,'logout'])->name('admin.logout');
 
 
-Route::get('/admin/dashboard/{id?}', [DashboardController::class,'index'])->name('admin.dashboard');
+
 
 Route::middleware(['adminCustomerGaurd'])->group(function () { 
 
@@ -76,7 +83,7 @@ Route::middleware(['adminCustomerGaurd'])->group(function () {
 
 Route::middleware(['adminGaurd'])->group(function () {   
 
-
+    Route::get('/admin/dashboard/{id?}', [DashboardController::class,'index'])->name('admin.dashboard');
 // Lead Management 
 
 Route::get('/admin/leads',[App\Http\Controllers\adminpanel\LeadsController::class,'leads'])->name('admin.leads');
@@ -86,7 +93,7 @@ Route::get('/admin/leads/edit/{id}',[App\Http\Controllers\adminpanel\LeadsContro
 Route::post('/admin/leads/edit/{id}',[App\Http\Controllers\adminpanel\LeadsController::class,'save_editLeads'])->name('admin.leadseditsave');
 Route::get('/admin/leads/add-to-customer/{id}',[App\Http\Controllers\adminpanel\LeadsController::class,'add_to_customer'])->name('admin.add_to_customer');
 Route::post('/admin/leads/add-to-customer/{id}',[App\Http\Controllers\adminpanel\LeadsController::class,'save_add_to_customer'])->name('admin.save_add_to_customer');
-Route::post('admin/leads/add',[App\Http\Controllers\adminpanel\LeadsController::class,'SaveUsersData'])->name('admin.leads.save');
+Route::post('admin/leads/add',[App\Http\Controllers\adminpanel\LeadsController::class,'save_new_lead'])->name('admin.leads.save');
 Route::any('admin/leads/ajaxcall/{id}',[App\Http\Controllers\adminpanel\LeadsController::class,'ajaxcall'])->name('leads.changestatus');
 // Customer Trashed
 Route::get('/admin/customer/{type?}',[App\Http\Controllers\adminpanel\CustomersController::class,'customers'])->name('admin.customer');
@@ -102,16 +109,17 @@ Route::any('admin/colors/ajaxcall/{id}',[App\Http\Controllers\adminpanel\ColorsC
 Route::get('/admin/products/categories',[App\Http\Controllers\adminpanel\ProductsController::class,'categoreis'])->name('admin.categories'); 
 Route::get('/admin/products',[App\Http\Controllers\adminpanel\ProductsController::class,'products'])->name('admin.products');
 Route::get('/admin/products/add',[App\Http\Controllers\adminpanel\ProductsController::class,'addproducts'])->name('products.openform');
-Route::post('admin/products/add',[App\Http\Controllers\adminpanel\ProductsController::class,'SaveproductsData'])->name('products.add');
+Route::post('admin/products/add',[App\Http\Controllers\adminpanel\ProductsController::class,'add_new_product'])->name('products.add');
 Route::any('admin/products/ajaxcall/{id}',[App\Http\Controllers\adminpanel\ProductsController::class,'ajaxcall'])->name('products.ajaxcall');
 Route::any('admin/products/categoryajaxcall/{id?}',[App\Http\Controllers\adminpanel\ProductsController::class,'categoryajaxcall'])->name('pro_category.ajaxcall');
 
 // Users Management
 Route::get('/admin/users',[App\Http\Controllers\adminpanel\AdminController::class,'users'])->name('admin.users');
 Route::get('/admin/users/add',[App\Http\Controllers\adminpanel\AdminController::class,'addUser'])->name('admin.usersformadd');
-Route::post('admin/users/add',[App\Http\Controllers\adminpanel\AdminController::class,'SaveUsersData'])->name('admin.users.save');
-Route::any('admin/users/update/{id}',[App\Http\Controllers\adminpanel\AdminController::class,'UpdateUsersData'])->name('admin.users.update');
-Route::any('admin/users/delete/{id}',[App\Http\Controllers\adminpanel\AdminController::class,'DeleteUsersData'])->name('admin.users.delete');
+Route::post('admin/users/add',[App\Http\Controllers\adminpanel\AdminController::class,'add_user_data'])->name('admin.users.save');
+Route::get('/admin/users/edit/{id}',[App\Http\Controllers\adminpanel\AdminController::class,'edit_user_form'])->name('admin.edit_user_form');
+Route::post('admin/users/edit/{id}',[App\Http\Controllers\adminpanel\AdminController::class,'update_user_data'])->name('admin.update_user_data');
+//Route::any('admin/users/delete/{id}',[App\Http\Controllers\adminpanel\AdminController::class,'lead'])->name('admin.users.delete');
 Route::any('admin/users/changestatus/{id}',[App\Http\Controllers\adminpanel\AdminController::class,'changeStatus'])->name('admin.users.changestatus');
 Route::get('/admin/activity-log',[App\Http\Controllers\adminpanel\AdminController::class,'activitylog'])->name('admin.activitylog');
 
@@ -126,27 +134,32 @@ Route::get('/admin/customers/edit/{id}',[App\Http\Controllers\adminpanel\Custome
 Route::post('/admin/customers/edit/{id}',[App\Http\Controllers\adminpanel\CustomersController::class,'save_edit_customer'])->name('admin.save_edit_customer');
 Route::get('/admin/customers/add',[App\Http\Controllers\adminpanel\CustomersController::class,'addcustomers'])->name('admin.customersaddform');
 Route::post('admin/customers/add',[App\Http\Controllers\adminpanel\CustomersController::class,'save_new_customer'])->name('admin.customers.save');
+Route::get('/admin/customer/quotes/{id}',[App\Http\Controllers\adminpanel\QuotesController::class,'customer_quotes'])->name('customer.quotes');
 Route::any('admin/customers/ajaxcall/{id}',[App\Http\Controllers\adminpanel\CustomersController::class,'ajaxcall'])->name('admin.customers.ajaxcall');
+
 
 // Quotes Management 
 
 Route::get('/admin/quotes',[App\Http\Controllers\adminpanel\QuotesController::class,'quotes'])->name('admin.quotes');
 Route::get('/admin/quote/{type?}',[App\Http\Controllers\adminpanel\QuotesController::class,'quotes'])->name('admin.quote.types');
 Route::get('/admin/quotes/request/{id?}',[App\Http\Controllers\adminpanel\QuotesController::class,'request_quotes_form'])->name('quotes.request_quotes_form');
-Route::post('admin/quotes/request/{id?}',[App\Http\Controllers\adminpanel\QuotesController::class,'save_quote_data'])->name('quotes.save_quote_date');
+Route::post('admin/quotes/request/{id?}',[App\Http\Controllers\adminpanel\QuotesController::class,'save_quote_data'])->name('quotes.save_quote_data');
 Route::get('/admin/quotes/eidt/{id}',[App\Http\Controllers\adminpanel\QuotesController::class,'quotes_edit_form'])->name('quotes.quoteeditform');
 Route::post('admin/quotes/edit/{id}',[App\Http\Controllers\adminpanel\QuotesController::class,'save_quote_edit'])->name('quotes.save_quote_edit');
+Route::get('/admin/quotes/view/{id}',[App\Http\Controllers\adminpanel\QuotesController::class,'view_quote'])->name('quotes.view');
 Route::get('admin/quotes/send/{id}',[App\Http\Controllers\adminpanel\QuotesController::class,'send_quote_form'])->name('quotes.send_quote_form');
 Route::post('admin/quotes/send/{id}',[App\Http\Controllers\adminpanel\QuotesController::class,'send_quote_data'])->name('quotes.send_quote_data');
 Route::get('admin/quotes/add-to-delivery/{id}',[App\Http\Controllers\adminpanel\QuotesController::class,'add_to_delivery'])->name('quotes.add_to_delivery_form');
 Route::post('admin/quotes/add-to-delivery/{id}',[App\Http\Controllers\adminpanel\QuotesController::class,'save_add_to_delivery'])->name('quotes.add_to_delivery_save');
 Route::any('admin/quotes/ajaxcall/{id}',[App\Http\Controllers\adminpanel\QuotesController::class,'ajaxcall'])->name('quotes.ajaxcall');
 
+//Reports
+Route::get('/reports/quote-delivery',[App\Http\Controllers\adminpanel\QuotesController::class,'report_quote_delivery'])->name('quotes.deliveries');
+
 // Deliveries Management
 Route::get('/admin/deliveries',[App\Http\Controllers\adminpanel\QuotesController::class,'deliveries'])->name('admin.deliveries');
 Route::get('/admin/deliveries/view/{id}',[App\Http\Controllers\adminpanel\QuotesController::class,'view_delivery'])->name('deliveries.view');
-
-
+Route::any('/admin/deliveries/upload_proof/{id}',[App\Http\Controllers\adminpanel\QuotesController::class,'upload_delivery_proof'])->name('delivery.upload_proof');
 Route::get('/deliveries/calender',[App\Http\Controllers\adminpanel\QuotesController::class,'calender_schedule'])->name('user.calender');
 
 
@@ -182,6 +195,7 @@ Route::get('/hod/no-access/', function(){
 });
 
 Route::get('/', function () {
+    return redirect()->route('admin.loginform');
     return view('welcome');
 });
 

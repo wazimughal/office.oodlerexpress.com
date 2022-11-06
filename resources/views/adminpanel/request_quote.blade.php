@@ -52,9 +52,14 @@
                                     </div>
                                     <div class="col-3">&nbsp;</div>
                                 </div>
-                                <form method="POST" action="{{ route('quotes.save_quote_date') }}">
+                                <form method="POST" action="{{ route('quotes.save_quote_data') }}">
                                     @csrf
                                     <input type="hidden" name="quote_type" value="single" id="quote_type">
+
+                                    @if (isset($customer_id) && $customer_id>0)
+                                    <input type="hidden" name="customer_id" value="{{$customer_id}}" >    
+                                    @endif
+                                    
 
                                     <div class="row form-group">
                                         <div class="col-3">&nbsp;</div>
@@ -76,7 +81,7 @@
                                         <div class="col-4">
                                             <div class="input-group mb-3">
                                                 <div class="form-group clearfix">
-                                                    <label>Business type  </label>&nbsp;
+                                                    <label>Delivery type </label>&nbsp;
                                                     <div class="icheck-primary d-inline">
                                                         <input value="{{phpslug('curbside')}}" type="radio" id="business_type1" name="business_type"
                                                             checked>
@@ -115,73 +120,8 @@
                                         </div>
                                         <div class="col-3">&nbsp;</div>
                                     </div>
-                                    {{-- List of items --}}
-                                   <?php
-                                   $total_items=0;
-                                      foreach($products as $key=>$data){
-                                        ?>
-                                        <div class="row form-group">
-                                          <div class="col-1">&nbsp;</div>
-                                          <div class="col-10 text-center card-header alert-secondary ">
-                                            <label>{{$data['name']}}</label>
-                                          </div>
-                                        </div>
-                                        <?php 
-                                        $total_items=$total_items+count($data['products']);
-                                        foreach($data['products'] as $k=>$proData){ ?>
-                                         <div class="row form-group">
-                                          <div class="col-1">&nbsp;</div>
-                                          <div class="col-4">
-                                              <div class="form-group clearfix">
-                                                  <div class="icheck-primary d-inline">
-                                                      <input type="hidden" name="product_details[{{$proData['id']}}][cat_id][]" value="{{$data['id']}}">
-                                                      <input type="hidden" value="{{$proData['id']}}" name="product_details[{{$proData['id']}}][product_id][]">
-                                                      <input type="checkbox" value="{{$proData['name']}}" name="product_details[{{$proData['id']}}][product_name][]" id="{{$proData['slug']}}_{{$proData['id']}}">
-                                                      <label for="{{$proData['slug']}}_{{$proData['id']}}">
-                                                          {{$proData['name']}}
-                                                      </label>
-                                                  </div>
-                                              </div>
-  
-                                          </div>
-                                          <div class="col-1">
-                                              <div class="input-group mb-3">
-                                                  <input placeholder="Quantity" value="1" type="number" name="product_details[{{$proData['id']}}][item_quantity][]" class=" form-control" required>
-                                              </div>
-                                          </div>
-                                          <div class="col-1">
-                                              <div class="input-group mb-3">
-                                                  <input placeholder="Size" type="number" name="product_details[{{$proData['id']}}][item_size][]" class=" form-control">
-                                                  
-                                              </div>
-                                          </div>
-                                          <div class="col-1">
-                                              <div class="input-group mb-3">
-                                                  <select name="product_details[{{$proData['id']}}][item_size_unit][]"  class="form-control select2bs4">@php echo getItemSizeUnitsOptions(); @endphp</select>
-                                              </div>
-                                          </div>
-                                          <div class="col-3">
-                                              <div class="input-group mb-3">
-                                                  <input placeholder="Description" type="text" name="product_details[{{$proData['id']}}][item_description][]"  class=" form-control @error('delivery_type') is-invalid @enderror">
-                                              </div>
-                                          </div>
-                                          <div class="col-1">&nbsp;</div>
-                                      </div>
-                                      <?php }?>
-                                      <div id="{{$data['slug']}}"></div>
-                                      <div class="row form-group">
-                                          <div class="col-11">&nbsp;</div>
-                                          <div class="col-1">
-                                              <div style="width: 90px; float:right;" onclick="addmore_items({{$data['id']}},'{{$data['slug']}}')"
-                                                  class="btn btn-success btn-block btn-sm"><i class="fas fa-plus"></i> Add
-                                                  more</div>
-                                          </div>
-                                      </div>
-                                   @php
-                                      }
-                                    @endphp
-                                   
-                                   
+
+
                                     {{-- End --}}
                                     <div class="row form-group">
                                         <div class="col-1">&nbsp;</div>
@@ -189,9 +129,9 @@
                                             <label>Pickup Address</label>
                                             <div class="input-group mb-3">
                                                 <input placeholder="Pickup street address" type="text"
-                                                    name="pickup_street_address" required value="{{ old('pickup_street_address') }}"
-                                                    class=" form-control @error('pickup_street_address') is-invalid @enderror">
-                                                @error('pickup_street_address')
+                                                    name="pickup_street_address1" required value="{{ old('pickup_street_address1') }}"
+                                                    class=" form-control @error('pickup_street_address1') is-invalid @enderror">
+                                                @error('pickup_street_address1')
                                                     <div class="invalid-feedback">
                                                         {{ $message }}
                                                     </div>
@@ -202,9 +142,9 @@
                                         <div class="col-5">
 
                                             <div class="input-group mb-3" style="margin-top:2rem;">
-                                                <input required value="{{ old('pickup_unit') }}" placeholder="Unit/STE"  type="text" name="pickup_unit"
-                                                    class=" form-control @error('pickup_unit') is-invalid @enderror">
-                                                @error('pickup_unit')
+                                                <input required value="{{ old('pickup_unit1') }}" placeholder="Unit/STE"  type="text" name="pickup_unit1"
+                                                    class=" form-control @error('pickup_unit1') is-invalid @enderror">
+                                                @error('pickup_unit1')
                                                     <div class="invalid-feedback">
                                                         {{ $message }}
                                                     </div>
@@ -217,11 +157,9 @@
                                         <div class="col-1">&nbsp;</div>
                                         <div class="col-5">
                                             <div class="input-group mb-3">
-                                                <select id="states1" onChange="changestates1()" name="pickup_state_id"
-                                                    class="form-control select2bs4"
-                                                    placeholder="Select State">@php echo getStatesOptions(); @endphp</select>
-                                                <div id="otherstates1"></div>
-                                                @error('pickup_state_id')
+                                                <input required value="{{ old('pickup_state1') }}" placeholder="State Name"  type="text" name="pickup_state1"
+                                                    class=" form-control @error('pickup_state1') is-invalid @enderror">
+                                                @error('pickup_state1')
                                                     <div class="invalid-feedback">
                                                         {{ $message }}
                                                     </div>
@@ -231,11 +169,9 @@
                                         </div>
                                         <div class="col-5">
                                             <div class="input-group mb-3">
-                                                <select id="city1" onChange="changeCity1()" name="pickup_city_id"
-                                                    class="form-control select2bs4 @error('city1') is-invalid @enderror"
-                                                    placeholder="Select City">@php echo getCitiesOptions(); @endphp</select>
-                                                 <div id="othercity1"></div>
-                                                @error('pickup_city_id')
+                                                <input required value="{{ old('pickup_city1') }}" placeholder="City Name"  type="text" name="pickup_city1"
+                                                    class=" form-control @error('pickup_city1') is-invalid @enderror">
+                                                @error('pickup_city1')
                                                     <div class="invalid-feedback">
                                                         {{ $message }}
                                                     </div>
@@ -248,11 +184,9 @@
                                         <div class="col-1">&nbsp;</div>
                                         <div class="col-5">
                                             <div class="input-group mb-3">
-                                                <select id="zipcode1" onChange="changezipcode1()" name="pickup_zipcode_id"
-                                                    class="form-control select2bs4"
-                                                    placeholder="Select Zip COde">@php echo getZipCodeOptions(); @endphp</select>
-                                                <div id="otherzipcode1"></div>
-                                                @error('pickup_zipcode_id')
+                                                <input required value="{{ old('pickup_zipcode1') }}" placeholder="Zip Code"  type="text" name="pickup_zipcode1"
+                                                    class=" form-control @error('pickup_zipcode1') is-invalid @enderror">
+                                                @error('pickup_zipcode1')
                                                     <div class="invalid-feedback">
                                                         {{ $message }}
                                                     </div>
@@ -261,9 +195,9 @@
                                         </div>
                                         <div class="col-5">
                                             <div class="input-group mb-3">
-                                                <input placeholder="Contact Number" type="text" name="pickup_contact_number" required value="{{ old('pickup_contact_number') }}"
-                                                    class=" form-control @error('pickup_contact_number') is-invalid @enderror">
-                                                @error('pickup_contact_number')
+                                                <input placeholder="Contact Number" type="text" name="pickup_contact_number1" required value="{{ old('pickup_contact_number1') }}"
+                                                    class=" form-control @error('pickup_contact_number1') is-invalid @enderror">
+                                                @error('pickup_contact_number1')
                                                     <div class="invalid-feedback">
                                                         {{ $message }}
                                                     </div>
@@ -275,30 +209,247 @@
                                     <div class="row form-group">
                                         <div class="col-1">&nbsp;</div>
                                         <div class="col-5">
-                                            <div class="input-group date" id="pick_up_reservationdate" data-target-input="nearest">
-                                                <input type="text" value="{{ old('pickup_date') }}" required name="pickup_date" placeholder="Pick Up date" class="form-control datetimepicker-input" data-target="#reservationdate"/>
-                                                <div class="input-group-append" data-target="#pick_up_reservationdate" data-toggle="datetimepicker">
+                                            <div class="input-group date" id="pick_up_reservationdate1" data-target-input="nearest">
+                                                <input type="text" id="pickup_date1" value="{{ old('pickup_date1') }}" required name="pickup_date1" placeholder="Pick Up date" class="form-control datetimepicker-input" data-target="#reservationdate"/>
+                                                <div class="input-group-append" data-target="#pick_up_reservationdate1" data-toggle="datetimepicker">
                                                     <div class="input-group-text"><i class="fa fa-calendar"></i></div>
                                                 </div>
                                             </div>
                                         </div>
                                         <div class="col-2">&nbsp;</div>
                                         <div class="col-3">
-                                            <div class="input-group mb-2">
-                                                <div class="form-group clearfix">
-                                                    <label>Pick Up at :  </label>&nbsp;
-                                                    <div class="icheck-primary d-inline">
-                                                        <input type="radio" id="pickup_at_time1" value="1" name="pickup_at_time" checked>
-                                                        <label for="pickup_at_time1">AM </label>
-                                                    </div> &nbsp;
-                                                    <div class="icheck-primary d-inline">
-                                                        <input type="radio" id="pickup_at_time2" value="2" name="pickup_at_time">
-                                                        <label for="pickup_at_time2">PM</label>
+                                            &nbsp;
+                                        </div>
+                                        <div class="col-1">&nbsp;</div>
+                                    </div>
+                                    {{-- List of items --}}
+                                   <?php
+                                   $total_items=0;
+                                      foreach($customer_products as $key=>$data){
+                                        ?>
+                                        <div class="row form-group">
+                                          <div class="col-1">&nbsp;</div>
+                                          <div class="col-10 text-center card-header alert-secondary ">
+                                            <label>{{$data['name']}}</label>
+                                          </div>
+                                        </div>
+                                        <?php 
+                                        $total_items=$total_items+count($data['products']);
+                                        foreach($data['products'] as $k=>$proData){ ?>
+                                        <div id="item_row1_{{$proData['id']}}">
+                                         <div class="row form-group">
+                                          <div class="col-1">&nbsp;</div>
+                                          <div class="col-4">
+                                              <div class="form-group clearfix">
+                                                  <div class="icheck-primary d-inline">
+                                                      <input type="hidden" name="product_details1[{{$proData['id']}}][cat_id][]" value="{{$data['id']}}">
+                                                      <input type="hidden" value="{{$proData['id']}}" name="product_details1[{{$proData['id']}}][product_id][]">
+                                                      <input type="checkbox" value="{{$proData['name']}}" name="product_details1[{{$proData['id']}}][product_name][]" id="{{$proData['slug']}}_{{$proData['id']}}">
+                                                      <label for="{{$proData['slug']}}_{{$proData['id']}}">
+                                                          {{$proData['name']}}
+                                                      </label>
+                                                  </div>
+                                              </div>
+  
+                                          </div>
+                                          <div class="col-1">
+                                              <div class="input-group mb-3">
+                                                  <input placeholder="Quantity" value="1" type="number" name="product_details1[{{$proData['id']}}][item_quantity][]" class=" form-control" required>
+                                              </div>
+                                          </div>
+                                          <div class="col-1">
+                                              <div class="input-group mb-3">
+                                                  <select name="product_details1[{{$proData['id']}}][product_sizes][]"  class="form-control">@php echo get_product_sizes($proData['sizes']); @endphp</select>
+                                              </div>
+                                          </div>
+                                          <div class="col-3">
+                                              <div class="input-group mb-3">
+                                                  <input placeholder="Description" type="text" name="product_details1[{{$proData['id']}}][item_description][]"  class=" form-control @error('delivery_type') is-invalid @enderror">
+                                              </div>
+                                          </div>
+                                          <div class="col-1"><div style="width: 90px; float:right;" onclick="addmore_items1({{$proData['id']}},'{{$data['slug']}}')"
+                                            class="btn btn-success btn-block btn-sm"><i class="fas fa-plus"></i> Add
+                                            more</div></div>
+                                      </div>
+                                    </div>
+                                      <div id="duplicate_row1_{{$proData['id']}}"></div>
+                                      <?php }?>
+                                      
+                                   @php
+                                      }
+                                    @endphp
+                                
+                                
+
+{{--  New Stop Of listing --}}
+                                   @for ($i=2; $i<4; $i++)
+                                   
+                                   <div id="new_pickup_{{$i}}" style="display: none;">
+                                    <div class="row form-group">
+                                        <div class="col-1">&nbsp;</div>
+                                        <div class="col-5">
+                                            <label>Pickup Address {{$i}}</label>
+                                            <div class="input-group mb-3">
+                                                <input placeholder="Pickup street address" type="text"
+                                                    name="pickup_street_address{{$i}}" value="{{ old('pickup_street_address'.$i) }}"
+                                                    class=" form-control @error('pickup_street_address'.$i) is-invalid @enderror">
+                                                @error('pickup_street_address'.$i)
+                                                    <div class="invalid-feedback">
+                                                        {{ $message }}
                                                     </div>
-                                                </div>
+                                                @enderror
+                                            </div>
+
+                                        </div>
+                                        <div class="col-5">
+
+                                            <div class="input-group mb-3" style="margin-top:2rem;">
+                                                <input value="{{ old('pickup_unit'.$i) }}" placeholder="Unit/STE"  type="text" name="pickup_unit{{$i}}"
+                                                    class=" form-control @error('pickup_unit'.$i) is-invalid @enderror">
+                                                @error('pickup_unit'.$i)
+                                                    <div class="invalid-feedback">
+                                                        {{ $message }}
+                                                    </div>
+                                                @enderror
                                             </div>
                                         </div>
                                         <div class="col-1">&nbsp;</div>
+                                    </div>
+                                    <div class="row form-group">
+                                        <div class="col-1">&nbsp;</div>
+                                        <div class="col-5">
+                                            <div class="input-group mb-3">
+                                                <input value="{{ old('pickup_state'.$i) }}" placeholder="State Name"  type="text" name="pickup_state{{$i}}"
+                                                    class=" form-control @error('pickup_state'.$i) is-invalid @enderror">
+                                                @error('pickup_state'.$i)
+                                                    <div class="invalid-feedback">
+                                                        {{ $message }}
+                                                    </div>
+                                                @enderror
+                                            </div>
+
+                                        </div>
+                                        <div class="col-5">
+                                            <div class="input-group mb-3">
+                                                <input value="{{ old('pickup_city'.$i) }}" placeholder="City Name"  type="text" name="pickup_city{{$i}}"
+                                                    class=" form-control @error('pickup_city'.$i) is-invalid @enderror">
+                                                @error('pickup_city'.$i)
+                                                    <div class="invalid-feedback">
+                                                        {{ $message }}
+                                                    </div>
+                                                @enderror
+                                            </div>
+                                        </div>
+                                        <div class="col-1">&nbsp;</div>
+                                    </div>
+                                    <div class="row form-group">
+                                        <div class="col-1">&nbsp;</div>
+                                        <div class="col-5">
+                                            <div class="input-group mb-3">
+                                                <input value="{{ old('pickup_zipcode'.$i) }}" placeholder="Zip Code"  type="text" name="pickup_zipcode{{$i}}"
+                                                    class=" form-control @error('pickup_zipcode'.$i) is-invalid @enderror">
+                                                @error('pickup_zipcode')
+                                                    <div class="invalid-feedback">
+                                                        {{ $message }}
+                                                    </div>
+                                                @enderror
+                                            </div>
+                                        </div>
+                                        <div class="col-5">
+                                            <div class="input-group mb-3">
+                                                <input placeholder="Contact Number" type="text" name="pickup_contact_number{{$i}}" value="{{ old('pickup_contact_number'.$i) }}"
+                                                    class=" form-control @error('pickup_contact_number'.$i) is-invalid @enderror">
+                                                @error('pickup_contact_number'.$i)
+                                                    <div class="invalid-feedback">
+                                                        {{ $message }}
+                                                    </div>
+                                                @enderror
+                                            </div>
+                                        </div>
+                                        <div class="col-1">&nbsp;</div>
+                                    </div>
+                                    <div class="row form-group">
+                                        <div class="col-1">&nbsp;</div>
+                                        <div class="col-5">
+                                            <div class="input-group date" id="pick_up_reservationdate{{$i}}" data-target-input="nearest">
+                                                <input type="text" value="{{ old('pickup_date'.$i) }}" id="pickup_date{{$i}}" name="pickup_date{{$i}}" placeholder="Pick Up date" class="form-control datetimepicker-input" data-target="#reservationdate"/>
+                                                <div class="input-group-append" data-target="#pick_up_reservationdate{{$i}}" data-toggle="datetimepicker">
+                                                    <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-2">&nbsp;</div>
+                                        <div class="col-3">
+                                            &nbsp;
+                                        </div>
+                                        <div class="col-1">&nbsp;</div>
+                                    </div>
+                                    {{-- List of items --}}
+                                   <?php
+                                   $total_items=0;
+                                      foreach($customer_products as $key=>$data){
+                                        ?>
+                                        <div class="row form-group">
+                                          <div class="col-1">&nbsp;</div>
+                                          <div class="col-10 text-center card-header alert-secondary ">
+                                            <label>{{$data['name']}}</label>
+                                          </div>
+                                        </div>
+                                        <?php 
+                                        $total_items=$total_items+count($data['products']);
+                                        foreach($data['products'] as $k=>$proData){ ?>
+                                        <div id="item_row{{$i}}_{{$proData['id']}}">
+                                         <div class="row form-group">
+                                          <div class="col-1">&nbsp;</div>
+                                          <div class="col-4">
+                                              <div class="form-group clearfix">
+                                                  <div class="icheck-primary d-inline">
+                                                      <input type="hidden" name="product_details{{$i}}[{{$proData['id']}}][cat_id][]" value="{{$data['id']}}">
+                                                      <input type="hidden" value="{{$proData['id']}}" name="product_details{{$i}}[{{$proData['id']}}][product_id][]">
+                                                      <input type="checkbox" value="{{$proData['name']}}" name="product_details{{$i}}[{{$proData['id']}}][product_name][]" id="{{$proData['slug']}}_{{$proData['id']}}">
+                                                      <label for="{{$proData['slug']}}_{{$proData['id']}}">
+                                                          {{$proData['name']}}
+                                                      </label>
+                                                  </div>
+                                              </div>
+  
+                                          </div>
+                                          <div class="col-1">
+                                              <div class="input-group mb-3">
+                                                  <input placeholder="Quantity" value="1" type="number" name="product_details{{$i}}[{{$proData['id']}}][item_quantity][]" class=" form-control">
+                                              </div>
+                                          </div>
+                                          <div class="col-1">
+                                              <div class="input-group mb-3">
+                                                  <select name="product_details{{$i}}[{{$proData['id']}}][product_sizes][]"  class="form-control">@php echo get_product_sizes($proData['sizes']); @endphp</select>
+                                              </div>
+                                          </div>
+                                          <div class="col-3">
+                                              <div class="input-group mb-3">
+                                                  <input placeholder="Description" type="text" name="product_details{{$i}}[{{$proData['id']}}][item_description][]"  class=" form-control @error('delivery_type') is-invalid @enderror">
+                                              </div>
+                                          </div>
+                                          <div class="col-1"><div style="width: 90px; float:right;" onclick="addmore_items{{$i}}({{$proData['id']}},'{{$data['slug']}}')"
+                                            class="btn btn-success btn-block btn-sm"><i class="fas fa-plus"></i> Add
+                                            more</div></div>
+                                      </div>
+                                    </div>
+                                      <div id="duplicate_row{{$i}}_{{$proData['id']}}"></div>
+                                      <?php }
+                                }
+                                ?>
+                                                        
+                               
+
+                                   </div>
+                                   @endfor
+{{-- END --}}
+                                    <div id="add_new_pickup_btn" class="row form-group">
+                                        <div class="col-5">&nbsp;</div>
+                                        <div class="col-2">
+                                            <span onclick="add_new_pickup()" class="btn btn-outline-success btn-block btn-lg"><i class="fa fa-plus"></i> Add Stop</span>
+                                        </div>
+                                        <div class="col-5">&nbsp;</div>
                                     </div>
                                     <div class="row form-group">
                                         <div class="col-1">&nbsp;</div>
@@ -333,11 +484,9 @@
                                         <div class="col-1">&nbsp;</div>
                                         <div class="col-5">
                                             <div class="input-group mb-3">
-                                                <select id="states2" onChange="changestates2()" name="drop_off_state_id"
-                                                    class="form-control select2bs4"
-                                                    placeholder="Select State">@php echo getStatesOptions(); @endphp</select>
-                                                <div id="otherstates2"></div>
-                                                @error('drop_off_state_id')
+                                                <input required placeholder="State" type="text" name="drop_off_state" value="{{ old('drop_off_state') }}"
+                                                class=" form-control @error('drop_off_state') is-invalid @enderror">
+                                                @error('drop_off_state')
                                                     <div class="invalid-feedback">
                                                         {{ $message }}
                                                     </div>
@@ -347,11 +496,9 @@
                                         </div>
                                         <div class="col-5">
                                             <div class="input-group mb-3">
-                                                <select id="city2" onChange="changeCity2()" name="drop_off_city_id"
-                                                    class="form-control select2bs4 @error('drop_off_city_id') is-invalid @enderror"
-                                                    placeholder="Select City">@php echo getCitiesOptions(); @endphp</select>
-                                                <div id="othercity2"></div>
-                                                @error('drop_off_city_id')
+                                                <input required placeholder="City Name" type="text" name="drop_off_city" value="{{ old('drop_off_city') }}"
+                                                class=" form-control @error('drop_off_city') is-invalid @enderror">
+                                                @error('drop_off_city')
                                                     <div class="invalid-feedback">
                                                         {{ $message }}
                                                     </div>
@@ -364,11 +511,10 @@
                                         <div class="col-1">&nbsp;</div>
                                         <div class="col-5">
                                             <div class="input-group mb-3">
-                                                <select id="zipcode2" onChange="changezipcode2()" name="drop_off_zipcode_id"
-                                                    class="form-control select2bs4"
-                                                    placeholder="Select Zip COde">@php echo getZipCodeOptions(); @endphp</select>
+                                                <input required placeholder="Zip Code" type="text" name="drop_off_zipcode" value="{{ old('drop_off_zipcode') }}"
+                                                class=" form-control @error('drop_off_zipcode') is-invalid @enderror">
                                                 <div id="otherzipcode2"></div>
-                                                @error('drop_off_zipcode_id')
+                                                @error('drop_off_zipcode')
                                                     <div class="invalid-feedback">
                                                         {{ $message }}
                                                     </div>
@@ -420,22 +566,12 @@
                                         </div>
                                         <div class="col-2">&nbsp;</div>
                                         <div class="col-3">
-                                            <div class="input-group mb-2">
-                                                <div class="form-group clearfix">
-                                                    <label>Drop Of at :  </label>&nbsp;
-                                                    <div class="icheck-primary d-inline">
-                                                        <input type="radio" id="drop_off_at_time1" value="1" name="drop_off_at_time" checked>
-                                                        <label for="drop_off_at_time1">AM </label>
-                                                    </div> &nbsp;
-                                                    <div class="icheck-primary d-inline">
-                                                        <input type="radio" id="drop_off_at_time2" value="2" name="drop_off_at_time">
-                                                        <label for="drop_off_at_time2">PM</label>
-                                                    </div>
-                                                </div>
-                                            </div>
+                                            &nbsp;
                                         </div>
                                         <div class="col-1">&nbsp;</div>
                                     </div>
+                                    
+                                   
                                     <div class="row form-group">
                                         <div class="col-5">&nbsp;</div>
                                         <div class="col-2">
@@ -465,6 +601,33 @@
     <!-- date-range-picker -->
     <script src="{{ url('adminpanel/plugins/daterangepicker/daterangepicker.js') }}"></script>
     <script>
+            function addmore_items1(id, slug){
+            row_html=$('#item_row1_'+id).html();
+            $('#duplicate_row1_'+id).append(row_html);
+
+            }
+            function addmore_items2(id, slug){
+            row_html=$('#item_row2_'+id).html();
+            $('#duplicate_row2_'+id).append(row_html);
+
+            }
+            function addmore_items3(id, slug){
+            row_html=$('#item_row3_'+id).html();
+            $('#duplicate_row3_'+id).append(row_html);
+
+            }
+
+            let _counter=2;
+            function add_new_pickup(){
+            
+            $('#new_pickup_'+_counter).show('slow');
+            if(_counter==3)
+            $('#add_new_pickup_btn').html('');
+            _counter++;
+
+            }
+
+        
         var ctr = 1;
         var counter = {{$total_items}};
         $(function() {
@@ -472,7 +635,13 @@
                 theme: 'bootstrap4'
             });
               //Date picker
-            $('#pick_up_reservationdate').datetimepicker({
+            $('#pick_up_reservationdate1').datetimepicker({
+                format: 'L'
+            });
+            $('#pick_up_reservationdate2').datetimepicker({
+                format: 'L'
+            });
+            $('#pick_up_reservationdate3').datetimepicker({
                 format: 'L'
             });
             $('#reservationdate').datetimepicker({
@@ -498,28 +667,7 @@
                 }
                 
             }
-            // Add more Items manually
-        function addmore_items(cat_id, cat_slug) {
-            counter++;
-            itemHTML = '<div class="row form-group"><div class="col-1">&nbsp;</div>';
-            itemHTML += '<input value="'+cat_id+'" placeholder="Category ID" type="hidden" name="product_details['+counter+'][cat_id][]" required  class=" form-control" >';
-            itemHTML +=
-                '<div class="col-4"><div class="input-group mb-3"><input placeholder="Item Name" type="text" name="product_details['+counter+'][product_name][]" required  class=" form-control" ></div></div>';
-            itemHTML +=
-                '<div class="col-1"><div class="input-group mb-3"><input placeholder="Quantity" type="number" value=1 name="product_details['+counter+'][item_quantity][]" required  class=" form-control" ></div></div>';
-            itemHTML +=
-                '<div class="col-1"><div class="input-group mb-3"><input placeholder="Size" type="number" name="product_details['+counter+'][item_size][]"  class=" form-control" ></div></div>';
-            itemHTML +=
-                '<div class="col-1"><div class="input-group mb-3"><select name="product_details['+counter+'][item_size_unit][]" class="form-control select2HTML">@php echo getItemSizeUnitsOptions(); @endphp</select></div></div>';
-            itemHTML +=
-                '<div class="col-3"><div class="input-group mb-3"><input placeholder="Description" type="text" name="product_details['+counter+'][item_description][]"  class=" form-control" ></div></div>';
-            itemHTML +=
-                '<div class="col-1"><div style="width:20px; cursor:pointer; padding:10px; color:red;"><i onclick=$("#manual_item_' +
-                counter + '").remove() class="fas fa-minus"></i></div></div></div>';
-                
-            $('#' + cat_slug).append('<div id="manual_item_' + counter + '">' + itemHTML + '</div>');
-            
-        }
+           
 
         function addmore_floors() {
             ctr++;

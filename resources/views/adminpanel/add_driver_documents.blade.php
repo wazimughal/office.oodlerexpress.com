@@ -50,6 +50,7 @@
                       @php
                         $userData=$userData[0];
                         //p($userData);
+                    
                       @endphp
                               <div class="row form-group">
                                 <div class="col-3">&nbsp;</div>
@@ -92,7 +93,7 @@
                                 <div class="col-3">{{$userData['address']}}</div>
                               </div>
 
-                                
+                                         
          <form method="post" action="{{ route('dropzone.store') }}" enctype="multipart/form-data" id="image-upload" >                       <!-- /.row -->
           @csrf
           <div class="row">
@@ -100,7 +101,7 @@
             <div class="col-md-10">
               <div class="card card-default">
                 <div class="card-header">
-                  <h3 class="card-title">Upload Documents: <small> <em> <strong>Click!</strong> Add file -> Start Upload</em> (Cancel to Stop uploading file)</small></h3>
+                  <h3 class="card-title">Upload Documents:   <small> <em> <strong>Click!</strong> Add file -> Start Upload</em> (Cancel to Stop uploading file)</small></h3>
                 </div>
                 <div class="card-body">
                   <div id="actions" class="row">
