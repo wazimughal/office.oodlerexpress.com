@@ -23,6 +23,7 @@ return new class extends Migration
             $table->unsignedBigInteger('user_id');
             $table->foreign('user_id')->references('id')->on('users');
             $table->unsignedBigInteger('quote_id')->nullable();
+            $table->string('file_section')->nullable();// Comment for Lead/Quote/Booking...
             
             $table->timestamps();
         });

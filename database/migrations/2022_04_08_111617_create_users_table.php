@@ -46,8 +46,9 @@ return new class extends Migration
             $table->string('password')->nullable();
             $table->tinyInteger('lead_by')->default(0); //0: By Office , 1: by Website
             $table->string('profile_pic')->nullable();
-            $table->tinyInteger('is_active')->default(0 );
-            $table->tinyInteger('status')->default(0 );
+            $table->tinyInteger('is_active')->default(0);
+            $table->tinyInteger('status')->default(0);
+            $table->tinyInteger('prioritise')->default(0)->nullable();
             $table->unsignedBigInteger('group_id');
             $table->foreign('group_id')->references('id')->on('groups');
             

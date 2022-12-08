@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('extra_charges')->nullable();
             $table->string('reason_for_extra_charges')->nullable();
             $table->string('any_other_extra_charges')->nullable();
+            $table->string('tax_amount')->nullable();
             $table->string('other')->nullable();
             $table->string('description')->nullable();
             $table->string('slug')->nullable();

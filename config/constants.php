@@ -3,9 +3,11 @@
 
 return [
     'app_name'=>'CRM Oodler Express',
-    'admin_email'=>'to.wazim@gmail.com',
-    'date_formate'=>'d/m/Y',
+    'admin_email'=>'sales@oodlerexpress.com',
+    'google_api_key'=>'AIzaSyA1JM99SFagfbshQ0xgQQmUXlgfvi-MUDw', // Google Api Key for Google map and place suggestion
+    'date_formate'=>'m/d/Y',
     'date_formate_us'=>'m/d/Y',
+    'date_and_time'=>'m/d/Y h:i:s',
     'per_page'=>2,
     // Costant Value ID set for the groups table for User ROLEs
     'groups' => [
@@ -23,7 +25,8 @@ return [
         'trashed' => 4,
         'delivery' => 5,
         'complete' => 6,
-    ]
+    ],
+  
 ];
 
 /*

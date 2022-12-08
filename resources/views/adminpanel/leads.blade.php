@@ -38,6 +38,11 @@
                             </div>
                             <!-- /.card-header -->
                             <div class="card-body">
+                                <div class="row" style="margin-bottom: 15px;">
+                                    <div class="col-4">
+                                    <input class="form-control" onkeyup="search_leads()" type="text" id="qsearch" name="qsearch" placeholder="Type email or customer or business  name to search">
+                                    </div>
+                                </div>
                                 <table id="example1" class="table table-bordered table-striped">
                                     <thead>
                                         <tr>
@@ -47,7 +52,7 @@
                                             <th>Business Name</th>
                                             <th>Business Address</th>
                                             <th>Business Phone</th>
-                                            <th>Lead By</th>
+                                            <th>Status</th>
                                             <th>Action</th>
                                         </tr>
                                     </thead>
@@ -70,8 +75,9 @@
                                             <td id="business_phone_{{ $data['id'] }}">
                                                {{$data['business_phone']}}
                                             </td>
-                                            <td id="status{{ $data['id'] }}">
-                                                @if ($data['lead_by'] == 0)
+                                            <td id="prioritise_{{ $data['id'] }}">
+                                                {!!prioritise($data['id'],$data['prioritise'])!!}
+                                                {{-- @if ($data['lead_by'] == 0)
                                                     <a @disabled(true)
                                                         class="btn btn-success btn-flat btn-sm"><i
                                                             class="fas fa-chart-line"></i> Office</a>
@@ -79,7 +85,7 @@
                                                     <a @disabled(true)
                                                         class="btn bg-gradient-secondary btn-flat btn-sm"><i
                                                             class="fas fa-chart-line"></i> Website</a>
-                                                @endif
+                                                @endif --}}
                                             </td>
                                             <td>
                                                 @if ($data['is_active']==2)
@@ -92,9 +98,12 @@
                                                 <a href="{{route('admin.add_to_customer',$data['id']) }}"
                                                     class="btn btn-success btn-block btn-sm"><i class="fa fa-plus"></i> Add
                                                     to Customer</a>
-                                                <a href="{{route('admin.leadseditform',$data['id']) }}"
+                                                {{-- <a href="{{route('admin.leadseditform',$data['id']) }}"
                                                     class="btn btn-info btn-block btn-sm"><i class="fas fa-edit"></i>
-                                                    Edit</a>
+                                                    Edit</a> --}}
+                                                <a href="{{route('admin.leadview',$data['id']) }}"
+                                                    class="btn btn-info btn-block btn-sm"><i class="fas fa-eye"></i>
+                                                    View</a>
                                                 
                                                 <button
                                                     onClick="do_action({{ $data['id'] }},'delete',{{ $counter }})"
@@ -220,9 +229,96 @@
             // }).buttons().container().appendTo('#example1_wrapper .col-md-6:eq(0)');
 
         });
+        
+        function search_leads() {
 
+            searchval=$('#qsearch').val();
+            if(searchval.length < 4 && searchval.length>0){
+            return false;
+            }
+
+
+            var sendInfo = {
+            action: 'qsearch_lead',
+            qsearch: searchval,
+            };
+
+            $.ajax({
+            url: "{{ route('leads.ajaxcall',1) }}/",
+            data: sendInfo,
+            contentType: 'application/json',
+            error: function() {
+                alert('There is Some Error, Please try again !');
+            },
+            type: 'GET',
+            dataType: 'json',
+            success: function(data) {
+
+                if (data.error == 'No') {
+                    console.log(data.sql);
+                    $('#example1').html(data.response);
+
+
+                } else {
+                    $(document).Toasts('create', {
+                        class: 'bg-danger',
+                        title: data.title,
+                        subtitle: 'record',
+                        body: data.msg
+                    });
+                }
+                
+                //alert('i am here');
+            }
+            });
+
+            }
         
 
+        function prioritise_lead(id,priority_no,action_name) {
+
+                var sendInfo = {
+                    action: action_name,
+                    priority_no: priority_no,
+                    id: id
+                };
+                $('#_loader').show();
+                $.ajax({
+                    url: "{{ route('leads.ajaxcall') }}/"+id+"?time={{time()}}",
+                    data: sendInfo,
+                    contentType: 'application/json',
+                    error: function() {
+                        alert('There is Some Error, Please try again !');
+                    },
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function(data) {
+                        if (data.error == 'No') {
+                            //$('#prioritise_' + id).html(data.response);
+                            $('#_loader').hide();
+                            $(document).Toasts('create', {
+                                class: 'bg-success',
+                                title: data.title,
+                                subtitle: 'record',
+                                body: data.msg
+                            });
+
+
+                        } else {
+                            $(document).Toasts('create', {
+                                class: 'bg-danger',
+                                title: data.title,
+                                subtitle: 'record',
+                                body: data.msg
+                            });
+                        }
+                        console.log(data);
+                        //alert('i am here');
+                        window.location='';
+                    }
+                });
+            
+        }
         function do_action(id, action_name,counter_id) {
 
                 if(action_name=='restore')

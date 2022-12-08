@@ -15,14 +15,15 @@
     <link rel="stylesheet" href="{{ url('adminpanel/plugins/icheck-bootstrap/icheck-bootstrap.min.css') }}">
     <!-- Theme style -->
     <link rel="stylesheet" href="{{ url('adminpanel/dist/css/adminlte.min.css') }}">
+    <style>.card-primary.card-outline{border-top:none !important;}</style>
 </head>
 
 <body class="hold-transition login-page">
     <div class="login-box">
         <!-- /.login-logo -->
         <div class="card card-outline card-primary">
-            <div class="card-header text-center">
-                <a href="{{ url('admin/dashboard') }}" class="h1"><b>{{config('constants.app_name')}}</b></a>
+            <div style="background: #343a40;"  class="card-header text-center">
+                <a href="{{ url()->current() }}" class="h1"><b><img src="{{ url('adminpanel/dist/img/oodler-Final-logo-white.png') }}" alt="OodlerExpress CRM" width="80%"></b></a>
             </div>
             <div class="card-body">
                 <p class="login-box-msg">Sign in to start your session</p>

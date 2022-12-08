@@ -6,10 +6,16 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\adminpanel\Users;
 use App\Models\adminpanel\Groups;
+use App\Models\adminpanel\Quotes;
 use App\Models\adminpanel\FilesManage;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Auth;
+use Maatwebsite\Excel\Facades\Excel; // To export import excel
+use DateTime;
+
+// Import/Export Excelsheet
+use App\Exports\ExportDriverDeliveries;
 
 
 // Used for Email Section
@@ -25,11 +31,13 @@ class DriverController extends Controller
         $this->users= new Users;
         $this->groups= new Groups;
         $this->files= new FilesManage;
+        $this->quotes= new Quotes;
       }
       public function adddrivers(){
-        $user=Auth::user(); 
         
-         return view('adminpanel/add_drivers',compact('user'));
+        $user=Auth::user(); 
+       
+         return view('adminpanel.add_drivers',compact('user'));
      }
       public function edit_driver($id){
         $user=Auth::user(); 
@@ -62,7 +70,7 @@ class DriverController extends Controller
             $dataArray['firstname']=$req['firstname'];
             $dataArray['lastname']=$req['lastname'];
             $dataArray['name']=$req['firstname'].' '.$req['lastname'];
-            $dataArray['phone']=$req['phone'];
+            $dataArray['mobileno']=$req['phone'];
             $dataArray['address']=$req['address'];
             $dataArray['city']=$req['city'];
             $dataArray['state']=$req['state'];
@@ -71,7 +79,7 @@ class DriverController extends Controller
             $dataArray['license_no']=$req['license_no'];
 
             if(isset($req['password']) && $req['password']!='')
-            $dataArray['password']=$req['password'];
+            $dataArray['password']=Hash::make($req['password']);
             
             $dataArray['city']=$req['city'];
             $dataArray['state']=$req['state'];                
@@ -115,7 +123,7 @@ class DriverController extends Controller
      }
     public function add_documents($id){
         $user=Auth::user(); 
-        $userData=$this->users->where('id',$id)->with('files')->with('city')->with('ZipCode')->with('getGroups')->get()->toArray();
+        $userData=$this->users->where('id',$id)->with('files','driver_documents')->with('getGroups')->get()->toArray();
        
          return view('adminpanel/uploadform',get_defined_vars());
          return view('adminpanel/add_driver_documents',get_defined_vars());
@@ -139,9 +147,10 @@ class DriverController extends Controller
         //return response()->json(['success'=>$imageName]);
 
             $this->files->name=$orginalImageName;
-            $this->files->slug=phpslug($imageName);
+            $this->files->slug=phpslug('driver_documents');
+            $this->files->file_section=phpslug('driver_documents');
             $this->files->path=url('uploads').'/'.$imageName;
-            $this->files->description=$orginalImageName.' file uploaded';
+            $this->files->description=$imageName;
             $this->files->otherinfo=$imageExt;
             $this->files->user_id=$id;
             $this->files->save();
@@ -186,7 +195,7 @@ class DriverController extends Controller
         $this->users->firstname=$request['firstname'];
         $this->users->lastname=$request['lastname'];
         $this->users->email=$request['email'];
-        $this->users->phone=$request['phone'];
+        $this->users->mobileno=$request['phone'];
         
         
         $this->users->license_no=$request['license_no'];
@@ -235,6 +244,7 @@ class DriverController extends Controller
     }
     // List All the drivers 
     public function drivers($type=NULL){
+        
         $user=Auth::user();
 
         $where_clasue=[
@@ -253,6 +263,162 @@ class DriverController extends Controller
             ->orderBy('created_at', 'desc')->paginate(config('constants.per_page'));
        
         return view('adminpanel/drivers',compact('driversData','user'));
+    }
+    public function report_drivers(Request $req){
+        $user=Auth::user();
+
+        $where_in_clause=$customer_ids=$driver_ids=$quote_status=array();
+
+        $where_clasue=[
+            'group_id'=> config('constants.groups.driver'),
+            'is_active'=> 1,
+        ];
+        
+        if(isset($req->driver_id) && !empty($req->driver_id)){
+            $driver_ids=$req->driver_id;
+            $where_in_clause['driver_id']=$driver_ids;
+            }
+        // if($user->group_id!=config('constants.groups.admin'))
+        // $where_clasue['id']=get_session_value('id');
+
+        
+            $driversData=$this->users->with('City')->with('ZipCode')
+            ->where($where_clasue)
+            ->orderBy('created_at', 'desc')->paginate(config('constants.per_page'));
+       
+        return view('adminpanel.reports.drivers',get_defined_vars());
+    }
+    public function report_driver_working_hours(Request $req){
+        $user=Auth::user();
+
+        $where_in_clause=$customer_ids=$driver_ids=$quote_status=array();
+
+        $where_clasue=[
+            'group_id'=> config('constants.groups.driver'),
+            'is_active'=> 1,
+        ];
+        
+        if(isset($req->driver_id) && !empty($req->driver_id)){
+            $driver_ids=$req->driver_id;
+            $where_in_clause['driver_id']=$driver_ids;
+            }
+            $driversData=$this->users->with('City')->with('ZipCode')
+            ->where($where_clasue)
+            ->orderBy('created_at', 'desc')->paginate(config('constants.per_page'));
+            
+            if(isset($req->action) && $req->action=='download_working_hours'){ // Download Excelsheed
+
+                $where_clause=[
+                    ['status','=',config('constants.quote_status.complete')],
+                    ['is_active','=',1],
+                    ['driver_id','=',$req->driver_id],
+                ];
+             
+               
+                $quotes=$this->quotes
+                        ->with(array('driver','customer'))
+                        ->where($where_clause)
+                        ->orderBy('created_at', 'desc');
+                if(
+                    isset($req->from_date) &&
+                    !empty($req->from_date) &&
+                    isset($req->to_date) &&
+                    !empty($req->to_date)
+                 )   
+                {
+                 $from=($req->from_date);
+                 $to=($req->to_date);
+                $quotes=$quotes->WhereBetween('drop_off_date', [$from, $to]);
+                 }
+                 //p($req->all());
+                 //echo $quotesData=$quotes->toSql(); 
+                 $quotesData=$quotes->get()->toArray();
+                //  p($where_clause);
+                //  p($quotesData); die;
+                $exportData=array();
+                $total_hours=$total_mins=0;
+                foreach($quotesData as $key=>$data){
+
+                    $elapsed_time=elapsed_time($data['reached_at_pickup'],$data['delivered']);
+
+                    $exportData[]=[
+                        'id'=>$data['id'],
+                        'po_number'=>$data['po_number'],
+                        // 'quote_type'=>$data['quote_type'],
+                        // 'business_type'=>$data['business_type'],
+                        // 'pickup_street_address'=>$data['pickup_street_address'],
+                        // 'pickup_unit'=>$data['pickup_unit'],
+                        // 'pickup_state'=>$data['pickup_state'],
+                        // 'pickup_city'=>$data['pickup_city'],
+                        // 'pickup_zipcode'=>$data['pickup_zipcode'],
+                        // 'pickup_contact_number'=>$data['pickup_contact_number'],
+                        // 'pickup_email'=>$data['pickup_email'],
+                        // 'pickup_date'=>$data['pickup_date'],
+                        // 'drop_off_street_address'=>$data['drop_off_street_address'],
+                        // 'drop_off_unit'=>$data['drop_off_unit'],
+                        // 'drop_off_city'=>$data['drop_off_city'],
+                        // 'drop_off_zipcode'=>$data['drop_off_zipcode'],
+                        // 'drop_off_contact_number'=>$data['drop_off_contact_number'],
+                        // 'drop_off_email'=>$data['drop_off_email'],
+                        'drop_off_date'=>$data['drop_off_date'],
+                        // 'drop_off_instructions'=>$data['drop_off_instructions'],
+                        // 'status'=>quote_status_msg($data['status']),
+                        // 'customer_name'=>$data['customer']['name'],
+                        // 'customer_email'=>$data['customer']['email'],
+                        // 'customer_mobileno'=>$data['customer']['mobileno'],
+                        // 'customer_business_name'=>$data['customer']['business_name'],
+                        'driver_name'=>(isset($data['driver']['name']) && !empty($data['driver']['name']))?$data['driver']['name']:'',
+                        // 'driver_email'=>(isset($data['driver']['email']) && !empty($data['driver']['email']))?$data['driver']['email']:'',
+                        // 'driver_mobileno'=>(isset($data['driver']['mobileno']) && !empty($data['driver']['mobileno']))?$data['driver']['mobileno']:'',
+                        // 'driver_license_no'=>(isset($data['driver']['license_no']) && !empty($data['driver']['license_no']))?$data['driver']['license_no']:'',
+                        'Working hours'=>$elapsed_time['hours'].' hours,'.$elapsed_time['mins'].' mins,'.$elapsed_time['seconds'].' seconds,',
+                        
+                    ];
+                    $total_hours=$total_hours+$elapsed_time['hours'];
+                    $total_mins=$total_mins+$elapsed_time['mins'];
+                }
+                $hours=(int)($total_mins/60);
+                $total_hours=$total_hours+$hours;
+                $total_mins=($total_mins%60);
+                $exportData[]=[
+                    'id'=>'',
+                    'po_number'=>'',
+                    // 'quote_type'=>'',
+                    // 'business_type'=>'',
+                    // 'pickup_street_address'=>'',
+                    // 'pickup_unit'=>'',
+                    // 'pickup_state'=>'',
+                    // 'pickup_city'=>'',
+                    // 'pickup_zipcode'=>'',
+                    // 'pickup_contact_number'=>'',
+                    // 'pickup_email'=>'',
+                    // 'pickup_date'=>'',
+                    // 'drop_off_street_address'=>'',
+                    // 'drop_off_unit'=>'',
+                    // 'drop_off_city'=>'',
+                    // 'drop_off_zipcode'=>'',
+                    // 'drop_off_contact_number'=>'',
+                    // 'drop_off_email'=>'',
+                    'drop_off_date'=>'',
+                    // 'drop_off_instructions'=>'',
+                    // 'status'=>'',
+                    // 'customer_name'=>'',
+                    // 'customer_email'=>'',
+                    // 'customer_mobileno'=>'',
+                    // 'customer_business_name'=>'',
+                    'driver_name'=>'TOTAL TIME',
+                    // 'driver_email'=>'',
+                    // 'driver_mobileno'=>'',
+                    //'driver_license_no'=>'TOTAL TIME',
+                    'Working hours'=>$total_hours.' Hours and '.$total_mins.' mins'
+                    
+                ];
+
+                return Excel::download(new ExportDriverDeliveries($exportData), 'driver-working-hours-for-delivery.xlsx');
+
+            }
+       
+        return view('adminpanel.reports.drivers',get_defined_vars());
     }
     public function UpdateUsersData($id,Request $request)
     {
@@ -347,9 +513,13 @@ class DriverController extends Controller
             if($fileData){
                 $fileData=$fileData[0];
 
-              $filePath=public_path('uploads').'/'.$fileData['slug'];
-              
-                unlink($filePath);
+                $uploadingPath=base_path().'/public/uploads';
+                if(base_path()!='/Users/waximarshad/office.oodlerexpress.com')
+                $uploadingPath=base_path().'/public_html/uploads';
+        
+                      $filePath=$uploadingPath.'/'.$fileData['description'];
+                      
+                        unlink($filePath);
                 
            
                 $file=$this->files->where('id', $id)->delete();
@@ -395,6 +565,114 @@ class DriverController extends Controller
                 $dataArray['msg']='There is some error ! Please fill all the required fields.';
             }
 
+        }
+        elseif(isset($req['action']) && $req['action']=='qsearch_driver')
+        {
+            $user=Auth::user();
+            $dataArray['title']='Search Result';
+            $where_clause=[
+                ['group_id', '=', config('constants.groups.driver')],
+                ['is_active', '=', 1],
+            ];
+           
+            $query=$this->users
+                ->where($where_clause)
+                
+                ->orderBy('created_at', 'desc');
+
+                $search_val=$req->qsearch;
+                $leads=$query->where(function($query) use ($search_val){
+                    $query->orwhere('name', 'like', '%' . $search_val . '%')
+                        ->orwhere('email', 'like', '%' . $search_val . '%')
+                        ->orwhere('license_no', 'like', '%' . $search_val . '%');
+
+                });
+                //$dataArray['sql']=$leads->toSql();
+                $driverData=$leads->get()->toArray();
+                // p($driverData);
+                // die;
+                //$response='<table id="example1" class="table table-bordered table-striped">
+                $response= ' <thead>
+                                        <tr>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>Phone</th>
+                                        <th>Address</th>
+                                        <th>License No.</th>
+                                        <th>From Date</th>
+                                        <th>To Date</th>
+                                        <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>';
+                                        
+                                            $counter = 1;
+                                            
+                                            $driver_id_array=array();
+                                            foreach ($driverData as $data){
+                                                $driver_id_array[]=$data['id'];
+                                            
+                                                $response .='<tr id="row_'.$data['id'].'">
+                                                <td><strong id="name_'.$data['id'].'">'.$data['name'].'</strong>
+                                                </td>
+                                                <td id="email_'.$data['id'].'">'.$data['email'].'</td>
+                                                <td id="mobileno_'.$data['id'].'">
+                                                    '.$data['mobileno'].'</td>
+                                                <td id="address_'.$data['id'].'">
+                                                    '.$data['address'].'</td>
+                                                <td id="license_no_'.$data['id'].'">
+                                                '.$data['license_no'].'
+                                                </td>
+                                                <td id="row_from_date_'.$data['id'].'">
+                                                <div class="input-group date" id="from_date_'.$data['id'].'" data-target-input="nearest">
+                                                    <input id="input_from_date_'.$data['id'].'"  type="text"  name="from_date" placeholder="From date" class="form-control datetimepicker-input" data-target="#from_date_'.$data['id'].'"/>
+                                                    <div class="input-group-append" data-target="#from_date_'.$data['id'].'" data-toggle="datetimepicker">
+                                                        <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                                                    </div>
+                                                </div>  
+                                            </td>
+                                            <td id="row_to_date_'.$data['id'].'">
+                                                <div class="input-group date" id="to_date_'.$data['id'].'" data-target-input="nearest">
+                                                    <input id="input_to_date_'.$data['id'].'" type="text"  name="to_date" placeholder="To Date" class="form-control datetimepicker-input" data-target="#to_date_'.$data['id'].'"/>
+                                                    <div class="input-group-append" data-target="#to_date_'.$data['id'].'" data-toggle="datetimepicker">
+                                                        <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                                                    </div>
+                                                </div> 
+                                            </td>
+                                                <td>';
+                                                
+                                                    
+                                                        $response .='<a href="'.route('admin.customerseditform', $data['id']).'"
+                                                        class="btn btn-info btn-block btn-sm"><i class="fas fa-edit"></i>
+                                                        Edit</a>';
+                                                    
+                                                        
+                                                $response .='</td>
+    
+                                                </td>
+    
+                                            </tr>';
+                                        
+                                                $counter ++;
+                                        }
+                                        
+                                        $response .='</tbody>
+                                    <tfoot>
+                                        <tr>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>Phone</th>
+                                        <th>Address</th>
+                                        <th>License No.</th>
+                                        <th>From Date</th>
+                                        <th>To Date</th>
+                                        <th>Action</th>
+                                        </tr>
+                                        
+                                    </tfoot>';
+
+                                $dataArray['drivers_id']= implode(',',$driver_id_array)  ;
+                                $dataArray['response']=  $response;
         }
         else if(isset($req['action']) && $req['action']=='restore')
         {

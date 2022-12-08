@@ -32,4 +32,12 @@ class Users extends Model
        {
            return $this->hasMany(FilesManage::class, 'user_id', 'id');
        }
+    public function driver_documents()
+       {
+           return $this->hasMany(FilesManage::class, 'user_id', 'id')->where(['slug'=>'driver_documents']);
+       }
+    public function lead_comments()
+       {
+           return $this->hasMany(comments::class, 'lead_id', 'id')->with('user')->where('comment_section','lead');
+       }
 }

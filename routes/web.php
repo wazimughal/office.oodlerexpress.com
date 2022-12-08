@@ -65,6 +65,11 @@ Route::get('migrate-fresh', function () {
 
     return "data migrated";
 });
+Route::get('migrate', function () {
+    $exitCode3 = Artisan::call('migrate');
+
+    return " migrated";
+});
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
@@ -89,12 +94,13 @@ Route::middleware(['adminGaurd'])->group(function () {
 Route::get('/admin/leads',[App\Http\Controllers\adminpanel\LeadsController::class,'leads'])->name('admin.leads');
 Route::get('/admin/lead/{type?}',[App\Http\Controllers\adminpanel\LeadsController::class,'leads'])->name('admin.lead');
 Route::get('/admin/leads/add',[App\Http\Controllers\adminpanel\LeadsController::class,'addLeads'])->name('admin.leadsform');
+Route::get('/admin/leads/view/{id}',[App\Http\Controllers\adminpanel\LeadsController::class,'view_leads'])->name('admin.leadview');
 Route::get('/admin/leads/edit/{id}',[App\Http\Controllers\adminpanel\LeadsController::class,'editLeads'])->name('admin.leadseditform');
 Route::post('/admin/leads/edit/{id}',[App\Http\Controllers\adminpanel\LeadsController::class,'save_editLeads'])->name('admin.leadseditsave');
 Route::get('/admin/leads/add-to-customer/{id}',[App\Http\Controllers\adminpanel\LeadsController::class,'add_to_customer'])->name('admin.add_to_customer');
 Route::post('/admin/leads/add-to-customer/{id}',[App\Http\Controllers\adminpanel\LeadsController::class,'save_add_to_customer'])->name('admin.save_add_to_customer');
 Route::post('admin/leads/add',[App\Http\Controllers\adminpanel\LeadsController::class,'save_new_lead'])->name('admin.leads.save');
-Route::any('admin/leads/ajaxcall/{id}',[App\Http\Controllers\adminpanel\LeadsController::class,'ajaxcall'])->name('leads.changestatus');
+Route::any('admin/leads/ajaxcall/{id?}',[App\Http\Controllers\adminpanel\LeadsController::class,'ajaxcall'])->name('leads.ajaxcall');
 // Customer Trashed
 Route::get('/admin/customer/{type?}',[App\Http\Controllers\adminpanel\CustomersController::class,'customers'])->name('admin.customer');
 
@@ -139,33 +145,55 @@ Route::any('admin/customers/ajaxcall/{id}',[App\Http\Controllers\adminpanel\Cust
 
 
 // Quotes Management 
-
 Route::get('/admin/quotes',[App\Http\Controllers\adminpanel\QuotesController::class,'quotes'])->name('admin.quotes');
 Route::get('/admin/quote/{type?}',[App\Http\Controllers\adminpanel\QuotesController::class,'quotes'])->name('admin.quote.types');
 Route::get('/admin/quotes/request/{id?}',[App\Http\Controllers\adminpanel\QuotesController::class,'request_quotes_form'])->name('quotes.request_quotes_form');
 Route::post('admin/quotes/request/{id?}',[App\Http\Controllers\adminpanel\QuotesController::class,'save_quote_data'])->name('quotes.save_quote_data');
-Route::get('/admin/quotes/eidt/{id}',[App\Http\Controllers\adminpanel\QuotesController::class,'quotes_edit_form'])->name('quotes.quoteeditform');
+Route::get('/admin/quotes/edit/{id}',[App\Http\Controllers\adminpanel\QuotesController::class,'quotes_edit_form'])->name('quotes.quoteeditform');
 Route::post('admin/quotes/edit/{id}',[App\Http\Controllers\adminpanel\QuotesController::class,'save_quote_edit'])->name('quotes.save_quote_edit');
 Route::get('/admin/quotes/view/{id}',[App\Http\Controllers\adminpanel\QuotesController::class,'view_quote'])->name('quotes.view');
 Route::get('admin/quotes/send/{id}',[App\Http\Controllers\adminpanel\QuotesController::class,'send_quote_form'])->name('quotes.send_quote_form');
 Route::post('admin/quotes/send/{id}',[App\Http\Controllers\adminpanel\QuotesController::class,'send_quote_data'])->name('quotes.send_quote_data');
 Route::get('admin/quotes/add-to-delivery/{id}',[App\Http\Controllers\adminpanel\QuotesController::class,'add_to_delivery'])->name('quotes.add_to_delivery_form');
 Route::post('admin/quotes/add-to-delivery/{id}',[App\Http\Controllers\adminpanel\QuotesController::class,'save_add_to_delivery'])->name('quotes.add_to_delivery_save');
-Route::any('admin/quotes/ajaxcall/{id}',[App\Http\Controllers\adminpanel\QuotesController::class,'ajaxcall'])->name('quotes.ajaxcall');
+Route::any('/admin/quotes/upload_quote_request',[App\Http\Controllers\adminpanel\QuotesController::class,'upload_quote_request'])->name('quote.upload_request');
+Route::any('/admin/quotes/requested_documents/{id}',[App\Http\Controllers\adminpanel\QuotesController::class,'quote_requested_documents'])->name('quote_requested_documents');
+Route::any('admin/quotes/ajaxcall/{id?}',[App\Http\Controllers\adminpanel\QuotesController::class,'ajaxcall'])->name('quotes.ajaxcall');
 
 //Reports
-Route::get('/reports/quote-delivery',[App\Http\Controllers\adminpanel\QuotesController::class,'report_quote_delivery'])->name('quotes.deliveries');
+Route::get('admin/reports/quote-delivery',[App\Http\Controllers\adminpanel\QuotesController::class,'report_quote_delivery'])->name('quotes.deliveries');
+Route::get('admin/reports/drivers',[App\Http\Controllers\adminpanel\DriverController::class,'report_drivers'])->name('driver.reports');
+Route::get('admin/reports/customers',[App\Http\Controllers\adminpanel\CustomersController::class,'report_customers'])->name('customer.reports');
+Route::get('/reports/export-customer-delivery-balance',[App\Http\Controllers\adminpanel\CustomersController::class,'report_customer_delivery_balance'])->name('customer.report_customer_delivery_balance');
+Route::get('/reports/export-driver-working-hours',[App\Http\Controllers\adminpanel\DriverController::class,'report_driver_working_hours'])->name('driver.report_driver_working_hours');
+Route::get('/reports/export-quotes',[App\Http\Controllers\adminpanel\QuotesController::class,'report_export_quote_delivery'])->name('quotes.deliveries.export');
 
 // Deliveries Management
+Route::get('/admin/delivery/add/{id}',[App\Http\Controllers\adminpanel\QuotesController::class,'add_delivery_form'])->name('delivery.add_delivery_form');
+Route::post('admin/delivery/add/{id}',[App\Http\Controllers\adminpanel\QuotesController::class,'save_new_delivery_data'])->name('delivery.save_delivery_data');
+Route::get('/admin/delivery/edit/{id}',[App\Http\Controllers\adminpanel\QuotesController::class,'delivery_edit_form'])->name('delivery.editform');
+Route::post('admin/delivery/edit/{id}',[App\Http\Controllers\adminpanel\QuotesController::class,'save_delivery_edit'])->name('delivery.save_delivery_edit');
+
+Route::get('/admin/scheduled-deliveries',[App\Http\Controllers\adminpanel\QuotesController::class,'deliveries'])->name('scheduled.deliveries');
+Route::get('/admin/previous-deliveries',[App\Http\Controllers\adminpanel\QuotesController::class,'previous_deliveries'])->name('previous.deliveries');
+
 Route::get('/admin/deliveries',[App\Http\Controllers\adminpanel\QuotesController::class,'deliveries'])->name('admin.deliveries');
 Route::get('/admin/deliveries/view/{id}',[App\Http\Controllers\adminpanel\QuotesController::class,'view_delivery'])->name('deliveries.view');
 Route::any('/admin/deliveries/upload_proof/{id}',[App\Http\Controllers\adminpanel\QuotesController::class,'upload_delivery_proof'])->name('delivery.upload_proof');
+Route::any('/admin/deliveries/uploade_document_for_driver/{id}',[App\Http\Controllers\adminpanel\QuotesController::class,'uploade_documents_for_driver'])->name('delivery.uploade_document_for_driver');
+Route::get('/delivery/downloadpdf',[App\Http\Controllers\adminpanel\QuotesController::class,'download_pdf_deliery'])->name('download_pdf_deliery');
 Route::get('/deliveries/calender',[App\Http\Controllers\adminpanel\QuotesController::class,'calender_schedule'])->name('user.calender');
 
+// Invoices
+Route::get('/admin/deliveries/invoice/{id}',[App\Http\Controllers\adminpanel\QuotesController::class,'invoice_delivery'])->name('delivery.invoice');
+Route::get('/admin/deliveries/invoice/customer/{id}',[App\Http\Controllers\adminpanel\QuotesController::class,'invoice_delivery'])->name('download.customer.invoice');
+Route::get('/admin/deliveries/invoice/{id}',[App\Http\Controllers\adminpanel\QuotesController::class,'invoice_delivery'])->name('download.invoice');
+Route::get('/admin/deliveries/send-invoice/{id}',[App\Http\Controllers\adminpanel\QuotesController::class,'send_delivery_invoice'])->name('send.customer.invoice');
+Route::post('admin/deliveries/add_invoice/{id}',[App\Http\Controllers\adminpanel\QuotesController::class,'save_delivery_invoice_data'])->name('delivery.add_invoice');
 
 // Driver Management 
 Route::get('/admin/drivers',[App\Http\Controllers\adminpanel\DriverController::class,'drivers'])->name('admin.drivers');
-Route::get('drivers/{type?}',[App\Http\Controllers\adminpanel\DriverController::class,'drivers'])->name('drivers.trashed');
+Route::get('admin/driver/{type?}',[App\Http\Controllers\adminpanel\DriverController::class,'drivers'])->name('drivers.type');
 Route::get('/admin/drivers/add-documents/{id}',[App\Http\Controllers\adminpanel\DriverController::class,'add_documents'])->name('drivers.add-documents');
 Route::any('/admin/drivers/upload-documents/{id}',[App\Http\Controllers\adminpanel\DriverController::class,'upload_documents'])->name('drivers.uploaddocuments');
 // For Testing Purpose
@@ -174,13 +202,14 @@ Route::get('/admin/drivers/add',[App\Http\Controllers\adminpanel\DriverControlle
 Route::post('admin/drivers/add',[App\Http\Controllers\adminpanel\DriverController::class,'add_new_driver'])->name('drivers.add');
 Route::get('/admin/drivers/edit/{id}',[App\Http\Controllers\adminpanel\DriverController::class,'edit_driver'])->name('drivers.open_edit_form');
 Route::post('admin/drivers/edit/{id}',[App\Http\Controllers\adminpanel\DriverController::class,'save_edit_driver'])->name('drivers.edit');
-Route::any('admin/drivers/ajaxcall/{id}',[App\Http\Controllers\adminpanel\DriverController::class,'ajaxcall'])->name('drivers.ajaxcall');
+Route::any('admin/drivers/ajaxcall/{id?}',[App\Http\Controllers\adminpanel\DriverController::class,'ajaxcall'])->name('drivers.ajaxcall');
 
 
 });
 
 // Approve or Reject by The Customer
 Route::any('/customer/quote/action/{quote_id}/{action}',[App\Http\Controllers\adminpanel\QuotesController::class,'customer_action'])->name('customer_action');
+Route::any('delete_quotes_without_po_number_cron',[App\Http\Controllers\adminpanel\QuotesController::class,'delete_quotes_without_po_number'])->name('delete_quotes_without_po_number');
 
 
 Route::get('/admin/no-access/', function(){

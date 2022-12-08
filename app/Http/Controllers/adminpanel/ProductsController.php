@@ -99,7 +99,7 @@ class ProductsController extends Controller
        
         $validator=$request->validate([
             'name'=>'required',
-            'sizes'=>'required',
+            //'sizes'=>'required',
             'cat_id'=>'required',
         ]);
         

@@ -55,6 +55,7 @@
                                 <form method="POST" action="{{ route('quotes.save_quote_edit',$id) }}">
                                     @csrf
                                     <input type="hidden" name="quote_type" value="{{$quotesData['quote_type']}}" id="quote_type">
+                                    <input type="hidden" name="customer_id" value="{{$quotesData['customer_id']}}" id="quote_type">
 
                                     <div class="row form-group">
                                         <div class="col-3">&nbsp;</div>
@@ -122,13 +123,60 @@
                                                         {{ $message }}
                                                     </div>
                                                 @enderror
-                                                <span style="margin-top: 15px;" for="PO"> <strong>NOTE<sup>*</sup>
+                                                {{-- <span style="margin-top: 15px;" for="PO"> <strong>NOTE<sup>*</sup>
                                                         :</strong> If you have multiple pickup addresses and delivery
-                                                    addresses, please submit them as separate POs.</span>
+                                                    addresses, please submit them as separate POs.</span> --}}
                                             </div>
                                         </div>
                                         <div class="col-3">&nbsp;</div>
                                     </div>
+                                    @if(count($quotesData['document_for_request_quote'])>0)
+                                                        
+                                                        <div style="margin: 10px 0;"  class="row form-group">
+                                                            <div class="col-1">&nbsp;</div>
+                                                            <div class="col-10">
+                                                                <div class="card" style="margin-top: 25px;">
+                                                                    <div class="card-header p-2">
+                                                                        <strong> Attached Documents</strong>
+                                                                    </div><!-- /.card-header -->
+                                                                <div class="row form-group">
+                                                                    <?php
+                                                             $imagesTypes=array('jpg','jpeg','png','gif');
+                                                             $excelTypes=array('xls','xlsx');
+                                                             $docTypes=array('doc','docx');
+                                                             //p($quotesData['document_for_request_quote']);
+                                                                foreach($quotesData['document_for_request_quote'] as $data){
+                                                                  if(in_array($data['otherinfo'],$imagesTypes))
+                                                                    $thumb_img=$data['path'];
+                                                                  else if(in_array($data['otherinfo'],$excelTypes))
+                                                                    $thumb_img=url('adminpanel/dist/img/xls.jpeg');
+                                                                  else if(in_array($data['otherinfo'],$docTypes))
+                                                                    $thumb_img=url('adminpanel/dist/img/doxx.png');
+                                                                  else if($data['otherinfo']=='pdf')
+                                                                  $thumb_img=url('adminpanel/dist/img/pdf.png');
+                                                                    ?>
+                                                                    <div id="file_{{ $data['id'] }}" class="col-2 text-center"
+                                                                        style="position: relative;">
+                                                                        <label class="">{{ $data['name'] }}</label>
+                                                                        {{-- <i onclick="removeFile({{ $data['id'] }})"
+                                                                            style="position: absolute; top:15px; right:0px; cursor:pointer"
+                                                                            class="fas fa-times"></i> --}}
+                                                                        <a href="{{ $data['path'] }}" target="_blank"><img
+                                                                                class="w-100 shadow-1-strong rounded mb-4 img-thumbnail"
+                                                                                src="{{ isset($thumb_img)?$thumb_img:'' }}" width="200" alt="Uploaded Image"></a>
+                                                                    </div>
+                        
+                        
+                                                                    <?php 
+                                                                  }
+                                                              ?>
+                        
+                                                                </div>
+                                                                <div class="col-1">&nbsp;</div>
+                                                            </div>
+                                                        </div>
+                                                        </div>
+                                                        @endif
 
                                     @php
                                         //p($quotesData);
@@ -140,8 +188,8 @@
                                             <label>Pickup Address</label>
                                             <div class="input-group mb-3">
                                                 <input placeholder="Pickup street address" type="text"
-                                                    name="pickup_street_address1" required value="{{ $quotesData['pickup_street_address'] }}"
-                                                    class=" form-control @error('pickup_street_address1') is-invalid @enderror">
+                                                    name="pickup_street_address1" id="pickup_street_address1" required value="{{ $quotesData['pickup_street_address'] }}"
+                                                    class="google_address form-control @error('pickup_street_address1') is-invalid @enderror">
                                                 @error('pickup_street_address1')
                                                     <div class="invalid-feedback">
                                                         {{ $message }}
@@ -153,7 +201,7 @@
                                         <div class="col-5">
 
                                             <div class="input-group mb-3" style="margin-top:2rem;">
-                                                <input required value="{{ $quotesData['pickup_unit'] }}" placeholder="Unit/STE"  type="text" name="pickup_unit1"
+                                                <input value="{{ $quotesData['pickup_unit'] }}" placeholder="Unit/STE"  type="text" name="pickup_unit1"
                                                     class=" form-control @error('pickup_unit1') is-invalid @enderror">
                                                 @error('pickup_unit1')
                                                     <div class="invalid-feedback">
@@ -164,8 +212,19 @@
                                         </div>
                                         <div class="col-1">&nbsp;</div>
                                     </div>
-                                    <div class="row form-group">
+                                    {{-- <div class="row form-group">
                                         <div class="col-1">&nbsp;</div>
+                                        <div class="col-5">
+                                            <div class="input-group mb-3">
+                                                <input required value="{{ $quotesData['pickup_city'] }}" placeholder="City Name"  type="text" name="pickup_city1"
+                                                    class=" form-control @error('pickup_city1') is-invalid @enderror">
+                                                @error('pickup_city1')
+                                                    <div class="invalid-feedback">
+                                                        {{ $message }}
+                                                    </div>
+                                                @enderror
+                                            </div>
+                                        </div>
                                         <div class="col-5">
                                             <div class="input-group mb-3">
                                                 <input required value="{{ $quotesData['pickup_state'] }}" placeholder="State Name"  type="text" name="pickup_state1"
@@ -178,24 +237,14 @@
                                             </div>
 
                                         </div>
-                                        <div class="col-5">
-                                            <div class="input-group mb-3">
-                                                <input required value="{{ $quotesData['pickup_city'] }}" placeholder="City Name"  type="text" name="pickup_city1"
-                                                    class=" form-control @error('pickup_city1') is-invalid @enderror">
-                                                @error('pickup_city1')
-                                                    <div class="invalid-feedback">
-                                                        {{ $message }}
-                                                    </div>
-                                                @enderror
-                                            </div>
-                                        </div>
+                                        
                                         <div class="col-1">&nbsp;</div>
-                                    </div>
+                                    </div> --}}
                                     <div class="row form-group">
                                         <div class="col-1">&nbsp;</div>
                                         <div class="col-5">
                                             <div class="input-group mb-3">
-                                                <input required value="{{ $quotesData['pickup_zipcode'] }}" placeholder="Zip Code"  type="text" name="pickup_zipcode1"
+                                                <input value="{{ $quotesData['pickup_zipcode'] }}" placeholder="Zip Code"  type="text" name="pickup_zipcode1"
                                                     class=" form-control @error('pickup_zipcode1') is-invalid @enderror">
                                                 @error('pickup_zipcode1')
                                                     <div class="invalid-feedback">
@@ -206,7 +255,7 @@
                                         </div>
                                         <div class="col-5">
                                             <div class="input-group mb-3">
-                                                <input placeholder="Contact Number" type="text" name="pickup_contact_number1" required value="{{ $quotesData['pickup_contact_number'] }}"
+                                                <input placeholder="Contact Number" type="text" name="pickup_contact_number1"  value="{{ $quotesData['pickup_contact_number'] }}"
                                                     class=" form-control @error('pickup_contact_number1') is-invalid @enderror">
                                                 @error('pickup_contact_number1')
                                                     <div class="invalid-feedback">
@@ -220,6 +269,17 @@
                                     <div class="row form-group">
                                         <div class="col-1">&nbsp;</div>
                                         <div class="col-5">
+                                            <div class="input-group mb-3">
+                                                <input placeholder="Email" type="text" name="pickup_email1" required value="{{ $quotesData['pickup_email'] }}"
+                                                    class=" form-control @error('pickup_email1') is-invalid @enderror">
+                                                @error('pickup_email1')
+                                                    <div class="invalid-feedback">
+                                                        {{ $message }}
+                                                    </div>
+                                                @enderror
+                                            </div>
+                                        </div>
+                                        <div class="col-5">
                                             <div class="input-group date" id="pick_up_reservationdate1" data-target-input="nearest">
                                                 <input type="text" id="pickup_date1" value="{{ $quotesData['pickup_date'] }}" required name="pickup_date1" placeholder="Pick Up date" class="form-control datetimepicker-input" data-target="#reservationdate"/>
                                                 <div class="input-group-append" data-target="#pick_up_reservationdate1" data-toggle="datetimepicker">
@@ -227,10 +287,7 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="col-2">&nbsp;</div>
-                                        <div class="col-3">
-                                            &nbsp;
-                                        </div>
+                                        
                                         <div class="col-1">&nbsp;</div>
                                     </div>
                                     {{-- List of items --}}
@@ -319,8 +376,19 @@
                                         </div>
                                         <div class="col-1">&nbsp;</div>
                                     </div>
-                                    <div class="row form-group">
+                                    {{-- <div class="row form-group">
                                         <div class="col-1">&nbsp;</div>
+                                        <div class="col-5">
+                                            <div class="input-group mb-3">
+                                                <input value="{{ $product_pickup_dropoff['pickup_city']}}" placeholder="City Name"  type="text" name="pickup_city{{$i}}"
+                                                    class=" form-control @error('pickup_city'.$i) is-invalid @enderror">
+                                                @error('pickup_city'.$i)
+                                                    <div class="invalid-feedback">
+                                                        {{ $message }}
+                                                    </div>
+                                                @enderror
+                                            </div>
+                                        </div>
                                         <div class="col-5">
                                             <div class="input-group mb-3">
                                                 <input value="{{ $product_pickup_dropoff['pickup_state']}}" placeholder="State Name"  type="text" name="pickup_state{{$i}}"
@@ -333,19 +401,8 @@
                                             </div>
 
                                         </div>
-                                        <div class="col-5">
-                                            <div class="input-group mb-3">
-                                                <input value="{{ $product_pickup_dropoff['pickup_city']}}" placeholder="City Name"  type="text" name="pickup_city{{$i}}"
-                                                    class=" form-control @error('pickup_city'.$i) is-invalid @enderror">
-                                                @error('pickup_city'.$i)
-                                                    <div class="invalid-feedback">
-                                                        {{ $message }}
-                                                    </div>
-                                                @enderror
-                                            </div>
-                                        </div>
                                         <div class="col-1">&nbsp;</div>
-                                    </div>
+                                    </div> --}}
                                     <div class="row form-group">
                                         <div class="col-1">&nbsp;</div>
                                         <div class="col-5">
@@ -375,6 +432,17 @@
                                     <div class="row form-group">
                                         <div class="col-1">&nbsp;</div>
                                         <div class="col-5">
+                                            <div class="input-group mb-3">
+                                                <input placeholder="Email" type="text" name="pickup_email{{$i}}" value="{{ (isset($product_pickup_dropoff['pickup_email'])?$product_pickup_dropoff['pickup_email']:'') }}"
+                                                    class=" form-control @error('pickup_email'.$i) is-invalid @enderror">
+                                                @error('pickup_email'.$i)
+                                                    <div class="invalid-feedback">
+                                                        {{ $message }}
+                                                    </div>
+                                                @enderror
+                                            </div>
+                                        </div>
+                                        <div class="col-5">
                                             <div class="input-group date" id="pick_up_reservationdate{{$i}}" data-target-input="nearest">
                                                 <input type="text" value="{{ $product_pickup_dropoff['pickup_date']}}" id="pickup_date{{$i}}" name="pickup_date{{$i}}" placeholder="Pick Up date" class="form-control datetimepicker-input" data-target="#reservationdate"/>
                                                 <div class="input-group-append" data-target="#pick_up_reservationdate{{$i}}" data-toggle="datetimepicker">
@@ -382,10 +450,7 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="col-2">&nbsp;</div>
-                                        <div class="col-3">
-                                            &nbsp;
-                                        </div>
+                                        
                                         <div class="col-1">&nbsp;</div>
                                     </div>
                                     {{-- List of items --}}
@@ -429,8 +494,8 @@
                                         <div class="col-5">
                                             <label>Drop off Address</label>
                                             <div class="input-group mb-3">
-                                                <input required placeholder="Drop off address" type="text" name="drop_off_street_address" value="{{ $quotesData['drop_off_street_address'] }}"
-                                                    class=" form-control @error('drop_off_street_address') is-invalid @enderror">
+                                                <input required placeholder="Drop off address" id="drop_off_street_address" type="text" name="drop_off_street_address" value="{{ $quotesData['drop_off_street_address'] }}"
+                                                    class=" google_address form-control @error('drop_off_street_address') is-invalid @enderror">
                                                 @error('drop_off_street_address')
                                                     <div class="invalid-feedback">
                                                         {{ $message }}
@@ -453,7 +518,7 @@
                                         </div>
                                         <div class="col-1">&nbsp;</div>
                                     </div>
-                                    <div class="row form-group">
+                                    {{-- <div class="row form-group">
                                         <div class="col-1">&nbsp;</div>
                                         <div class="col-5">
                                             <div class="input-group mb-3">
@@ -479,7 +544,7 @@
                                             </div>
                                         </div>
                                         <div class="col-1">&nbsp;</div>
-                                    </div>
+                                    </div> --}}
                                     <div class="row form-group">
                                         <div class="col-1">&nbsp;</div>
                                         <div class="col-5">
@@ -525,6 +590,17 @@
                                     <div class="row form-group">
                                         <div class="col-1">&nbsp;</div>
                                         <div class="col-5">
+                                            <div class="input-group mb-3">
+                                                <input required placeholder="Email" value="{{ $quotesData['drop_off_email'] }}" type="text" name="drop_off_email"
+                                                    class=" form-control @error('drop_off_email') is-invalid @enderror">
+                                                @error('drop_off_email')
+                                                    <div class="invalid-feedback">
+                                                        {{ $message }}
+                                                    </div>
+                                                @enderror
+                                            </div>
+                                        </div>
+                                        <div class="col-5">
                                             <div class="input-group date" id="reservationdate" data-target-input="nearest">
                                                 <input required type="text" value="{{ $quotesData['drop_off_date'] }}" name="drop_off_date" placeholder="Delivery date" class="form-control datetimepicker-input" data-target="#reservationdate"/>
                                                 <div class="input-group-append" data-target="#reservationdate" data-toggle="datetimepicker">
@@ -567,6 +643,8 @@
     <!-- Select2 -->
     <link rel="stylesheet" href="{{ url('adminpanel/plugins/select2/css/select2.min.css') }}">
     <link rel="stylesheet" href="{{ url('adminpanel/plugins/select2-bootstrap4-theme/select2-bootstrap4.min.css') }}">
+    {{-- For google Address --}}
+    <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=places&key={{config('constants.google_api_key')}}"></script> 
 @endsection
 @section('footer-js-css')
     <!-- Select2 -->
@@ -574,6 +652,24 @@
     <!-- date-range-picker -->
     <script src="{{ url('adminpanel/plugins/daterangepicker/daterangepicker.js') }}"></script>
     <script>
+        @php
+        $address=['pickup_street_address1','pickup_street_address2','pickup_street_address3','drop_off_street_address']   
+        @endphp
+    $(document).ready(function () {
+        var autocomplete;
+        @foreach ($address as $key=>$addr )
+        autocomplete = new google.maps.places.Autocomplete((document.getElementById('{{$addr}}')), {
+            types: ['geocode']
+           
+        });  
+        @endforeach
+      
+    
+        google.maps.event.addListener(autocomplete, 'place_changed', function () {
+            var near_place = autocomplete.getPlace();
+        });
+    });
+
             function addmore_items1(id, slug){
             row_html=$('#item_row1_'+id).html();
             $('#duplicate_row1_'+id).append(row_html);

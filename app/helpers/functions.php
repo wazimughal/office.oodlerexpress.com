@@ -275,14 +275,50 @@ if(!function_exists('getItemSizeUnitsOptions')){
      return $options;   
     }
 }
+if(!function_exists('formate_date')){
+    function formate_date($timestamp,$time=false){
+        if($time)
+        return date(config('constants.date_and_time'), $timestamp);
+        return date(config('constants.date_formate'), $timestamp);
+        
+    }
+}
+if(!function_exists('elapsed_time')){
+    function elapsed_time($first_timestamp,$second_timestamp) {
+        
+        $first_time = new DateTime(formate_date($first_timestamp,true));
+        $second_time = new DateTime(formate_date($second_timestamp,true));
+        
+        $diff = $first_time->diff( $second_time );
+        $elasped_time=$diff->format( '%D:%H:%I:%S' ); 
+        $elasped_time_array=explode(':',$elasped_time);
+
+        $days_hours= $elasped_time_array[0]*24;
+        $total_hours=$days_hours+$elasped_time_array[1];
+        $working_time=[
+            'hours'=>$total_hours,
+            'mins'=>$elasped_time_array[2],
+            'seconds'=>$elasped_time_array[3],
+        ];
+        return $working_time;
+
+      }
+}
 // Get Options of Prodcut Sizes
+
 if(!function_exists('get_product_sizes')){
     function get_product_sizes($sizes,$selectID=NULL){
     $product_sizes=explode(',',$sizes);
          $options='';
         foreach($product_sizes as $value){
             $selected='';
-            if($selectID==phpslug($value)) $selected='selected';
+            $selectID=phpslug($selectID);
+            $value2=phpslug($value);
+            if($selectID == $value2){
+                
+                $selected='selected';
+            } 
+            
             $options .='<option '.$selected.' value="'.($value).'">'.$value.'</option>';
         }
         
@@ -551,12 +587,14 @@ if(!function_exists('get_record_count')){
         $product_info = DB::table('products')
                  ->select('is_active', DB::raw('count(*) as total'))
                  ->groupBy('is_active')
+                 ->where('is_active',1)
                  ->get()->toArray();
                  $product_info=$product_info[0];
        
        $product_cat_info = DB::table('product_categories')
                  ->select('is_active', DB::raw('count(*) as total'))
                  ->groupBy('is_active')
+                 ->where('is_active',1)
                  ->get()->toArray();
                  $product_cat_info=$product_cat_info[0];
 
@@ -580,14 +618,29 @@ if(!function_exists('get_record_count')){
                  ->groupBy('lead_by')
                  ->orderBy('lead_by', 'asc')
                  ->where($leadsWhere)
+                 ->where('is_active',1)
+                 
                  ->get()->toArray();
 
-                 $quote_info = DB::table('quotes')
+        $quote_info = DB::table('quotes')
                  ->select('status', DB::raw('count(*) as total'))
                  ->groupBy('status')
                  ->where($quoteWhere)
+                 ->where('is_active',1)
+                 ->where('po_number','!=','')
                  ->orderBy('status', 'asc')
                  ->get()->toArray();                 
+    
+        $trashed_quote_info = DB::table('quotes')
+                ->select('status', DB::raw('count(*) as total'))
+                ->groupBy('status')
+                ->where($quoteWhere)
+                ->where('is_active',2)
+                ->where('status','<', config('constants.quote_status.delivery'))
+                ->orderBy('status', 'asc')
+                ->get()->toArray();                 
+
+                 //p($trashed_quote_info); die;
                  
         $user_info = DB::table('users')
                  ->select('group_id', DB::raw('count(*) as total'))
@@ -623,10 +676,10 @@ if(!function_exists('get_record_count')){
                         $retData['declined_quotes']=$quote->total;
                         $retData['total_quotes']=$retData['total_quotes']+$quote->total;
                     }
-                    elseif($quote->status==config('constants.quote_status.trashed')){
-                        $retData['trashed_quotes']=$quote->total;
-                        $retData['total_quotes']=$retData['total_quotes']+$quote->total;
-                    }
+                    // elseif($quote->status==config('constants.quote_status.trashed')){
+                    //     $retData['trashed_quotes']=$quote->total;
+                    //     $retData['total_quotes']=$retData['total_quotes']+$quote->total;
+                    // }
                     elseif($quote->status==config('constants.quote_status.delivery')){
                         $retData['deliverable_quotes']=$quote->total;
                         $retData['total_deliverable']=$retData['total_deliverable']+$quote->total;
@@ -639,6 +692,34 @@ if(!function_exists('get_record_count')){
                    
                   }
 
+                  // Trashed Quotes
+                  foreach($trashed_quote_info as $key=>$quote){
+                    
+                    if($quote->status==config('constants.quote_status.pending')){
+                        $retData['trashed_quotes']=$retData['trashed_quotes']+$quote->total;
+                        $retData['pending_trashed_quotes']=$quote->total;
+                    }
+                    elseif($quote->status==config('constants.quote_status.quote_submitted')){
+                        $retData['submitted_trashed_quotes']=$quote->total;
+                        $retData['trashed_quotes']=$retData['trashed_quotes']+$quote->total;
+                    }
+                    elseif($quote->status==config('constants.quote_status.approved')){
+                        $retData['approved_trashed_quotes']=$quote->total;
+                        $retData['trashed_quotes']=$retData['trashed_quotes']+$quote->total;
+                    }
+                    elseif($quote->status==config('constants.quote_status.declined')){
+                        $retData['declined_trashed_quotes']=$quote->total;
+                        $retData['trashed_quotes']=$retData['trashed_quotes']+$quote->total;
+                    }
+                    elseif($quote->status==config('constants.quote_status.trashed')){
+                        $retData['trashed_quotes']=$quote->total;
+                        $retData['trashed_quotes']=$retData['trashed_quotes']+$quote->total;
+                    }
+                   
+                   
+                   
+                  }
+                  // End Trashed Quotes
                   // Lead Data
               
                   //p($leads_info); die;
@@ -672,7 +753,31 @@ if(!function_exists('get_record_count')){
                  return $retData;
     }
 }
+// Get the paid amount for the Quote by Customer
+if(!function_exists('received_amount')){
+    function received_amount($id){
+        $amount=App\Models\adminpanel\invoices::where('quote_id','=',$id)->sum('paid_amount');
+        return $amount;
+    }
+}
 
+if(!function_exists('prioritise')){
+    function prioritise($id,$priority_no){
+        $title='Low';
+        $class='btn-primary';
+        if($priority_no==1){
+            $title='Moderate';
+            $class='btn-secondary';
+        }
+        elseif($priority_no==2){
+            $title='High';
+            $class='btn-danger';
+        }
+         $btn='<a @disabled(true) onclick="prioritise_lead('.$id.','.$priority_no.',\'prioritise\')" class="btn '.$class.' btn-flat btn-sm"><i class="fas fa-chart-line"></i>'.$title.'</a>';
+    return $btn;
+
+    }
+}
 if(!function_exists('quote_data_for_mail')){
     function quote_data_for_mail($id){
         $zipcodeData = App\Models\adminpanel\zipcode::where('is_active',1)->orderBy('id', 'asc')->get();
@@ -725,9 +830,20 @@ if(!function_exists('quote_data_for_mail')){
                     $quote_price .='</table>
                     </td><tr>';
     }
-
+    $multi_quote_html='';
+if($quotesData['quote_type']=='multi'){
+    $multi_quote_html ='<tr>
+    <td colspan="2" style="text-align:justified">
+    Quote :'.$quotesData['quote_type'].'<br>
+    Business Type :'.$quotesData['business_type'].'<br>
+    Elevator :'.(($quotesData['elevator']==1)?'YES':'NO').'<br>
+    No of Appartments :'.$quotesData['no_of_appartments'].'<br>
+    List of Floors :'.implode(',',json_decode($quotesData['list_of_floors'],true)).'<br>
+    </td>
+    </tr>';
+}
 $bodymsg='<table width="100%" border=1>
-       <tr><th colspan="2">Quote Information</th></tr>
+       <tr><th colspan="2">Quote Information [PO No.: '.$quotesData['po_number'].']</th></tr>'.$multi_quote_html .'
        <tr><td colspan="2">
            <table border="1" width="100%">
                <tbody>';

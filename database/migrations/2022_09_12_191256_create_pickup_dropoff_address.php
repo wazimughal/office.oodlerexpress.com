@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('pickup_city')->nullable();
             $table->string('pickup_zipcode')->nullable();
             $table->string('pickup_contact_number')->nullable();
+            $table->string('pickup_email')->nullable();
             $table->text('pickup_date')->nullable();
             $table->tinyInteger('pickup_at_time')->default(1)->nullable();
             
@@ -30,6 +31,7 @@ return new class extends Migration
             $table->string('drop_off_city')->nullable();
             $table->string('drop_off_zipcode')->nullable();
             $table->string('drop_off_contact_number')->nullable();
+            $table->string('drop_off_email')->nullable();
             $table->text('drop_off_instructions')->nullable();
             $table->text('drop_off_date')->nullable();
             $table->tinyInteger('drop_off_at_time')->default(1)->nullable();

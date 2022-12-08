@@ -367,7 +367,7 @@
                                     </div>
                                     <div class="row form-group">
                                         <div class="col-1">&nbsp;</div>
-                                        <div class="col-5">
+                                        {{-- <div class="col-5">
                                             <span>What do you Ship?</span>
                                             <div class="input-group mb-3">
                                                     <select name="shipping_cat[]" id="shipping_cat" class="form-control select2bs4 @error('shipping_cat') is-invalid @enderror" multiple="multiple" data-placeholder="What do you Ship" style="width: 100%;">
@@ -379,7 +379,7 @@
                                                     </div>
                                                 @enderror
                                             </div>
-                                        </div>
+                                        </div> --}}
                                         <div class="col-5">
                                             <span>How often you ship?</span>
                                             <div class="input-group mb-3">

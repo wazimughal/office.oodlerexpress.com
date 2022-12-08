@@ -54,11 +54,102 @@
                                     <div class="col-md-8">
                                         <div class="card">
                                             <div class="card-header p-2">
-                                                <strong> Quote Information</strong>
+                                                
+                                                <div class="row">
+                                                    <div class="col-2"><strong> Quote Information</strong></div>
+                                                    @if ($user->group_id==config('constants.groups.admin'))
+                                                        
+                                                    
+                                                    @php
+                                                        $view_document='';
+                                                    //p($data['document_for_request_quote']); die;
+                                                    if(count($quotesData['document_for_request_quote'])>0){
+                                                        $view_document='<div class="col-2"><a href="'.route('quote_requested_documents',$quotesData['id']).'"
+                                                    class="btn btn-secondary btn-block btn-sm smallbtn"><i class="fas fa-eye"></i> Docs</a></div>';
+                                                    }
+                                                    @endphp
+    
+                                                    @if ($quotesData['status'] == config('constants.quote_status.approved'))
+                                                    <div class="col-2"> <a href="{{ route('quotes.add_to_delivery_form', $quotesData['id']) }}"
+                                                        class="btn btn-success btn-block btn-sm smallbtn"><i
+                                                            class="fas fa-plus"></i> Delivery</a></div>
+                                                    @endif
+                                                    {!! $view_document !!}
+                                                    <div class="col-2 pull-right"> <a href="{{ route('quotes.quoteeditform', $quotesData['id']) }}"
+                                                    class="btn btn-info btn-block btn-sm smallbtn"><i class="fas fa-edit"></i>
+                                                    Edit</a></div>
+                                                    @endif
+
+                                                </div>
                                             </div><!-- /.card-header -->
+                                            
                                             <div class="card-body">
                                                 <div class="tab-content">
                                                     <div>
+                                                        <div class="row" style="margin-top: 20px;">
+                                                            <div class="col-4">&nbsp;</div>
+                                                            <div class="col-4"><strong>PO Number: {{$quotesData['po_number']}}</strong></div>
+                                                        </div>
+                                                        @if (isset($quotesData['quote_type']) && $quotesData['quote_type']=='multi')
+                                                        <div class="row" style="margin-top: 10px;">
+                                                            <div class="col-4">&nbsp;</div>
+                                                            <div class="col-4">
+                                                                Type: {{$quotesData['quote_type']}}<br>
+                                                                Business Type: {{$quotesData['business_type']}}<br>
+                                                                Elevator: {{($quotesData['elevator']==1)?'YES':'NO';}}<br>
+                                                                Appartments: {{$quotesData['no_of_appartments']}}<br>
+                                                                List of Floors: {{ implode(',',json_decode($quotesData['list_of_floors'],true)) }}<br>
+                                                            </div>
+                                                        </div>
+                                                        @endif
+
+                                                        @if(count($quotesData['document_for_request_quote'])>0)
+                                                        <div class="card" style="margin-top: 25px;">
+                                                            <div class="card-header p-2">
+                                                                <strong> Attached Documents</strong>
+                                                            </div><!-- /.card-header -->
+                                                        <div style="margin: 10px 0;"  class="row form-group">
+                                                            <div class="col-1">&nbsp;</div>
+                                                            <div class="col-10">
+                                                                <div class="row form-group">
+                                                                    <?php
+                                                             $imagesTypes=array('jpg','jpeg','png','gif');
+                                                             $excelTypes=array('xls','xlsx');
+                                                             $docTypes=array('doc','docx');
+                                                             //p($quotesData['document_for_request_quote']);
+                                                                foreach($quotesData['document_for_request_quote'] as $data){
+                                                                  if(in_array($data['otherinfo'],$imagesTypes))
+                                                                    $thumb_img=$data['path'];
+                                                                  else if(in_array($data['otherinfo'],$excelTypes))
+                                                                    $thumb_img=url('adminpanel/dist/img/xls.jpeg');
+                                                                  else if(in_array($data['otherinfo'],$docTypes))
+                                                                    $thumb_img=url('adminpanel/dist/img/doxx.png');
+                                                                  else if($data['otherinfo']=='pdf')
+                                                                  $thumb_img=url('adminpanel/dist/img/pdf.png');
+                                                                    ?>
+                                                                    <div id="file_{{ $data['id'] }}" class="col-3 text-center"
+                                                                        style="position: relative;">
+                                                                        <label class="">{{ $data['name'] }}</label>
+                                                                        {{-- <i onclick="removeFile({{ $data['id'] }})"
+                                                                            style="position: absolute; top:15px; right:0px; cursor:pointer"
+                                                                            class="fas fa-times"></i> --}}
+                                                                        <a href="{{ $data['path'] }}" target="_blank"><img
+                                                                                class="w-100 shadow-1-strong rounded mb-4 img-thumbnail"
+                                                                                src="{{ isset($thumb_img)?$thumb_img:'' }}" width="200" alt="Uploaded Image"></a>
+                                                                    </div>
+                        
+                        
+                                                                    <?php 
+                                                                  }
+                                                              ?>
+                        
+                                                                </div>
+                                                                <div class="col-1">&nbsp;</div>
+                                                            </div>
+                                                        </div>
+                                                        </div>
+                                                        @endif
+
                                                         <div class="row">
                                                             <div class="col-3">&nbsp;</div>
                                                             <div class="col-6">
@@ -306,14 +397,14 @@
                                         {{-- This section is for Comments --}}
                                         <div class="card">
                                             <div class="card-header p-2">
-                                                <strong> Notes Section </strong>
+                                                <strong> Notes Section (Only for Admin) </strong>
                                             </div><!-- /.card-header -->
                                             <div class="card-body">
-                                                <div id="submit_comment_replace">
+                                                <div id="submit_comment_crm_replace">
                                                     @php
                                                         // p($quotesData['comments']);
                                                     @endphp
-                                                    @foreach ($quotesData['comments'] as $key => $comment)
+                                                    @foreach ($quotesData['delivery_notes'] as $key => $comment)
                                                         <div class="row border">
                                                             <div class="col-12">
                                                                 <strong>({{ $comment['slug'] }}) </strong>
@@ -329,10 +420,11 @@
                                                     //p($userData);
                                                 @endphp
                                                 <div class="tab-content">
-                                                    <form method="post" id="submit_comment">
+                                                    <form method="post" id="submit_comment_crm">
                                                         <input type="hidden" name="group_id"
                                                             value="{{ $user->group_id }}">
-                                                        <input type="hidden" name="action" value="submit_comment">
+                                                        <input type="hidden" name="action" value="submit_comment_crm">
+                                                        <input type="hidden" name="comment_section" value="delivery_notes_only">
                                                         <input type="hidden" name="slug"
                                                             value="{{ $userData['get_groups']['slug'] }}">
                                                         <input type="hidden" name="user_name"
@@ -342,7 +434,7 @@
                                                             <textarea id="comments" name="comment" placeholder="Write comment about the Booking" class="form-control"
                                                                 rows="4"></textarea></br>
                                                             <button
-                                                                onclick="do_action({{ $quotesData['id'] }},'submit_comment')"
+                                                                onclick="do_action({{ $quotesData['id'] }},'submit_comment_crm')"
                                                                 type="button" class="btn btn-success float-right"><i
                                                                     class="far fa-credit-card"></i> Send</button>
                                                         </div>

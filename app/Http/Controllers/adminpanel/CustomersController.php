@@ -6,12 +6,18 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\adminpanel\Users;
 use App\Models\adminpanel\Groups;
+use App\Models\adminpanel\Quotes;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Auth;
 
 use App\Mail\EmailTemplate;
 use Illuminate\Support\Facades\Mail;
+use Maatwebsite\Excel\Facades\Excel; // To export import excel
+use DateTime;
+
+// Import/Export Excelsheet
+use App\Exports\ExportCustomerDeliveryBalance;
 
 class CustomersController extends Controller
 {
@@ -20,12 +26,179 @@ class CustomersController extends Controller
         
         $this->users= new Users;
         $this->groups= new Groups;
+        $this->quotes= new Quotes;
       }
       public function addcustomers(){
         $user=Auth::user(); 
        
          return view('adminpanel/add_customers',compact('user'));
      }
+     public function report_customers(Request $req){
+        $user=Auth::user();
+
+        $where_in_clause=$customer_ids=$driver_ids=$quote_status=array();
+
+        $where_clasue=[
+            'group_id'=> config('constants.groups.customer'),
+            'is_active'=> 1,
+        ];
+        
+        if(isset($req->customer_id) && !empty($req->customer_id)){
+            $customer_ids=$req->customer_id;
+            $where_in_clause['customer_id']=$customer_ids;
+            }
+        // if($user->group_id!=config('constants.groups.admin'))
+        // $where_clasue['id']=get_session_value('id');
+
+        
+            $customersData=$this->users->with('City')->with('ZipCode')
+            ->where($where_clasue)
+            ->orderBy('created_at', 'desc')->paginate(config('constants.per_page'));
+       
+        return view('adminpanel.reports.customers',get_defined_vars());
+    }
+    public function report_customer_delivery_balance(Request $req){
+        $user=Auth::user();
+
+        $where_in_clause=$customer_ids=$customer_ids=$quote_status=array();
+
+        $where_clasue=[
+            'group_id'=> config('constants.groups.customer'),
+            'is_active'=> 1,
+        ];
+        
+        if(isset($req->customer_id) && !empty($req->customer_id)){
+            $customer_ids=$req->customer_id;
+            $where_in_clause['customer_id']=$customer_ids;
+            }
+            $customerData=$this->users->with('City')->with('ZipCode')
+            ->where($where_clasue)
+            ->orderBy('created_at', 'desc')->paginate(config('constants.per_page'));
+            
+            if(isset($req->action) && $req->action=='download_customer_delivery_balance'){ // Download Excelsheed
+
+                $where_clause=[
+                    ['status','=',config('constants.quote_status.complete')],
+                    ['is_active','=',1],
+                    ['customer_id','=',$req->customer_id],
+                ];
+             
+               
+                $quotes=$this->quotes
+                        ->with(array('driver','customer','quote_agreed_cost','quote_prices','invoices'))
+                        ->where($where_clause)
+                        ->orderBy('created_at', 'desc');
+                if(
+                    isset($req->from_date) &&
+                    !empty($req->from_date) &&
+                    isset($req->to_date) &&
+                    !empty($req->to_date)
+                 )   
+                {
+                 $from=($req->from_date);
+                 $to=($req->to_date);
+                $quotes=$quotes->WhereBetween('drop_off_date', [$from, $to]);
+                 }
+                 //p($req->all());
+                 //echo $quotesData=$quotes->toSql(); 
+                 $quotesData=$quotes->get()->toArray();
+                //   p($where_clause);
+                //   p($quotesData); die;
+                $exportData=array();
+                $total_delivery_cost=0;
+                $total_due_payment=0;
+                $total_received_payment=0;
+                foreach($quotesData as $key=>$data){
+
+                    $delivery_cost=$data['quote_agreed_cost']['quoted_price']+$data['quote_agreed_cost']['extra_charges']+$data['quote_agreed_cost']['any_other_extra_charges'];
+                    $recievedAmount=0; 
+                    if($data['invoices'] && count($data['invoices'])>0){ 
+                        foreach ($data['invoices'] as $key=>$invoice){ 
+                            $recievedAmount=$recievedAmount+$invoice['paid_amount'];
+                        }
+                    }
+                    $total_delivery_cost=$total_delivery_cost+$delivery_cost;
+                    $total_received_payment=$total_received_payment+$recievedAmount;
+
+                    $exportData[]=[
+                        'id'=>$data['id'],
+                        'po_number'=>$data['po_number'],
+                        // 'quote_type'=>$data['quote_type'],
+                        // 'business_type'=>$data['business_type'],
+                        // 'pickup_street_address'=>$data['pickup_street_address'],
+                        // 'pickup_unit'=>$data['pickup_unit'],
+                        // 'pickup_state'=>$data['pickup_state'],
+                        // 'pickup_city'=>$data['pickup_city'],
+                        // 'pickup_zipcode'=>$data['pickup_zipcode'],
+                        // 'pickup_contact_number'=>$data['pickup_contact_number'],
+                        // 'pickup_email'=>$data['pickup_email'],
+                        // 'pickup_date'=>$data['pickup_date'],
+                        // 'drop_off_street_address'=>$data['drop_off_street_address'],
+                        // 'drop_off_unit'=>$data['drop_off_unit'],
+                        // 'drop_off_city'=>$data['drop_off_city'],
+                        // 'drop_off_zipcode'=>$data['drop_off_zipcode'],
+                        // 'drop_off_contact_number'=>$data['drop_off_contact_number'],
+                        // 'drop_off_email'=>$data['drop_off_email'],
+                        'drop_off_date'=>$data['drop_off_date'],
+                        // 'drop_off_instructions'=>$data['drop_off_instructions'],
+                        // 'status'=>quote_status_msg($data['status']),
+                        'customer_name'=>$data['customer']['name'],
+                        // 'customer_email'=>$data['customer']['email'],
+                        // 'customer_mobileno'=>$data['customer']['mobileno'],
+                        // 'customer_business_name'=>$data['customer']['business_name'],
+                        // 'driver_name'=>(isset($data['driver']['name']) && !empty($data['driver']['name']))?$data['driver']['name']:'',
+                        // 'driver_email'=>(isset($data['driver']['email']) && !empty($data['driver']['email']))?$data['driver']['email']:'',
+                        // 'driver_mobileno'=>(isset($data['driver']['mobileno']) && !empty($data['driver']['mobileno']))?$data['driver']['mobileno']:'',
+                        // 'driver_license_no'=>(isset($data['driver']['license_no']) && !empty($data['driver']['license_no']))?$data['driver']['license_no']:'',
+                        'Delivery Cost'=>'$'.$delivery_cost,
+                        'Paid amount'=>'$'.$recievedAmount,
+                        'Due Payment'=>'$'.$delivery_cost-$recievedAmount,
+                    ];
+                    
+                }
+                $exportData[]=[
+                    'id'=>'',
+                    'po_number'=>'',
+                    // 'quote_type'=>'',
+                    // 'business_type'=>'',
+                    // 'pickup_street_address'=>'',
+                    // 'pickup_unit'=>'',
+                    // 'pickup_state'=>'',
+                    // 'pickup_city'=>'',
+                    // 'pickup_zipcode'=>'',
+                    // 'pickup_contact_number'=>'',
+                    // 'pickup_email'=>'',
+                    // 'pickup_date'=>'',
+                    // 'drop_off_street_address'=>'',
+                    // 'drop_off_unit'=>'',
+                    // 'drop_off_city'=>'',
+                    // 'drop_off_zipcode'=>'',
+                    // 'drop_off_contact_number'=>'',
+                    // 'drop_off_email'=>'',
+                    'drop_off_date'=>'',
+                    // 'drop_off_instructions'=>'',
+                    // 'status'=>'',
+                    'customer_name'=>'TOTAL Payments',
+                    // 'customer_email'=>'',
+                    // 'customer_mobileno'=>'',
+                    // 'customer_business_name'=>'',
+                    // 'driver_name'=>'',
+                    // 'driver_email'=>'',
+                    // 'driver_mobileno'=>'',
+                    // 'driver_license_no'=>'',
+                    'Total Delivery Cost'=>'$'.$total_delivery_cost,
+                    'Total Paid amount'=>'$'.$total_received_payment,
+                    'Total Due Payment'=>'$'.$total_delivery_cost-$total_received_payment,
+                    
+                ];
+
+                return Excel::download(new ExportCustomerDeliveryBalance($exportData), 'customer-delivery-balance.xlsx');
+
+            }
+       
+        return view('adminpanel.reports.drivers',get_defined_vars());
+    }
+
      public function save_new_customer(Request $request){
        
         $validator=$request->validate([
@@ -282,6 +455,245 @@ class CustomersController extends Controller
                 $dataArray['msg']='There is some error ! Please fill all the required fields.';
             }
 
+        }
+        elseif(isset($req['action']) && $req['action']=='qsearch_customer')
+        {
+            $user=Auth::user();
+            $dataArray['title']='Search Result';
+            $where_clause=[
+                ['group_id', '=', config('constants.groups.customer')],
+                ['is_active', '=', 1],
+            ];
+           
+            $query=$this->users
+                ->where($where_clause)
+                
+                ->orderBy('created_at', 'desc');
+
+                $search_val=$req->qsearch;
+                $leads=$query->where(function($query) use ($search_val){
+                    $query->orwhere('name', 'like', '%' . $search_val . '%')
+                        ->orwhere('email', 'like', '%' . $search_val . '%')
+                        ->orwhere('license_no', 'like', '%' . $search_val . '%');
+
+                });
+                //$dataArray['sql']=$leads->toSql();
+                $customerData=$leads->get()->toArray();
+                // p($customerData);
+                // die;
+                //$response='<table id="example1" class="table table-bordered table-striped">
+                $response= ' <thead>
+                                        <tr>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>Phone</th>
+                                        <th>Address</th>
+                                        <th>Business Name</th>
+                                        <th>Delivery From</th>
+                                        <th>Delivery To</th>
+                                        <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>';
+                                        
+                                            $counter = 1;
+                                            
+                                            $customer_id_array=array();
+                                            foreach ($customerData as $data){
+                                                $customer_id_array[]=$data['id'];
+                                            
+                                                $response .='<tr id="row_'.$data['id'].'">
+                                                <td><strong id="name_'.$data['id'].'">'.$data['name'].'</strong>
+                                                </td>
+                                                <td id="email_'.$data['id'].'">'.$data['email'].'</td>
+                                                <td id="mobileno_'.$data['id'].'">
+                                                    '.$data['mobileno'].'</td>
+                                                <td id="address_'.$data['id'].'">
+                                                    '.$data['address'].'</td>
+                                                <td id="business_name_'.$data['id'].'">
+                                                '.$data['business_name'].'
+                                                </td>
+                                                <td id="row_from_date_'.$data['id'].'">
+                                                <div class="input-group date" id="from_date_'.$data['id'].'" data-target-input="nearest">
+                                                    <input id="input_from_date_'.$data['id'].'"  type="text"  name="from_date" placeholder="From date" class="form-control datetimepicker-input" data-target="#from_date_'.$data['id'].'"/>
+                                                    <div class="input-group-append" data-target="#from_date_'.$data['id'].'" data-toggle="datetimepicker">
+                                                        <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                                                    </div>
+                                                </div>  
+                                            </td>
+                                            <td id="row_to_date_'.$data['id'].'">
+                                                <div class="input-group date" id="to_date_'.$data['id'].'" data-target-input="nearest">
+                                                    <input id="input_to_date_'.$data['id'].'" type="text"  name="to_date" placeholder="To Date" class="form-control datetimepicker-input" data-target="#to_date_'.$data['id'].'"/>
+                                                    <div class="input-group-append" data-target="#to_date_'.$data['id'].'" data-toggle="datetimepicker">
+                                                        <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                                                    </div>
+                                                </div> 
+                                            </td>
+                                                <td>';
+                                                
+                                                    
+                                                        $response .='<button onclick="$(\'#download_customer_delivery_balance_'.$data['id'].'\').submit()" type="button" class="btn btn-block btn-primary"><i class="fa fa-download"></i> Delivery Balance Excel</button>';
+                                                    
+                                                        
+                                                $response .='</td>
+    
+                                                </td>
+    
+                                            </tr>';
+                                        
+                                                $counter ++;
+                                        }
+                                        
+                                        $response .='</tbody>
+                                    <tfoot>
+                                        <tr>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>Phone</th>
+                                        <th>Address</th>
+                                        <th>Business Name</th>
+                                        <th>Delivery From</th>
+                                        <th>Delivery To</th>
+                                        <th>Action</th>
+                                        </tr>
+                                        
+                                    </tfoot>';
+
+                                $dataArray['customers_id']= implode(',',$customer_id_array)  ;
+                                $dataArray['response']=  $response;
+        }
+        elseif(isset($req['action']) && $req['action']=='qsearch_customer')
+        {
+            $user=Auth::user();
+            $dataArray['title']='Search Result';
+            $where_clause=[
+                ['group_id', '=', config('constants.groups.customer')],
+                ['is_active', '=', 1],
+            ];
+           
+            $query=$this->users
+                ->where($where_clause)
+                
+                ->orderBy('created_at', 'desc');
+
+                $search_val=$req->qsearch;
+                $leads=$query->where(function($query) use ($search_val){
+                    $query->orwhere('name', 'like', '%' . $search_val . '%')
+                        ->orwhere('email', 'like', '%' . $search_val . '%')
+                        ->orwhere('business_name', 'like', '%' . $search_val . '%');
+
+                });
+                //$dataArray['sql']=$leads->toSql();
+                $leadsData=$leads->get()->toArray();
+                // p($leadsData);
+                // die;
+                //$response='<table id="example1" class="table table-bordered table-striped">
+                $response= ' <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Email</th>
+                                            <th>Mobile</th>
+                                            <th>Business Name</th>
+                                            <th>Business Address</th>
+                                            <th>Business Phone</th>
+                                            <th>Lead by</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>';
+                                        
+                                            $counter = 1;
+                                            
+                                            foreach ($leadsData as $data){
+                                            
+                                                $response .='<tr id="row_'.$data['id'].'">
+                                                <td><strong id="name_'.$data['id'].'">'.$data['name'].'</strong>
+                                                </td>
+                                                <td id="email_'.$data['id'].'">'.$data['email'].'</td>
+                                                <td id="mobileno_'.$data['id'].'">
+                                                    '.$data['mobileno'].'</td>
+                                                <td id="business_name_'.$data['id'].'">
+                                                    '.$data['business_name'].'</td>
+                                                <td id="business_address_'.$data['id'].'">
+                                                '.$data['business_address'].'
+                                                </td>
+                                                <td id="business_phone_'.$data['id'].'">
+                                                '.$data['business_phone'].'
+                                                </td>
+                                                <td id="status'.$data['id'].'">';
+
+                                                if($data['lead_by'] == 0){
+                                                    $response .='<a @disabled(true)
+                                                    class="btn btn-success btn-flat btn-sm"><i
+                                                        class="fas fa-chart-line"></i> Office</a>';
+                                                }
+                                                else{
+                                                    $response .='<a @disabled(true)
+                                                    class="btn bg-gradient-secondary btn-flat btn-sm"><i
+                                                        class="fas fa-chart-line"></i> Website</a>';
+                                                }
+                                                
+                                                $response .= '</td>
+                                                <td>';
+                                                
+                                                    if($user->group_id == config('constants.groups.admin')){
+                                                        $response .='<a href="'.route('delivery.add_delivery_form', $data['id']).'"
+                                                        class="btn btn-success btn-block btn-sm"><i class="fas fa-plus"></i>
+                                                        Add Delivery</a>
+                                                    <a href="'.route('customer.quotes', $data['id']).'"
+                                                        class="btn btn-primary btn-block btn-sm"><i class="fas fa-eye"></i>
+                                                        View all quotes</a>';
+                                                        if ($data['is_active'] == 2){
+                                                            $response .=' <button
+                                                            onClick="do_action('.$data['id'].',\'restore\','.$counter.')"
+                                                            type="button" class="btn btn-info btn-block btn-sm"><i
+                                                                class="fas fa-chart-line"></i>
+                                                            Restore</button>';
+                                                        }
+                                                        else{
+                                                            $response .='  <a href="'.route('admin.customerseditform', $data['id']) .'"
+                                                            class="btn btn-info btn-block btn-sm"><i
+                                                                class="fas fa-edit"></i>
+                                                            Edit</a>
+                                                        <button
+                                                            onClick="do_action('.$data['id'] .',\'delete\','.$counter .')"
+                                                            type="button" class="btn btn-danger btn-block btn-sm"><i
+                                                                class="fas fa-trash"></i>
+                                                            Delete</button>';
+
+                                                        }
+                                                    }else {
+                                                        $response .='<a href="'.route('admin.customerseditform', $data['id']).'"
+                                                        class="btn btn-info btn-block btn-sm"><i class="fas fa-edit"></i>
+                                                        Edit</a>';
+                                                    
+                                                        
+                                                }
+                                                        
+                                                $response .='</td>
+    
+                                                </td>
+    
+                                            </tr>';
+                                        
+                                                $counter ++;
+                                        }
+                                        
+                                        $response .='</tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Email</th>
+                                            <th>Mobile</th>
+                                            <th>Business Name</th>
+                                            <th>Business Address</th>
+                                            <th>Business Phone</th>
+                                            <th>Lead by</th>
+                                            <th>Action</th>
+                                        </tr>
+                                        
+                                    </tfoot>';
+                                $dataArray['response']=  $response;
         }
         else if(isset($req['action']) && $req['action']=='restore')
         {

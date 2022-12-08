@@ -56,6 +56,68 @@
                                             <div class="card-header p-2">
                                                 <strong> Quote Information</strong>
                                             </div><!-- /.card-header -->
+                                            <div class="row" style="margin-top: 20px;">
+                                                <div class="col-4">&nbsp;</div>
+                                                <div class="col-4"><strong>PO Number: {{$quotesData['po_number']}}</strong></div>
+                                            </div>
+                                            @if (isset($quotesData['quote_type']) && $quotesData['quote_type']=='multi')
+                                                        <div class="row" style="margin-top: 10px;">
+                                                            <div class="col-4">&nbsp;</div>
+                                                            <div class="col-4">
+                                                                Type: {{$quotesData['quote_type']}}<br>
+                                                                Business Type: {{$quotesData['business_type']}}<br>
+                                                                Elevator: {{($quotesData['elevator']==1)?'YES':'NO';}}<br>
+                                                                Appartments: {{$quotesData['no_of_appartments']}}<br>
+                                                                List of Floors: {{ implode(',',json_decode($quotesData['list_of_floors'],true)) }}<br>
+                                                            </div>
+                                                        </div>
+                                                        @endif
+                                                        @if(count($quotesData['document_for_request_quote'])>0)
+                                                        <div class="card" style="margin-top: 25px;">
+                                                            <div class="card-header p-2">
+                                                                <strong> Attached Documents</strong>
+                                                            </div><!-- /.card-header -->
+                                                        <div style="margin: 10px 0;"  class="row form-group">
+                                                            <div class="col-1">&nbsp;</div>
+                                                            <div class="col-10">
+                                                                <div class="row form-group">
+                                                                    <?php
+                                                             $imagesTypes=array('jpg','jpeg','png','gif');
+                                                             $excelTypes=array('xls','xlsx');
+                                                             $docTypes=array('doc','docx');
+                                                             //p($quotesData['document_for_request_quote']);
+                                                                foreach($quotesData['document_for_request_quote'] as $data){
+                                                                  if(in_array($data['otherinfo'],$imagesTypes))
+                                                                    $thumb_img=$data['path'];
+                                                                  else if(in_array($data['otherinfo'],$excelTypes))
+                                                                    $thumb_img=url('adminpanel/dist/img/xls.jpeg');
+                                                                  else if(in_array($data['otherinfo'],$docTypes))
+                                                                    $thumb_img=url('adminpanel/dist/img/doxx.png');
+                                                                  else if($data['otherinfo']=='pdf')
+                                                                  $thumb_img=url('adminpanel/dist/img/pdf.png');
+                                                                    ?>
+                                                                    <div id="file_{{ $data['id'] }}" class="col-3 text-center"
+                                                                        style="position: relative;">
+                                                                        <label class="">{{ $data['name'] }}</label>
+                                                                        {{-- <i onclick="removeFile({{ $data['id'] }})"
+                                                                            style="position: absolute; top:15px; right:0px; cursor:pointer"
+                                                                            class="fas fa-times"></i> --}}
+                                                                        <a href="{{ $data['path'] }}" target="_blank"><img
+                                                                                class="w-100 shadow-1-strong rounded mb-4 img-thumbnail"
+                                                                                src="{{ isset($thumb_img)?$thumb_img:'' }}" width="200" alt="Uploaded Image"></a>
+                                                                    </div>
+                        
+                        
+                                                                    <?php 
+                                                                  }
+                                                              ?>
+                        
+                                                                </div>
+                                                                <div class="col-1">&nbsp;</div>
+                                                            </div>
+                                                        </div>
+                                                        </div>
+                                                        @endif
                                             <div class="card-body">
                                                 <div class="tab-content">
                                                     <div>

@@ -80,12 +80,12 @@
                                 <div class="row form-group">
                                     <div class="col-3">&nbsp;</div>
                                     <div class="col-3"> <strong>City :</strong></div>
-                                    <div class="col-3">{{ $userData['city']['name'] }}</div>
+                                    <div class="col-3">{{ $userData['city'] }}</div>
                                 </div>
                                 <div class="row form-group">
                                     <div class="col-3">&nbsp;</div>
                                     <div class="col-3"> <strong>Zip Code :</strong></div>
-                                    <div class="col-3">{{ $userData['zip_code']['code'] }}</div>
+                                    <div class="col-3">{{ $userData['zipcode'] }}</div>
                                 </div>
                                 <div class="row form-group">
                                     <div class="col-3">&nbsp;</div>
@@ -108,7 +108,7 @@
                                      $imagesTypes=array('jpg','jpeg','png','gif');
                                      $excelTypes=array('xls','xlsx');
                                      $docTypes=array('doc','docx');
-                                        foreach($userData['files'] as $data){
+                                        foreach($userData['driver_documents'] as $data){
                                           if(in_array($data['otherinfo'],$imagesTypes))
                                             $thumb_img=$data['path'];
                                           else if(in_array($data['otherinfo'],$excelTypes))
@@ -148,7 +148,7 @@
                                                         box and upload files.</small></h3>
                                         </div>
                                         <form
-                                            action="{{ url('/admin/drivers/upload-documents/') . '/' . $userData['id'] }}"
+                                            action="{{ route('drivers.uploaddocuments',$userData['id']) }}"
                                             method="post" enctype="multipart/form-data" id="image-upload"
                                             class="dropzone ">
                                             @csrf
@@ -210,7 +210,7 @@
                 };
 
                 $.ajax({
-                    url: "{{ url('/admin/drivers/ajaxcall/') }}/" + id,
+                    url: "{{ route('drivers.ajaxcall') }}/" + id+"/?time={{time()}}",
                     data: sendInfo,
                     contentType: 'application/json',
                     error: function() {

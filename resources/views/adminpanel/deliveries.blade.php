@@ -36,6 +36,90 @@
                             </div>
                             <!-- /.card-header -->
                             <div class="card-body">
+                                @php
+                                //p($_GET);
+                                $customer_ids=$driver_ids=$quote_status=array();
+
+                                if(isset($_GET['customer_id']) && !empty($_GET['customer_id']))
+                                $customer_ids=$_GET['customer_id'];
+                                if(isset($_GET['driver_id']) && !empty($_GET['driver_id']))
+                                $driver_ids=$_GET['driver_id'];
+                                if(isset($_GET['quote_status']) && !empty($_GET['quote_status']))
+                                $quote_status=$_GET['quote_status'];
+                            @endphp
+                                <form id="search_form" method="GET" action="{{ route('scheduled.deliveries') }}">
+                                    @csrf
+                                    <input type="hidden" name="action" value="search_form">
+                                    <input type="hidden" id="export_xls" name="export" value="noexport">
+                                    @if (isset($_GET['page']) && $_GET['page']>0)
+                                    <input type="hidden" name="page" value="{{($_GET['page']+1)}}">    
+                                    @endif
+                                    
+                                <table class="table table-bordered table-striped">
+                                    <tr>
+                                        <td>
+                                            <label>From</label>
+                                            <div class="input-group date" id="from_date" data-target-input="nearest">
+                                                <input required type="text" value="{{ isset($_GET['from_date'])?$_GET['from_date']:'' }}" name="from_date" placeholder="From date" class="form-control datetimepicker-input" data-target="#from_date"/>
+                                                <div class="input-group-append" data-target="#from_date" data-toggle="datetimepicker">
+                                                    <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                                                </div>
+                                                @error('from_date')
+                                                <div class="invalid-feedback">
+                                                    {{ $message }}
+                                                </div>
+                                            @enderror
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <label>To</label>
+                                            <div class="input-group date" id="to_date" data-target-input="nearest">
+                                                <input required type="text" value="{{ isset($_GET['to_date'])?$_GET['to_date']:'' }}" name="to_date" placeholder="To Date" class="form-control datetimepicker-input" data-target="#to_date"/>
+                                                <div class="input-group-append" data-target="#to_date" data-toggle="datetimepicker">
+                                                    <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                                                </div>
+                                                @error('to_date')
+                                                <div class="invalid-feedback">
+                                                    {{ $message }}
+                                                </div>
+                                            @enderror
+                                            </div>
+                                        </td>
+                                        @if ($user->group_id==config('constants.groups.admin'))
+                                       
+                                        <td>
+                                            <label>Select Customer</label>
+                                            <select name="customer_id[]" class="form-control select2" multiple="multiple" data-placeholder="Select Customer" style="width: 100%;">
+                                            {!!get_customers_options($customer_ids)!!}
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <label>Select Driver</label>
+                                            <select name="driver_id[]" class="form-control select2" multiple="multiple" data-placeholder="Select Driver" style="width: 100%;">
+                                                {!!get_drivers_options($driver_ids)!!}
+                                            </select>
+                                        </td>
+                                        @endif
+                                        <td><button onclick="$('#search_form').submit()" style="margin-top: 32px;" type="button" class="btn btn-block btn-primary"><i class="fa fa-search"></i>Search</button></td>
+                                        <td><a href="{{route('scheduled.deliveries')}}" style="margin-top: 32px;" type="button" class="btn btn-block btn-secondary"><i class="fa fa-undo"></i> Cancel</a></td>
+                                    </tr>
+                                   
+                                       
+                                        {{-- <td>
+                                            <span>Select Status</span>
+                                            <select name="quote_status[]" class="form-control select2" multiple="multiple" data-placeholder="Select Quote Status" style="width: 100%;">
+                                                {!!get_quote_status_options($quote_status, true)!!}
+                                                </select>
+
+                                        </td> --}}
+                                       
+                                </table>
+                                </form>
+                                <div class="row" style="margin-bottom: 15px;">
+                                    <div class="col-4">
+                                    <input class="form-control" onkeyup="search_delivery()" type="text" id="qsearch" name="qsearch" placeholder="Type PO Number to search">
+                                    </div>
+                                </div>
                                 <table id="example1" class="table table-bordered table-striped">
                                     <thead>
                                         <tr>
@@ -47,7 +131,7 @@
                                             <th>Drop-off Street Address</th>
                                             <th>Drop-off Phone</th>
                                             <th>Customer</th>
-                                            <th>Status</th>
+                                            <th>Created at</th>
                                             <th>Action</th>
                                         </tr>
                                     </thead>
@@ -77,7 +161,7 @@
                                             <td id="drop_off_contact_number_{{ $data['id'] }}">
                                                {{$data['customer']['name']}}
                                             </td>
-                                            <td id="status{{ $data['id'] }}">
+                                            {{-- <td id="status{{ $data['id'] }}">
                                                 @if ($data['status']==config('constants.quote_status.pedning'))
                                                 <span class="btn btn-info btn-block btn-sm"><i
                                                     class="fas fa-chart-line"></i>
@@ -100,14 +184,17 @@
                                                 Deliverable</span>
                                                @endif
                                                 
-                                            </td>
+                                            </td> --}}
+                                            <td>{{formate_date(strtotime($data['created_at']),true)}}</td>
                                             <td>
                                                
                                                 <a href="{{route('deliveries.view',$data['id']) }}"
                                                 class="btn btn-info btn-block btn-sm"><i class="fas fa-eye"></i>
                                                 View</a>
                                                 @if ($user->group_id==config('constants.groups.admin'))
-                                                    
+                                                {{-- <a href="{{route('delivery.editform',$data['id']) }}"
+                                                class="btn btn-info btn-block btn-sm"><i class="fas fa-edit"></i>
+                                                Edit</a> --}}
                                                 
                                                 @if ($data['is_active']==1)
                                                 <button
@@ -133,10 +220,6 @@
                                                 $counter ++;
                                         }
                                         ?>
-
-
-
-
                                     </tbody>
                                     <tfoot>
                                         <tr>
@@ -216,8 +299,61 @@
 
     <script>
       
-        
+      $(function() {
+            $('.select2').select2();
+            $('.select2bs4').select2({
+                theme: 'bootstrap4'
+            });
 
+            $('#from_date').datetimepicker({
+                format: 'L'
+            });
+            $('#to_date').datetimepicker({
+                format: 'L'
+            });
+        });
+
+        function search_delivery() {
+
+                searchval=$('#qsearch').val();
+                if(searchval.length < 4 && searchval.length>0){
+                    return false;
+                }
+                
+
+                var sendInfo = {
+                    action: 'qsearch_delivery',
+                    qsearch: searchval,
+                };
+
+                $.ajax({
+                    url: "{{route('quotes.ajaxcall',1) }}",
+                    data: sendInfo,
+                    contentType: 'application/json',
+                    error: function() {
+                        alert('There is Some Error, Please try again !');
+                    },
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function(data) {
+                        if (data.error == 'No') {
+                           $('#example1').html(data.response);
+
+
+                        } else {
+                            $(document).Toasts('create', {
+                                class: 'bg-danger',
+                                title: data.title,
+                                subtitle: 'record',
+                                body: data.msg
+                            });
+                        }
+                       
+                        //alert('i am here');
+                    }
+                });
+            
+        }
         function do_action(id, action_name,counter_id) {
 
                 if(action_name=='restore')
@@ -234,7 +370,7 @@
                 };
 
                 $.ajax({
-                    url: "{{ url('/admin/quotes/ajaxcall/') }}/" + id,
+                    url: "{{ route('quotes.ajaxcall') }}/"+ id+"/?time={{time()}}",
                     data: sendInfo,
                     contentType: 'application/json',
                     error: function() {
@@ -261,6 +397,7 @@
                                 body: data.msg
                             });
                         }
+                        window.location='';
                         console.log(data);
                         //alert('i am here');
                     }

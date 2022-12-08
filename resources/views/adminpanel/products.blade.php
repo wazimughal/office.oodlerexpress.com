@@ -94,9 +94,9 @@
                                     <tfoot>
                                         <tr>
                                             <th>Name</th>
+                                            <th>Sizes</th>
                                             <th>Category</th>
                                             <th>Product Description</th>
-                                           
                                             <th>Action</th>
                                         </tr>
                                         <tr>

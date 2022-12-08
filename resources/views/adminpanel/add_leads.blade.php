@@ -57,7 +57,7 @@
                                     </div>
                                     <div class="col-3">&nbsp;</div>
                                 </div>
-                                <form method="POST" action="{{ url('/admin/leads/add') }}">
+                                <form method="POST" action="{{ route('admin.leads.save') }}">
                                     @csrf
                                     <div class="row form-group">
                                         <div class="col-1">&nbsp;</div>
@@ -221,7 +221,7 @@
                                         <div class="col-5">
                                             <span>Business Address</span>
                                             <div class="input-group mb-3">
-                                                <input type="text" name="business_address"
+                                                <input type="text" id="business_address" name="business_address"
                                                     class="form-control @error('business_address') is-invalid @enderror"
                                                     placeholder="Business Address" value="{{ old('business_address') }}">
                                                 <div class="input-group-append">
@@ -239,7 +239,7 @@
                                         <div class="col-1">&nbsp;</div>
                                     </div>
 
-
+{{-- 
                                     <div class="row form-group">
                                         <div class="col-1">&nbsp;</div>
                                         <div class="col-5">
@@ -280,7 +280,7 @@
                                             </div>
                                         </div>
                                         <div class="col-1">&nbsp;</div>
-                                    </div>
+                                    </div> --}}
                                     <div class="row form-group">
                                         <div class="col-1">&nbsp;</div>
                                         <div class="col-5">
@@ -366,7 +366,7 @@
                                     </div>
                                     <div class="row form-group">
                                         <div class="col-1">&nbsp;</div>
-                                        <div class="col-5">
+                                        {{-- <div class="col-5">
                                             <span>What do you Ship?</span>
                                             <div class="input-group mb-3">
                                                 <select name="shipping_cat[]"  class="form-control select2bs4 @error('shipping_cat') is-invalid @enderror" multiple="multiple" data-placeholder="What do you Ship" >
@@ -384,7 +384,7 @@
                                                     </div>
                                                 @enderror
                                             </div>
-                                        </div>
+                                        </div> --}}
                                         <div class="col-5">
                                             <span>How often you ship?</span>
                                             <div class="input-group mb-3">
@@ -445,12 +445,27 @@
 @section('footer-js-css')
     <!-- Select2 -->
     <script src="{{ url('adminpanel/plugins/select2/js/select2.full.min.js') }}"></script>
+    {{-- Google API --}}
+    <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=places&key={{config('constants.google_api_key')}}"></script> 
+
     <script>
         $(function() {
             $('.select2bs4').select2({
                 theme: 'bootstrap4'
             });
         });
+
+        $(document).ready(function () {
+        var autocomplete;
+        
+        autocomplete = new google.maps.places.Autocomplete((document.getElementById('business_address')), {
+            types: ['geocode']
+           
+        });  
+        google.maps.event.addListener(autocomplete, 'place_changed', function () {
+            var near_place = autocomplete.getPlace();
+        });
+    });
 
         // Shorthand for $( document ).ready()
         function changeCity() {

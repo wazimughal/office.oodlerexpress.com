@@ -54,8 +54,32 @@
                                     <div class="col-md-8">
                                         <div class="card">
                                             <div class="card-header p-2">
-                                                <strong> Quote Information</strong>
+                                                <strong> Delivery Information</strong>
+                                                <div style="width: 120px; float:right;">
+                                                @if ($user->group_id==config('constants.groups.admin'))
+                                                <a href="{{route('delivery.editform',$id) }}"
+                                                class="btn btn-info btn-flat btn-sm"><i class="fas fa-edit"></i>
+                                                Edit Delivery</a>  
+                                                @endif
+                                                
+                                                </div>
                                             </div><!-- /.card-header -->
+                                            <div class="row" style="margin-top: 20px;">
+                                                <div class="col-4">&nbsp;</div>
+                                                <div class="col-4"><strong>PO Number: {{$quotesData['po_number']}}</strong></div>
+                                            </div>
+                                            @if (isset($quotesData['quote_type']) && $quotesData['quote_type']=='multi')
+                                                        <div class="row" style="margin-top: 10px;">
+                                                            <div class="col-4">&nbsp;</div>
+                                                            <div class="col-4">
+                                                                Type: {{$quotesData['quote_type']}}<br>
+                                                                Business Type: {{$quotesData['business_type']}}<br>
+                                                                Elevator: {{($quotesData['elevator']==1)?'YES':'NO';}}<br>
+                                                                Appartments: {{$quotesData['no_of_appartments']}}<br>
+                                                                List of Floors: {{ implode(',',json_decode($quotesData['list_of_floors'],true)) }}<br>
+                                                            </div>
+                                                        </div>
+                                                        @endif
                                             <div class="card-body">
                                                 <div class="tab-content">
                                                     <div>
@@ -63,13 +87,10 @@
                                                             <div class="col-3">&nbsp;</div>
                                                             <div class="col-6">
 
-                                                                @if ($errors->any())
-                                                                    {{ implode('', $errors->all('<div>:message</div>')) }}
-                                                                @endif
                                                                 <!-- flash-message -->
-                                                                <div class="flash-message">
+                                                                <div class="flash-message bg-danger">
                                                                     @if ($errors->any())
-                                                                        {{ implode('', $errors->all('<div>:message</div>')) }}
+                                                                        {!! implode('', $errors->all('<div>:message</div>')) !!}
                                                                     @endif
 
                                                                     @foreach (['danger', 'warning', 'success', 'info'] as $msg)
@@ -189,9 +210,375 @@
                                             </div><!-- /.card-body -->
                                         </div>
                                         <!-- /.card -->
+                                        
+                                            @if ($user->group_id==config('constants.groups.admin') || $user->group_id==config('constants.groups.customer'))
+                                            <?php if($quotesData['quote_prices']){  $k=1;?>
+                                                <div class="card">
+                                                <div class="card-header p-2">
+                                                    <strong> Delivery Cost   </strong>
+                                                </div><!-- /.card-header -->
+                                            
+                                                <div class="form-group row">
+                                                    <div class="col-sm-12">
+                                                        <div class="table-responsive">
+                                                            <form id="update_delivery_price" method="post">
+                                                                @csrf
+                                                                <input type="hidden" name="quote_id" value="{{$quotesData['id']}}">
+                                                                <input type="hidden" name="action" value="update_delivery_price">
+                                                                
+                                                            <table class="table">
+                                                                <tr>
+                                                                    <td>Price</td>
+                                                                    <td>Extra</td>
+                                                                    <td>Reason</td>
+                                                                    @if ($user->group_id==config('constants.groups.admin'))
+                                                                    <td>Description</td>    
+                                                                    @endif
+                                                                    
+                                                                    <td>Sent On</td>
+                                                                    <td>Status</td>
+                                                                </tr>
+                                                                <?php foreach ($quotesData['quote_prices'] as $key=>$data){ ?>
+                                                                <tr>
+                                                                    <td>${{ $data['quoted_price'] }}</td>
+                                                                    <td>${{ $data['extra_charges'] != '' ? $data['extra_charges'] : 0 }}
+                                                                    </td>
+                                                                    <td>{{ $data['reason_for_extra_charges'] }}</td>
+                                                                    @if ($user->group_id==config('constants.groups.admin'))
+                                                                    <td>{{ $data['description'] }}</td>
+                                                                    @endif
+                                                                    <td>{{ date('d/m/Y H:i:s', strtotime($data['created_at'])) }}
+                                                                    </td>
+                                                                    <td>
+                                                                        @if ($data['status'] == 1)
+                                                                            <span
+                                                                                class="btn btn-success btn-block btn-sm"><i
+                                                                                    class="fas fa-chart-line"></i>
+                                                                                Active</span>
+                                                                        @else
+                                                                            <span
+                                                                                class="btn btn-primary btn-block btn-sm"><i
+                                                                                    class="fas fa-chart-line"></i>
+                                                                                Previous</span>
+                                                                        @endif
+                                                                    </td>
+                                                                </tr>
+                                                                @php
+                                                                  if ($data['status'] == 1){
+                                                                    $delivery_cost=$data['quoted_price']+$data['extra_charges'];
+                                                                  }  
+                                                                @endphp
+                                                                
+                                                                @if ($data['status'] == 1 && $user->group_id==config('constants.groups.admin'))
+                                                                <input type="hidden" name="invoice_id" value="{{$data['id']}}">
+                                                                
+                                                                <tr>
+                                                                    <td><input type="number" name="quoted_price" value="{{$data['quoted_price']}}"> </td>
+                                                                    <td><input type="number" name="extra_charges" value="{{$data['extra_charges'] != '' ? $data['extra_charges'] : 0 }}">
+                                                                    </td>
+                                                                    <td colspan="2"><input style="width:100%;" type="text" name="reason_for_extra_charges" value="{{ $data['reason_for_extra_charges'] }}"></td>
+                                                                    <td colspan="2"><textarea style="width:100%;" name="description">{{ $data['description'] }}</textarea></td>
+                                                                    
+                                                                </tr>
+                                                                <tr>
+                                                                    <td colspan="2">&nbsp;</td>
+                                                                    <td colspan="2"><div onclick=" do_action({{ $quotesData['id'] }},'update_delivery_price')" class="btn btn-primary btn-block btn-sm"><i class="fas fa-save"></i> Save Changes</div></td>
+                                                                    <td colspan="2">&nbsp;</td>
+                                                                </tr>
+                                                                @endif
 
+                                                                <?php }?>
+                                                            </table>
+                                                            </form>
+                                                        </div>
+                                                    </div>
+                                                </div>
 
-                                        {{-- This section is for Comments --}}
+                                                <?php }else{?>
+                                                <div class="form-group row">
+                                                    <div class="col-sm-12 text-center">
+                                                        No quote sent yet!
+                                                    </div>
+                                                </div>
+                                                <?php }?>
+                                            </div>
+                                            @endif
+                                            
+                                        @if ($user->group_id == config('constants.groups.admin'))
+                                        
+                                        @if ($quotesData['status']>0)
+                                        <div class="card">
+                                            <div class="card-header p-2">
+                                                <strong> Payment Received </strong>
+                                            </div><!-- /.card-header -->
+                                            <div class="card-body">
+                                                <div class="tab-content">
+                                                    <div class="form-group row">
+                                                        <div class="col-5">&nbsp;</div>
+                                                        <div class="col-sm-4"><a href="{{route('send.customer.invoice',$id)}}"  class="btn btn-info btn-block btn-flat"><i class="fa fa-upload"></i> Send invoice to Customer</a></div>
+                                                        <div class="col-sm-3"><a href="{{route('download.invoice',$id)}}" class="btn btn-info btn-block btn-flat"><i class="fa fa-download"></i> Download invoice</a></div>
+                                                    </div>
+                                                    
+                                                    <?php $recievedAmount=0; if($quotesData['invoices'] && count($quotesData['invoices'])>0){  $k=1;?>
+                                                        <div class="form-group row">
+                                                            <div class="col-sm-12">
+                                                                <div class="table-responsive">
+                                                                    <table class="table">
+                                                                        <tr>
+                                                                            <th>Sr.No.</th>
+                                                                            <th>Payee Name</th>
+                                                                            <th>Paid Amount</th>
+                                                                            <th>Description</th>
+                                                                            <th>Paid date</th>
+                                                                            <th>Status</th>
+                                                                        </tr>
+                                                                        <?php foreach ($quotesData['invoices'] as $key=>$invoice){ 
+                                                                            $recievedAmount=$recievedAmount+$invoice['paid_amount'];?>
+                
+                                                                        <tr>
+                                                                            <td>{{ $k++}}</td>
+                                                                            <td>{{ $invoice['payee_name']}}</td>
+                                                                            <td>{{ $invoice['paid_amount']}}</td>
+                                                                            <td>{{ $invoice['description']}}</td>
+                                                                            <td>{{ date(config('constants.date_formate'),strtotime($invoice['created_at'])) }}</td>
+                                                                            <td style="width:200px">
+                                                                                <span style="width:200px"  class=" btn-success btn-sm">Received</span>
+                                                                            </td>
+                                                                            <div </tr>
+                
+                                                                                <?php }?>
+                                                                    </table>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                
+                                                        <?php }?>
+                                                        @if ($errors->any())
+                                                        <div class="form-group row">
+                                                            <div class="col-3">&nbsp;</div>
+                                                        <div class=" col-6 flash-message bg-danger">
+                                                            
+                                                                {!! implode('', $errors->all('<div>:message</div>')) !!}
+                                                           
+                                                        </div>
+                                                        </div>
+                                                        @endif
+
+                                                    <form action="{{route('delivery.add_invoice',$id)}}" method="POST">
+                                                        @csrf
+                                                        
+                                                        <div class="form-group row">
+                                                            
+                                                            <div class="col-sm-3">
+                                                                <label>Payee Name
+                                                                </label>
+                                                                <div class="input-group mb-2"><input type="text"
+                                                                        name="payee_name" value="{{ old('payee_name') }}"
+                                                                        placeholder="Name of Payee" class="form-control">
+                                                                </div>
+                                                            </div>
+                                                            {{-- <div class="col-sm-3">
+                                                                <label>Payee Phone
+                                                                </label>
+                                                                <div class="input-group mb-2"><input type="text"
+                                                                        name="payee_phone" value="{{ old('payee_phone') }}"
+                                                                        placeholder="Phone of Payee" class="form-control">
+                                                                </div>
+                                                            </div> --}}
+                                                            <div class="col-sm-2">
+                                                                <label>Amout</label>
+                                                                <div class="input-group mb-2"><input type="number"
+                                                                        name="paid_amount"
+                                                                        value="{{ old('paid_amount') }}"
+                                                                        placeholder="Amount" class="form-control">
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-sm-7">
+                                                                <label>Description</label>
+                                                                <div class="input-group mb-2"><textarea
+                                                                        name="description"
+                                                                        value="{{ old('description') }}"
+                                                                        placeholder="Description about Payment" class="form-control"></textarea>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="row form-group">
+                                                            <div class="col-4">&nbsp;</div>
+                                                            <div class="col-4">
+                                                                <button type="submit"
+                                                                    class="btn btn-outline-success btn-block btn-lg"><i
+                                                                        class="fa fa-save"></i> Add Payment</button>
+                                                            </div>
+                                                            <div class="col-4">&nbsp;</div>
+
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        @endif
+                                            <div class="card">
+                                                <div class="card-header p-2">
+                                                    <strong> Delivery Documents (Only for Office) </strong>
+                                                </div><!-- /.card-header -->
+                                                <div class="row form-group">
+                                                    <div class="col-1">&nbsp;</div>
+                                                    <div class="col-10">
+                                                        <div class="row form-group">
+                                                            <?php
+                                                     $imagesTypes=array('jpg','jpeg','png','gif');
+                                                     $excelTypes=array('xls','xlsx');
+                                                     $docTypes=array('doc','docx');
+                                                        foreach($quotesData['document_for_delivery'] as $data){
+                                                          if(in_array($data['otherinfo'],$imagesTypes))
+                                                            $thumb_img=$data['path'];
+                                                          else if(in_array($data['otherinfo'],$excelTypes))
+                                                            $thumb_img=url('adminpanel/dist/img/xls.jpeg');
+                                                          else if(in_array($data['otherinfo'],$docTypes))
+                                                            $thumb_img=url('adminpanel/dist/img/doxx.png');
+                                                          else if($data['otherinfo']=='pdf')
+                                                          $thumb_img=url('adminpanel/dist/img/pdf.png');
+                                                            ?>
+                                                            <div id="file_{{ $data['id'] }}" class="col-3 text-center"
+                                                                style="position: relative;">
+                                                                <label class="">{{ $data['name'] }}</label>
+                                                                <i onclick="removeFile({{ $data['id'] }})"
+                                                                    style="position: absolute; top:15px; right:0px; cursor:pointer"
+                                                                    class="fas fa-times"></i>
+                                                                <a href="{{ $data['path'] }}" target="_blank"><img
+                                                                        class="w-100 shadow-1-strong rounded mb-4 img-thumbnail"
+                                                                        src="{{ isset($thumb_img)?$thumb_img:'' }}" width="200" alt="Uploaded Image"></a>
+                                                            </div>
+                
+                
+                                                            <?php 
+                                                          }
+                                                      ?>
+                                                        </div>
+                                                        <div class="col-1">&nbsp;</div>
+                                                    </div>
+                                                </div>
+                                                <div class="row form-group">
+                                                    <div class="col-1">&nbsp;</div>
+                                                    <div class="col-10 card card-default">
+                                                      
+                                                        <form action="{{ route('delivery.uploade_document_for_driver',$id) }}"
+                                                            method="post" enctype="multipart/form-data" id="image-upload"
+                                                            class="dropzone ">
+                                                            <input type="hidden" name="documents_for" value="document_for_delivery"> 
+                                                            @csrf
+                                                            <div>
+                                                                <h4 class="form-label">Upload Multiple Files By Click On
+                                                                    Box</h4>
+                                                            </div>
+                                                        </form>
+                                                        <div class="card-footer">
+                                                            You can select multiple files (e.g images, .docx , .xls ,.csv,
+                                                            .pdf ) and upload
+
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-3">&nbsp;</div>
+
+                                                </div>
+                                            </div>
+                                        
+                                            <div class="card">
+                                                <div class="card-header p-2">
+                                                    <strong> Notes Section for Delivery (Only Admin)</strong>
+                                                </div><!-- /.card-header -->
+                                                <div class="card-body">
+                                                    <div id="submit_comment_crm_replace">
+                                                        @php
+                                                            // p($quotesData['comments']);
+                                                        @endphp
+                                                        @foreach ($quotesData['delivery_notes'] as $key => $comment)
+                                                            <div class="row border">
+                                                                <div class="col-12">
+                                                                    <strong>{{ $comment['user']['name'] }}</strong>({{ $comment['slug'] }})
+                                                                    {{ date('d/m/Y H:i:s', strtotime($comment['created_at'])) }}<br>
+                                                                    {{ $comment['comment'] }}
+                                                                </div>
+                                                            </div>
+                                                        @endforeach
+
+                                                    </div>
+                                                    @php
+                                                        $userData = get_session_value();
+                                                        //p($userData);
+                                                    @endphp
+                                                    <div class="tab-content">
+                                                        <form method="post" id="submit_comment_crm">
+                                                            <input type="hidden" name="group_id"
+                                                                value="{{ $user->group_id }}">
+                                                            <input type="hidden" name="action" value="submit_comment_crm">
+                                                            <input type="hidden" name="comment_section" value="delivery_notes_only">
+                                                            <input type="hidden" name="slug"
+                                                                value="{{ $userData['get_groups']['slug'] }}">
+                                                            <input type="hidden" name="user_name"
+                                                                value="{{ $userData['name'] }}">
+                                                            <div class="form-group">
+                                                                <label for="inputDescription">Comment</label>
+                                                                <textarea id="comments_crm" name="comment" placeholder="Write comment about the quote" class="form-control"
+                                                                    rows="4"></textarea></br>
+                                                                <button
+                                                                    onclick="do_action({{ $quotesData['id'] }},'submit_comment_crm')"
+                                                                    type="button" class="btn btn-success float-right"><i
+                                                                        class="far fa-credit-card"></i> Send</button>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @endif
+                                        {{-- This section is for upload proof of delivery --}}
+                                        @if ($user->group_id == config('constants.groups.customer'))
+                                        <div class="card">
+                                            <div class="card-header p-2">
+                                                <strong> Proof of Delivery </strong>
+                                            </div><!-- /.card-header -->
+                                            <div class="row form-group">
+                                                <div class="col-1">&nbsp;</div>
+                                                <div class="col-10">
+                                                    <div class="row form-group">
+                                                        <?php
+                                                 $imagesTypes=array('jpg','jpeg','png','gif');
+                                                 $excelTypes=array('xls','xlsx');
+                                                 $docTypes=array('doc','docx');
+                                                 if(count($quotesData['delivery_proof'])>0){
+                                                    foreach($quotesData['delivery_proof'] as $data){
+                                                      if(in_array($data['otherinfo'],$imagesTypes))
+                                                        $thumb_img=$data['path'];
+                                                      else if(in_array($data['otherinfo'],$excelTypes))
+                                                        $thumb_img=url('adminpanel/dist/img/xls.jpeg');
+                                                      else if(in_array($data['otherinfo'],$docTypes))
+                                                        $thumb_img=url('adminpanel/dist/img/doxx.png');
+                                                      else if($data['otherinfo']=='pdf')
+                                                      $thumb_img=url('adminpanel/dist/img/pdf.png');
+                                                        ?>
+                                                        <div id="file_{{ $data['id'] }}" class="col-3 text-center"
+                                                            style="position: relative;">
+                                                            <label class="">{{ $data['name'] }}</label>
+                                                            <a href="{{ $data['path'] }}" target="_blank"><img
+                                                                    class="w-100 shadow-1-strong rounded mb-4 img-thumbnail"
+                                                                    src="{{ isset($thumb_img)?$thumb_img:'' }}" width="200" alt="Uploaded Image"></a>
+                                                        </div>
+            
+            
+                                                        <?php 
+                                                      }
+                                                    }
+                                                    else{
+                                                        echo '<div class="col-12 text-center">No Proof uploaded Yet</div>';
+                                                    }
+                                                  ?>
+            
+                                                </div>
+                                                    <div class="col-1">&nbsp;</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        @endif
                                         @if ($user->group_id == config('constants.groups.admin') || $user->group_id == config('constants.groups.driver'))
                                             <div class="card">
                                                 <div class="card-header p-2">
@@ -231,9 +618,7 @@
                                                           }
                                                       ?>
                 
-                
-                
-                                                        </div>
+                                                    </div>
                                                         <div class="col-1">&nbsp;</div>
                                                     </div>
                                                 </div>
@@ -249,8 +634,144 @@
                                                                 <h4 class="form-label">Upload Multiple Files By Click On
                                                                     Box</h4>
                                                             </div>
+                                                        </form>
+                                                        <div class="card-footer">
+                                                            You can select multiple files (e.g images, .docx , .xls ,.csv,
+                                                            .pdf ) and upload
 
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-3">&nbsp;</div>
 
+                                                </div>
+                                            </div>
+                                            <div class="card">
+                                                @php
+                                                if ($user->group_id==config('constants.groups.admin')){
+                                                    $documents_for=$quotesData['delivery_documents_for_driver'];
+                                                    $only_view_documents=$quotesData['delivery_documents_for_admin'];
+
+                                                    $heading_for_documents1='Driver uploads ';
+                                                    $heading_for_documents2='CRM Uploads (for Driver)';
+                                                      
+                                                  }
+                                                  else {
+                                                    $documents_for=$quotesData['delivery_documents_for_admin'];
+                                                    $only_view_documents=$quotesData['delivery_documents_for_driver'];
+
+                                                    $heading_for_documents1='CRM Uploads '; 
+                                                    $heading_for_documents2='Driver Uploads (Record)';
+                                                      
+                                                  }
+                                                  @endphp
+                                                <div class="card-header p-2"><strong>{{$heading_for_documents1}} </strong> </div>
+                                                <div class="row form-group">
+                                                    <div class="col-1">&nbsp;</div>
+                                                    <div class="col-10">
+                                                        <div class="row form-group">
+                                                            <?php
+                                                     $imagesTypes=array('jpg','jpeg','png','gif');
+                                                     $excelTypes=array('xls','xlsx');
+                                                     $docTypes=array('doc','docx');
+                                                        foreach($only_view_documents as $data){
+                                                          if(in_array($data['otherinfo'],$imagesTypes))
+                                                            $thumb_img=$data['path'];
+                                                          else if(in_array($data['otherinfo'],$excelTypes))
+                                                            $thumb_img=url('adminpanel/dist/img/xls.jpeg');
+                                                          else if(in_array($data['otherinfo'],$docTypes))
+                                                            $thumb_img=url('adminpanel/dist/img/doxx.png');
+                                                          else if($data['otherinfo']=='pdf')
+                                                          $thumb_img=url('adminpanel/dist/img/pdf.png');
+                                                            ?>
+                                                            <div id="file_{{ $data['id'] }}" class="col-3 text-center"
+                                                                style="position: relative;">
+                                                                <label class="">{{ $data['name'] }}</label>
+                                                                @if ($user->group_id==config('constants.groups.admin'))
+                                                                <i onclick="removeFile({{ $data['id'] }})"
+                                                                    style="position: absolute; top:15px; right:0px; cursor:pointer"
+                                                                    class="fas fa-times"></i>
+                                                                    @endif
+                                                                <a href="{{ $data['path'] }}" target="_blank"><img
+                                                                        class="w-100 shadow-1-strong rounded mb-4 img-thumbnail"
+                                                                        src="{{ isset($thumb_img)?$thumb_img:'' }}" width="200" alt="Uploaded Image"></a>
+                                                            </div>
+                
+                
+                                                            <?php 
+                                                          }
+                                                      ?>
+                
+                
+                
+                                                        </div>
+                                                        <div class="col-1">&nbsp;</div>
+                                                    </div>
+                                                </div>
+                                            
+                                            </div>
+                                            <div class="card">
+                                                <div class="card-header p-2">
+                                                 
+                                                <strong> {{$heading_for_documents2}}   </strong> 
+                                                </div><!-- /.card-header -->
+                                                <div class="row form-group">
+                                                    <div class="col-1">&nbsp;</div>
+                                                    <div class="col-10">
+                                                        <div class="row form-group">
+                                                            <?php
+                                                     $imagesTypes=array('jpg','jpeg','png','gif');
+                                                     $excelTypes=array('xls','xlsx');
+                                                     $docTypes=array('doc','docx');
+                                                        foreach($documents_for as $data){
+                                                          if(in_array($data['otherinfo'],$imagesTypes))
+                                                            $thumb_img=$data['path'];
+                                                          else if(in_array($data['otherinfo'],$excelTypes))
+                                                            $thumb_img=url('adminpanel/dist/img/xls.jpeg');
+                                                          else if(in_array($data['otherinfo'],$docTypes))
+                                                            $thumb_img=url('adminpanel/dist/img/doxx.png');
+                                                          else if($data['otherinfo']=='pdf')
+                                                          $thumb_img=url('adminpanel/dist/img/pdf.png');
+                                                            ?>
+                                                            <div id="file_{{ $data['id'] }}" class="col-3 text-center"
+                                                                style="position: relative;">
+                                                                <label class="">{{ $data['name'] }}</label>
+                                                                <i onclick="removeFile({{ $data['id'] }})"
+                                                                    style="position: absolute; top:15px; right:0px; cursor:pointer"
+                                                                    class="fas fa-times"></i>
+                                                                <a href="{{ $data['path'] }}" target="_blank"><img
+                                                                        class="w-100 shadow-1-strong rounded mb-4 img-thumbnail"
+                                                                        src="{{ isset($thumb_img)?$thumb_img:'' }}" width="200" alt="Uploaded Image"></a>
+                                                            </div>
+                
+                
+                                                            <?php 
+                                                          }
+                                                      ?>
+                
+                
+                
+                                                        </div>
+                                                        <div class="col-1">&nbsp;</div>
+                                                    </div>
+                                                </div>
+                                                <div class="row form-group">
+                                                    <div class="col-1">&nbsp;</div>
+                                                    <div class="col-10 card card-default">
+                                                      
+                                                        <form action="{{ route('delivery.uploade_document_for_driver',$id) }}"
+                                                            method="post" enctype="multipart/form-data" id="image-upload"
+                                                            class="dropzone ">
+                                                            @if ($user->group_id==config('constants.groups.admin'))
+                                                            <input type="hidden" name="documents_for" value="document_for_driver">    
+                                                            @else
+                                                            <input type="hidden" name="documents_for" value="document_for_admin">
+                                                            @endif
+                                                            
+                                                            @csrf
+                                                            <div>
+                                                                <h4 class="form-label">Upload Multiple Files By Click On
+                                                                    Box</h4>
+                                                            </div>
                                                         </form>
                                                         <div class="card-footer">
                                                             You can select multiple files (e.g images, .docx , .xls ,.csv,
@@ -264,7 +785,7 @@
                                             </div>
                                             <div class="card">
                                                 <div class="card-header p-2">
-                                                    <strong> Notes Section </strong>
+                                                    <strong> Notes Section for Driver </strong>
                                                 </div><!-- /.card-header -->
                                                 <div class="card-body">
                                                     <div id="submit_comment_replace">
@@ -379,6 +900,11 @@
                                                         <tbody>
                                                             <?php
                                                             $driver_activities=driver_activities();
+                                                            //p($driver_activities);
+
+                                                            if(!empty($quotesData['reached_at_pickup']) && !empty($quotesData['delivered']))
+                                                            $elapsed_time=elapsed_time($quotesData['reached_at_pickup'],$quotesData['delivered']);
+
                                                             foreach ($driver_activities as $key => $value) {
                                                                 
                                                              ?>
@@ -398,13 +924,16 @@
                                                                         <label for="{{ $key }}"></label>
                                                                     </div>
                                                                 </td>
-                                                                <td id="{{ $key }}_time">{!! $quotesData[$key] != '' ? date('d/m/Y h:i:s', $quotesData[$key]) : '&nbsp;' !!}
+                                                                <td id="{{ $key }}_time">{!! $quotesData[$key] != '' ? date(config('constants.date_and_time'), $quotesData[$key]) : '&nbsp;' !!}
                                                                 </td>
                                                             </tr>
                                                             <?php
                                                             }
                                                         ?>
-
+                                                        @if (isset($elapsed_time))
+                                                        <tr><th>Total Working Hours</th><td colspan="2">{{$elapsed_time['hours']}} Hours and {{$elapsed_time['mins']}} mins</td></tr>
+                                                        @endif
+                                                            
 
                                                         </tbody>
                                                     </form>
@@ -412,17 +941,74 @@
                                                 </table>
                                             </div>
                                         @endif
+
+                                        
+                                        
+                                        @if ($user->group_id==config('constants.groups.admin') ||
+                                        $user->group_id==config('constants.groups.customer')
+                                        )
+                                        <div class="card-header alert-secondary">
+                                            <h3 class="card-title">Payments</h3>
+                                        </div>
+                                        <div class="row form-group">
+                                            <div class="col-12">
+                                        <div class="table-responsive">
+                                            <table class="table" width="100%" style="width:100%">
+                                                <tbody>
+                                                        <tr>
+                                                            <th style="width:50%">Delivery Cost</th>
+                                                            <td style="width:50%">${{$delivery_cost}}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <th>Paid Amount 1</th>
+                                                            <td>${{$recievedAmount=received_amount($quotesData['id'])}}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <th>Due amount</th>
+                                                            <td>${{$due_amount=$delivery_cost-$recievedAmount}}</td>
+                                                        </tr>
+                                                        
+                                                    </tbody>
+                                                
+
+                                            </table>
+                                        </div>
+                                            </div>
+                                        </div>
+                                        @endif
                                         @if (isset($quotesData['driver']) && !empty($quotesData['driver']))
                                             <div class="card-header alert-secondary">
                                                 <h3 class="card-title">Driver Info</h3>
                                             </div>
+                                            @if ($user->group_id==config('constants.groups.admin'))
+                                            <form id="change_quote_driver" method="post">
+                                                @csrf
+                                                <input type="hidden" name="quote_id" value="{{$quotesData['id']}}">
+                                                <div class="row form-group">
+                                                <div class="col-8">
+                                                    <label class="col-form-label">Select Driver</label>
+                                                    <div class="input-group mb-3" >
+                                                        <select placeholder="select Driver" name="driver_id" class="select2bs4 form-control @error('photographer_expense[]') is-invalid @enderror">
+                                                            {!!get_drivers_options($quotesData['driver_id'])!!}
+                                                        </select>
+                                                        @error('driver_id')
+                                                            <div class="invalid-feedback">
+                                                                {{ $message }}
+                                                            </div>
+                                                        @enderror
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="col-4" style="margin-top: 42px">
+                                                    <button onclick="do_action({{$quotesData['id']}},'change_quote_driver')" class=" float-right btn btn-success btn-block btn-sm"><i
+                                                            class="fa fa-plus"></i> Save Changes</button>
+                                                </div>
+                                                </div>
+                                            </form>
+                                            @endif
                                             <div class="table-responsive">
                                                 <table class="table">
-                                                    <form method="post" id="driver_update">
-                                                        <input type="hidden" name="action" value="driver_update">
-                                                        <input type="hidden" name="uid"
-                                                            value="{{ $quotesData['driver']['id'] }}">
-                                                        <tbody>
+                                                    <tbody>
                                                             <tr>
                                                                 <th style="width:50%">Name</th>
                                                                 <td>{{ $quotesData['driver']['firstname'] }}
@@ -446,7 +1032,7 @@
                                                                 <td>{{ $quotesData['driver']['address'] }}</td>
                                                             </tr>
                                                         </tbody>
-                                                    </form>
+                                                    
 
                                                 </table>
                                             </div>
@@ -557,7 +1143,9 @@
                 theme: 'bootstrap4'
             });
         });
-        function removeFile(id) {
+
+ 
+function removeFile(id) {
 
 
 if (confirm('Are you sure? you want to delete this file?')) {
@@ -614,7 +1202,7 @@ if (confirm('Are you sure? you want to delete this file?')) {
             if (confirm(alertMsg)) {
                 $('#_loader').show();
                 $.ajax({
-                    url: "{{ url('/admin/quotes/ajaxcall/') }}/" + id,
+                    url: "{{ route('quotes.ajaxcall',$quotesData['id']) }}?time={{time()}}",
                     data: sendInfo,
                     contentType: 'application/json',
                     error: function() {
@@ -673,9 +1261,13 @@ if (confirm('Are you sure? you want to delete this file?')) {
                 if ($('#comments').val() == '')
                     return false;
             }
+            else if (action_name == 'submit_comment_crm') {
+                if ($('#comments_crm').val() == '')
+                    return false;
+            }
             $('#_loader').show();
             $.ajax({
-                url: "{{ url('/admin/quotes/ajaxcall/') }}/" + id,
+                url: "{{ route('quotes.ajaxcall',$quotesData['id']) }}" ,
                 data: sendInfo,
                 contentType: 'application/json',
                 error: function() {
@@ -685,8 +1277,11 @@ if (confirm('Are you sure? you want to delete this file?')) {
                 dataType: 'json',
                 success: function(data) {
 
+                   
+
                     $('#' + action_name + '_replace').append(data.response);
                     $('#comments').val('');
+                    $('#comments_crm').val('');
                     $('#_loader').hide();
                     //console.log('result :'+action_name);
                     if (data.error == 'No') {
@@ -705,8 +1300,14 @@ if (confirm('Are you sure? you want to delete this file?')) {
                             body: data.msg
                         });
                     }
+
+                    if(action_name=='change_quote_driver' || action_name=='update_delivery_price')
+                    window.location='';
+                    
                 }
             });
+
+            
 
         }
     </script>

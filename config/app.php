@@ -15,7 +15,7 @@ return [
     |
     */
 
-    'name' => env('APP_NAME', 'Diagnostic Lab'),
+    'name' => env('APP_NAME', 'Oodler Express'),
 
     /*
     |--------------------------------------------------------------------------
@@ -182,6 +182,8 @@ return [
        // Mavinoo\Batch\BatchServiceProvider::class,
        // For DOM PDF View
         Barryvdh\DomPDF\ServiceProvider::class,
+        // This is for Excel Import and Export  
+        Maatwebsite\Excel\ExcelServiceProvider::class,
 
     ],
 
@@ -197,7 +199,8 @@ return [
     */
 
     'aliases' => Facade::defaultAliases()->merge([
-        'PDF' => Barryvdh\DomPDF\Facade::class
+        'PDF' => Barryvdh\DomPDF\Facade::class,
+        'Excel' => Maatwebsite\Excel\Facades\Excel::class,
         // 'ExampleClass' => App\Example\ExampleClass::class,
         //'Batch' => Mavinoo\Batch\BatchFacade::class,
     ])->toArray(),

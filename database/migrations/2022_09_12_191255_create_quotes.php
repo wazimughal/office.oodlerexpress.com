@@ -15,12 +15,12 @@ return new class extends Migration
     {
         Schema::create('quotes', function (Blueprint $table) {
             $table->id();
-            $table->string('quote_type');
-            $table->string('business_type');
+            $table->string('quote_type')->nullable();
+            $table->string('business_type')->nullable();
             $table->tinyInteger('elevator')->nullable()->default(0);
             $table->string('no_of_appartments')->nullable();
             $table->text('list_of_floors')->nullable();
-            $table->string('po_number');
+            $table->string('po_number')->nullable();
 
             
             $table->string('pickup_street_address')->nullable();
@@ -29,6 +29,7 @@ return new class extends Migration
             $table->string('pickup_city')->nullable();
             $table->string('pickup_zipcode')->nullable();
             $table->string('pickup_contact_number')->nullable();
+            $table->string('pickup_email')->nullable();
             $table->text('pickup_date')->nullable();
             //$table->tinyInteger('pickup_at_time')->default(1);
             
@@ -38,6 +39,7 @@ return new class extends Migration
             $table->string('drop_off_city')->nullable();
             $table->string('drop_off_zipcode')->nullable();
             $table->string('drop_off_contact_number')->nullable();
+            $table->string('drop_off_email')->nullable();
             $table->text('drop_off_date')->nullable();
             //$table->tinyInteger('drop_off_at_time')->default(1);
 
@@ -54,6 +56,7 @@ return new class extends Migration
             $table->tinyInteger('is_active')->default(1); //0: In Active , 1: Active, 2: Trash, 3:Delete
             $table->unsignedBigInteger('customer_id');
             $table->foreign('customer_id')->references('id')->on('users');
+            $table->unsignedBigInteger('request_file_id')->default(0)->nullable();
 
             $table->unsignedBigInteger('driver_id')->nullable();
             $table->foreign('driver_id')->references('id')->on('users');

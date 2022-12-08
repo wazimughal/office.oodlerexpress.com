@@ -59,6 +59,22 @@
                                             <div class="card-body">
                                                 <div class="tab-content">
                                                     <div>
+                                                        <div class="row" style="margin-top: 20px;">
+                                                            <div class="col-4">&nbsp;</div>
+                                                            <div class="col-4"><strong>PO Number: {{$quotesData['po_number']}}</strong></div>
+                                                        </div>
+                                                        @if (isset($quotesData['quote_type']) && $quotesData['quote_type']=='multi')
+                                                                    <div class="row" style="margin-top: 10px;">
+                                                                        <div class="col-4">&nbsp;</div>
+                                                                        <div class="col-4">
+                                                                            Type: {{$quotesData['quote_type']}}<br>
+                                                                            Business Type: {{$quotesData['business_type']}}<br>
+                                                                            Elevator: {{($quotesData['elevator']==1)?'YES':'NO';}}<br>
+                                                                            Appartments: {{$quotesData['no_of_appartments']}}<br>
+                                                                            List of Floors: {{ implode(',',json_decode($quotesData['list_of_floors'],true)) }}<br>
+                                                                        </div>
+                                                                    </div>
+                                                                    @endif
                                                         <div class="row">
                                                             <div class="col-3">&nbsp;</div>
                                                             <div class="col-6">

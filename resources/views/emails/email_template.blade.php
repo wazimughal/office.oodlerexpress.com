@@ -507,7 +507,7 @@
 
                                                                 <!--[if (mso)|(IE)]><td style="padding:5px 15px"><![endif]-->
 
-                                                                <a href="https://oodlerexpress.com.com" target="_self"
+                                                                <a href="https://oodlerexpress.com" target="_self"
                                                                     style="padding:5px 15px;display:inline-block;color:#000000;font-family:arial,helvetica,sans-serif;font-size:14px;text-decoration:none"
                                                                     class="v-padding v-font-size">
                                                                     Home

@@ -49,6 +49,7 @@
                                 <form id="search_form" method="GET" action="{{ route('quotes.deliveries') }}">
                                     @csrf
                                     <input type="hidden" name="action" value="search_form">
+                                    <input type="hidden" id="export_xls" name="export" value="noexport">
                                     @if (isset($_GET['page']) && $_GET['page']>0)
                                     <input type="hidden" name="page" value="{{($_GET['page']+1)}}">    
                                     @endif
@@ -75,7 +76,7 @@
 
                                         </td>
                                         <td><button onclick="$('#search_form').submit()" style="margin-top: 24px;" type="button" class="btn btn-block btn-primary"><i class="fa fa-search"></i>Search</button></td>
-                                        <td><button style="margin-top: 24px;" type="button" class="btn btn-block btn-success"><i class="fa fa-download"></i> Excel</button></td>
+                                        <td><button onclick="$('#export_xls').val('export_xls');$('#search_form').submit()" style="margin-top: 24px;" type="button" class="btn btn-block btn-success"><i class="fa fa-download"></i> Excel</button></td>
                                     </tr>
                                 </table>
                                 </form>

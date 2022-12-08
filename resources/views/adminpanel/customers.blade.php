@@ -15,18 +15,18 @@
 
                     </div>
                     <div class="col-sm-3">
-                        @if ($user->group_id==config('constants.groups.admin'))
-                        <a style="width:60%" href="{{ route('admin.customersaddform') }}"
-                        class="btn btn-block btn-success btn-lg">Add New <i class="fa fa-plus"></i></a>
+                        @if ($user->group_id == config('constants.groups.admin'))
+                            <a style="width:60%" href="{{ route('admin.customersaddform') }}"
+                                class="btn btn-block btn-success btn-lg">Add New <i class="fa fa-plus"></i></a>
                         @endif
-                        
-                        </div>
+
+                    </div>
                     <div class="col-sm-1">&nbsp;</div>
                     <div class="col-sm-6">
-                        <ol class="breadcrumb float-sm-right">
+                        {{-- <ol class="breadcrumb float-sm-right">
                             <li class="breadcrumb-item"><a href="#">Home</a></li>
                             <li class="breadcrumb-item active">View</li>
-                        </ol>
+                        </ol> --}}
                     </div>
                 </div>
             </div><!-- /.container-fluid -->
@@ -39,10 +39,17 @@
                     <div class="col-12">
                         <div class="card card-success">
                             <div class="card-header">
-                                <h3 class="card-title">Customer</h3>
+                                <h3 class="card-title">Customers</h3>
                             </div>
                             <!-- /.card-header -->
                             <div class="card-body">
+                                <div class="row" style="margin-bottom: 15px;">
+                                    <div class="col-4">
+                                        <input class="form-control" onkeyup="search_customers()" type="text"
+                                            id="qsearch" name="qsearch"
+                                            placeholder="Type email or customer or business  name to search">
+                                    </div>
+                                </div>
                                 <table id="example1" class="table table-bordered table-striped">
                                     <thead>
                                         <tr>
@@ -70,10 +77,10 @@
                                             <td id="business_name_{{ $data['id'] }}">
                                                 {{ $data['business_name'] }}</td>
                                             <td id="business_address_{{ $data['id'] }}">
-                                               {{$data['business_address']}}
+                                                {{ $data['business_address'] }}
                                             </td>
                                             <td id="business_phone_{{ $data['id'] }}">
-                                               {{$data['business_phone']}}
+                                                {{ $data['business_phone'] }}
                                             </td>
                                             <td id="status{{ $data['id'] }}">
                                                 @if ($data['lead_by'] == 0)
@@ -88,36 +95,37 @@
                                             </td>
                                             <td>
 
-                                             
-                                            @if ($user->group_id==config('constants.groups.admin'))
-                                            <a href="{{route('quotes.request_quotes_form',$data['id']) }}"
-                                            class="btn btn-success btn-block btn-sm"><i class="fas fa-plus"></i>
-                                            Request quote</a>
-                                            <a href="{{route('customer.quotes',$data['id']) }}"
-                                            class="btn btn-primary btn-block btn-sm"><i class="fas fa-eye"></i>
-                                            View all quotes</a>
 
-                                                @if ($data['is_active']==2)
-                                                <button
-                                                onClick="do_action({{ $data['id'] }},'restore',{{ $counter }})"
-                                                type="button" class="btn btn-info btn-block btn-sm"><i
-                                                    class="fas fa-chart-line"></i>
-                                                Restore</button> 
-                                               @else 
-                                               <a href="{{route('admin.customerseditform',$data['id']) }}"
-                                             class="btn btn-info btn-block btn-sm"><i class="fas fa-edit"></i>
-                                             Edit</a>
-                                                <button
-                                                    onClick="do_action({{ $data['id'] }},'delete',{{ $counter }})"
-                                                    type="button" class="btn btn-danger btn-block btn-sm"><i
-                                                        class="fas fa-trash"></i>
-                                                    Delete</button>
+                                                @if ($user->group_id == config('constants.groups.admin'))
+                                                    <a href="{{ route('delivery.add_delivery_form', $data['id']) }}"
+                                                        class="btn btn-success btn-block btn-sm"><i class="fas fa-plus"></i>
+                                                        Add Delivery</a>
+                                                    <a href="{{ route('customer.quotes', $data['id']) }}"
+                                                        class="btn btn-primary btn-block btn-sm"><i class="fas fa-eye"></i>
+                                                        View all quotes</a>
+
+                                                    @if ($data['is_active'] == 2)
+                                                        <button
+                                                            onClick="do_action({{ $data['id'] }},'restore',{{ $counter }})"
+                                                            type="button" class="btn btn-info btn-block btn-sm"><i
+                                                                class="fas fa-chart-line"></i>
+                                                            Restore</button>
+                                                    @else
+                                                        <a href="{{ route('admin.customerseditform', $data['id']) }}"
+                                                            class="btn btn-info btn-block btn-sm"><i
+                                                                class="fas fa-edit"></i>
+                                                            Edit</a>
+                                                        <button
+                                                            onClick="do_action({{ $data['id'] }},'delete',{{ $counter }})"
+                                                            type="button" class="btn btn-danger btn-block btn-sm"><i
+                                                                class="fas fa-trash"></i>
+                                                            Delete</button>
                                                     @endif
-                                            @else
-                                            <a href="{{route('admin.customerseditform',$data['id']) }}"
-                                             class="btn btn-info btn-block btn-sm"><i class="fas fa-edit"></i>
-                                             Edit</a>
-                                             @endif
+                                                @else
+                                                    <a href="{{ route('admin.customerseditform', $data['id']) }}"
+                                                        class="btn btn-info btn-block btn-sm"><i class="fas fa-edit"></i>
+                                                        Edit</a>
+                                                @endif
                                             </td>
 
                                             </td>
@@ -237,13 +245,56 @@
 
         });
 
-        
+        function search_customers() {
 
-        function do_action(id, action_name,counter_id) {
+            searchval = $('#qsearch').val();
+            if (searchval.length < 4 && searchval.length > 0) {
+                return false;
+            }
 
-                if(action_name=='restore')
+
+            var sendInfo = {
+                action: 'qsearch_customer',
+                qsearch: searchval,
+            };
+
+            $.ajax({
+                url: "{{ route('admin.customers.ajaxcall', 1) }}/",
+                data: sendInfo,
+                contentType: 'application/json',
+                error: function() {
+                    alert('There is Some Error, Please try again !');
+                },
+                type: 'GET',
+                dataType: 'json',
+                success: function(data) {
+
+                    if (data.error == 'No') {
+                        console.log(data.sql);
+                        $('#example1').html(data.response);
+
+
+                    } else {
+                        $(document).Toasts('create', {
+                            class: 'bg-danger',
+                            title: data.title,
+                            subtitle: 'record',
+                            body: data.msg
+                        });
+                    }
+
+                    //alert('i am here');
+                }
+            });
+
+        }
+
+
+        function do_action(id, action_name, counter_id) {
+
+            if (action_name == 'restore')
                 alertMsg = 'Are you sure you want to Restore this?';
-                else if(action_name=='delete')
+            else if (action_name == 'delete')
                 alertMsg = 'Are you sure you want to Delete this?';
 
             if (confirm(alertMsg)) {
