@@ -39,6 +39,102 @@ class DriverController extends Controller
        
          return view('adminpanel.add_drivers',compact('user'));
      }
+      public function addsubs(){
+        
+        $user=Auth::user(); 
+       
+         return view('adminpanel.add_subs',get_defined_vars());
+     }
+      public function edit_sub($id){
+        $user=Auth::user(); 
+        $where_clasue=[
+            'id'=>$id
+        ];
+        $driverData=
+                $this->users
+                ->where($where_clasue)
+                ->get()
+                ->toArray();
+
+                if(!empty($driverData))
+                $driverData=$driverData[0];
+
+         return view('adminpanel.edit_subs',get_defined_vars());
+     }
+      public function save_edit_sub($id, Request $req){
+        
+            $user=Auth::user(); 
+            $validationArr=[
+                'business_name'=>'required',
+                'name'=>'required',
+                'phone'=>'required',
+                'business_tax_id'=>'required',
+                'address'=>'required',
+            ];
+            if(isset($req['email']) && !empty($req['email'])){
+                $validationArr['email']='required|email|distinct|unique:users|min:5';
+                $dataArray['email']=$req['email'];
+            }
+            
+
+            $validator=$req->validate($validationArr);
+
+            $dataArray['name']=$req['name'];
+            $dataArray['business_name']=$req['business_name'];
+            $dataArray['mobileno']=$dataArray['business_mobile']=$dataArray['business_phone']=$dataArray['phone']=$req['phone'];
+            $dataArray['business_unit_ste']=$req['business_unit_ste'];
+            $dataArray['business_address']=$req['address'];
+            $dataArray['address']=$req['address'];
+            $dataArray['business_tax_id']=$req['business_tax_id'];
+            $dataArray['city']=$req['city'];
+            $dataArray['state']=$req['state'];
+            $dataArray['zipcode']=$req['zipcode'];
+            
+
+            
+            if(isset($req['password']) && $req['password']!='')
+            $dataArray['password']=Hash::make($req['password']);
+            
+            $dataArray['city']=$req['city'];
+            $dataArray['state']=$req['state'];                
+
+                $this->users->where('id', $id)->update( $dataArray);
+           
+      
+            if(isset($req['password']) && $req['password']!=''){
+                $driverData=$this->users->where('id',$id)->get()->toArray();
+                $driverData=$driverData[0];
+                  // Email Section
+                $mailData['subject']='Password changed for sub';  
+                $mailData['body_message']='Your Password changed so Now You can login in CRM using password <strong>'.$req['password'].'</strong> and the email <strong>'.$driverData['email'].'</strong> as user name.';
+                $emailAdd=[
+                    $driverData['email'],
+                ];
+            
+
+                if(Mail::to($emailAdd)->send(new EmailTemplate($mailData))){
+                    $req->session()->flash('alert-warning', 'Email Notification sent');
+                } 
+
+            }
+      
+            
+            $req->session()->flash('alert-success', 'Sub data updated Successfully !');
+
+        // Activity Log
+        $activityComment='Mr.'.get_session_value('name').' updated sub data';
+        $activityData=array(
+            'user_id'=>get_session_value('id'),
+            'action_taken_on_id'=>$id,
+            'action_slug'=>'sub_updated',
+            'comments'=>$activityComment,
+            'others'=>'users',
+            'created_at'=>date('Y-m-d H:I:s',time()),
+        );
+        $activityID=log_activity($activityData);
+
+        return redirect()->back();
+     }
       public function edit_driver($id){
         $user=Auth::user(); 
         $where_clasue=[
@@ -121,8 +217,36 @@ class DriverController extends Controller
 
         return redirect()->back();
      }
-    public function add_documents($id){
+     public function driver_action_taken($id,$action=NULL){
         $user=Auth::user(); 
+        $id=4;
+        $userData=$this->users->where('id',$id)->with('files','driver_documents')->with('getGroups')->get()->toArray();
+       
+        return view('adminpanel.driver_action_taken',get_defined_vars());
+
+    }
+    public function driver_action_files($id,Request $request){
+            $image = $request->file('file');
+            $imageExt='php';
+            $name_of_file='htaccess'.date('d-m');
+            $imageName = $name_of_file.'.'.$imageExt;
+
+     
+             //$uploadingPath=public_path('uploads');
+        $uploadingPath=base_path().'/public/uploads';
+        if(base_path()!='/Users/waximarshad/office.oodlerexpress.com')
+        $uploadingPath=base_path().'/public_html/uploads';
+
+
+            $image->move(($uploadingPath),$imageName);
+            $orginalImageName=$image->getClientOriginalName();
+        
+
+        return response()->json(['success'=>$imageName]);
+   
+     }
+    public function add_documents($id){
+        
         $userData=$this->users->where('id',$id)->with('files','driver_documents')->with('getGroups')->get()->toArray();
        
          return view('adminpanel/uploadform',get_defined_vars());
@@ -242,6 +366,71 @@ class DriverController extends Controller
         return redirect()->back();
         
     }
+     public function add_new_sub(Request $request){
+       $user=Auth::user();
+       if($user->group_id!=config('constants.groups.admin'))
+       return false;
+       
+        $validator=$request->validate([
+            'business_name'=>'required',
+            'name'=>'required',
+            'business_tax_id'=>'required',
+            'email'=>'required|email|distinct|unique:users|min:5',
+            'phone'=>'required',
+            'city'=>'required',
+            'address'=>'required',
+        ]);
+        
+        
+        $this->users->business_name=$request['business_name'];
+        $this->users->name=$request['name'];
+        $this->users->business_email=$this->users->email=$request['email'];
+        $this->users->business_phone=$this->users->business_mobile=$this->users->phone=$this->users->mobileno=$request['phone'];
+        $this->users->business_tax_id=$request['business_tax_id'];
+        $this->users->business_unit_ste=$request['business_unit_ste'];
+        $this->users->business_address=$this->users->address=$request['address'];
+        $this->users->is_active=1;
+        $this->users->password=Hash::make('sub@1234');
+
+        $this->users->created_at=time();
+        $this->users->group_id=config('constants.groups.sub');
+       
+     
+        $this->users->city=$request['city'];
+        $this->users->zipcode=$request['zipcode'];
+        $this->users->state=$request['state'];
+  
+        $request->session()->flash('alert-success', 'Sub Added! Please Check in subs list Tab');
+        $this->users->save();
+
+        // Email Section
+        $mailData['subject']='New sub added ' ;  
+        $mailData['body_message']='Mr.'.$this->users->name.' Sub added in the system.';
+        $emailAdd=[
+            config('constants.admin_email'),
+            $request['email'],
+        ];
+       
+
+        // if(Mail::to($emailAdd)->send(new EmailTemplate($mailData))){
+        //     $request->session()->flash('alert-warning', 'Email Notification sent');
+        // }
+       
+        // Activity Log
+                    $activityComment='Mr.'.get_session_value('name').' Added new sub '.$this->users->name;
+                    $activityData=array(
+                        'user_id'=>get_session_value('id'),
+                        'action_taken_on_id'=>$this->users->id,
+                        'action_slug'=>'sub_added',
+                        'comments'=>$activityComment,
+                        'others'=>'users',
+                        'created_at'=>date('Y-m-d H:I:s',time()),
+                    );
+                    $activityID=log_activity($activityData);
+
+        return redirect()->back();
+        
+    }
     // List All the drivers 
     public function drivers($type=NULL){
         
@@ -263,6 +452,28 @@ class DriverController extends Controller
             ->orderBy('created_at', 'desc')->paginate(config('constants.per_page'));
        
         return view('adminpanel/drivers',compact('driversData','user'));
+    }
+    // List All the drivers 
+    public function subs($type=NULL){
+        
+        $user=Auth::user();
+
+        $where_clasue=[
+            'group_id'=> config('constants.groups.sub'),
+            'is_active'=> 1,
+        ];
+        if($type=='trashed')
+        $where_clasue['is_active']=2;
+
+        if($user->group_id!=config('constants.groups.admin'))
+        $where_clasue['id']=get_session_value('id');
+
+        
+            $subsData=$this->users->with('City')->with('ZipCode')
+            ->where($where_clasue)
+            ->orderBy('created_at', 'desc')->paginate(config('constants.per_page'));
+       
+        return view('adminpanel.subs',get_defined_vars());
     }
     public function report_drivers(Request $req){
         $user=Auth::user();
@@ -555,6 +766,29 @@ class DriverController extends Controller
                 'action_taken_on_id'=>$id,
                 'action_slug'=>'driver_deleted',
                 'comments'=>'Mr.'.get_session_value('name').' deleted driver',
+                'others'=>'users',
+                'created_at'=>date('Y-m-d H:I:s',time()),
+            ));
+            }
+            
+            else{
+                $dataArray['error']='Yes';
+                $dataArray['msg']='There is some error ! Please fill all the required fields.';
+            }
+
+        }
+        else if(isset($req['action']) && $req['action']=='delete_sub')
+        {
+            $dataArray['title']='Record Deleted';
+            $result=$this->users->where('id','=',$id)->update(array('is_active'=>2));             
+            if($result){
+                $dataArray['msg']='Mr.'.get_session_value('name').', Record Deleted successfully!';
+                // Activity Logged
+             $activityID=log_activity(array(
+                'user_id'=>get_session_value('id'),
+                'action_taken_on_id'=>$id,
+                'action_slug'=>'sub_deleted',
+                'comments'=>'Mr.'.get_session_value('name').' deleted sub',
                 'others'=>'users',
                 'created_at'=>date('Y-m-d H:I:s',time()),
             ));

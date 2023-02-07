@@ -63,15 +63,15 @@
                                 <form method="POST" action="{{ route('admin.save_edit_customer',$id) }}">
                                     @csrf
                                     <div class="row form-group">
-                                        <div class="col-1">&nbsp;</div>
-                                        <div class="col-5">
+                                        <div class="offset-md-1">&nbsp;</div>
+                                        <div class="col-md-5">
                                             <h3 class="title-form">Customer information: </h3>
                                         </div>
                                         
                                     </div>
                                     <div class="row form-group">
-                                        <div class="col-1">&nbsp;</div>
-                                        <div class="col-5">
+                                        <div class="offset-md-1">&nbsp;</div>
+                                        <div class="col-md-5">
                                             <span>Frist Name</span>
                                             <div class="input-group mb-3">
                                                 <input type="text" name="firstname"
@@ -90,7 +90,7 @@
 
                                             </div>
                                         </div>
-                                        <div class="col-5">
+                                        <div class="col-md-5">
                                             <span>Last Name</span>
                                             <div class="input-group mb-3">
                                                 <input type="text" name="lastname"
@@ -109,11 +109,11 @@
 
                                             </div>
                                         </div>
-                                        <div class="col-1">&nbsp;</div>
+                                        
                                     </div>
                                     <div class="row form-group">
-                                        <div class="col-1">&nbsp;</div>
-                                        <div class="col-5">
+                                        <div class="offset-md-1">&nbsp;</div>
+                                        <div class="col-md-5">
                                             <span>Email</span>
                                             <div class="input-group mb-3">
                                                 <input type="email" readonly disabled name="email"
@@ -131,8 +131,8 @@
                                                 @enderror
                                             </div>
                                         </div>
-                                        <div class="col-5">
-                                            <span>Password <span style="color:red">(Leave it empty if you don't want to chagne the password !)</span></span>
+                                        <div class="col-md-5">
+                                            <span>Password <span class="text-xs text-danger">(Leave it empty if you don't want to chagne the password !)</span></span>
                                             <div class="input-group mb-3">
                                                 <input type="password" name="password"
                                                     class="form-control @error('password') is-invalid @enderror"
@@ -149,11 +149,11 @@
                                                 @enderror
                                             </div>
                                         </div>
-                                        <div class="col-1">&nbsp;</div>
+                                        
                                     </div>
                                     <div class="row form-group">
-                                        <div class="col-1">&nbsp;</div>
-                                        <div class="col-5">
+                                        <div class="offset-md-1">&nbsp;</div>
+                                        <div class="col-md-5">
                                             <span>Cell No.</span>
                                             <div class="input-group mb-3">
                                                 <input type="text" name="mobileno"
@@ -171,7 +171,7 @@
                                                 @enderror
                                             </div>
                                         </div>
-                                        <div class="col-5">
+                                        <div class="col-md-5">
                                             <span>Position in Business</span>
                                             <div class="input-group mb-3">
                                                 <input type="text" name="designation"
@@ -189,20 +189,20 @@
                                                 @enderror
                                             </div>
                                         </div>
-                                        <div class="col-1">&nbsp;</div>
+                                        
                                     </div>
 
                                     {{-- Business Information --}}
                                     <div class="row form-group">
-                                        <div class="col-1">&nbsp;</div>
-                                        <div class="col-5">
+                                        <div class="offset-md-1">&nbsp;</div>
+                                        <div class="col-md-5">
                                             <h3 class="title-form">Business information: </h3>
                                         </div>
                                         
                                     </div>
                                     <div class="row form-group">
-                                        <div class="col-1">&nbsp;</div>
-                                        <div class="col-5">
+                                        <div class="offset-md-1">&nbsp;</div>
+                                        <div class="col-md-5">
                                             <span>Business Name</span>
                                             <div class="input-group mb-3">
                                                 <input type="text" name="business_name"
@@ -220,7 +220,7 @@
                                                 @enderror
                                             </div>
                                         </div>
-                                        <div class="col-5">
+                                        <div class="col-md-5">
                                             <span>Business Address</span>
                                             <div class="input-group mb-3">
                                                 <input type="text" id="business_address" name="business_address"
@@ -239,13 +239,13 @@
                                             </div>
                                         </div>
                                         
-                                        <div class="col-1">&nbsp;</div>
+                                        
                                     </div>
 
 
                                     {{-- <div class="row form-group">
-                                        <div class="col-1">&nbsp;</div>
-                                        <div class="col-5">
+                                        <div class="offset-md-1">&nbsp;</div>
+                                        <div class="col-md-5">
                                             <span>City</span>
                                             <div class="input-group mb-3">
                                                 <input type="text" name="city"
@@ -264,7 +264,7 @@
                                                 @enderror
                                             </div>
                                         </div>
-                                        <div class="col-5">
+                                        <div class="col-md-5">
                                             <span>State</span>
                                             <div class="input-group mb-3">
                                                 <input type="text" name="state"
@@ -282,12 +282,12 @@
                                                 @enderror
                                             </div>
                                         </div>
-                                        <div class="col-1">&nbsp;</div>
+                                        
                                     </div> --}}
                         
                                     <div class="row form-group">
-                                        <div class="col-1">&nbsp;</div>
-                                        <div class="col-5">
+                                        <div class="offset-md-1">&nbsp;</div>
+                                        <div class="col-md-5">
                                             <span>Zip Code</span>
                                             <div class="input-group mb-3">
                                                 <input type="text" name="zipcode"
@@ -305,7 +305,7 @@
                                                 @enderror
                                             </div>
                                         </div>
-                                        <div class="col-5">
+                                        <div class="col-md-5">
                                             <span>Business Email</span>
                                             <div class="input-group mb-3">
                                                 <input type="email" name="business_email"
@@ -323,11 +323,11 @@
                                                 @enderror
                                             </div>
                                         </div>
-                                        <div class="col-1">&nbsp;</div>
+                                        
                                     </div>
                                     <div class="row form-group">
-                                        <div class="col-1">&nbsp;</div>
-                                        <div class="col-5">
+                                        <div class="offset-md-1">&nbsp;</div>
+                                        <div class="col-md-5">
                                             <span>Business Phone</span>
                                             <div class="input-group mb-3">
                                                 <input type="text" name="business_phone"
@@ -345,7 +345,7 @@
                                                 @enderror
                                             </div>
                                         </div>
-                                        <div class="col-5">
+                                        <div class="col-md-5">
                                             <span>How many years in Business?</span>
                                             <div class="input-group mb-3">
                                                 <input type="number" name="years_in_business"
@@ -364,11 +364,11 @@
                                             </div>
                                         </div>
                                         
-                                        <div class="col-1">&nbsp;</div>
+                                        
                                     </div>
                                     <div class="row form-group">
-                                        <div class="col-1">&nbsp;</div>
-                                        <div class="col-5">
+                                        <div class="offset-md-1">&nbsp;</div>
+                                        <div class="col-md-5">
                                             <span>What do you Ship?</span>
                                             <div class="input-group mb-3">
                                                     <select name="shipping_cat[]" id="shipping_cat" class="form-control select2 @error('shipping_cat') is-invalid @enderror" multiple="multiple" data-placeholder="What do you Ship" style="width: 100%;">
@@ -381,7 +381,7 @@
                                                 @enderror
                                             </div>
                                         </div>
-                                        <div class="col-5">
+                                        <div class="col-md-5">
                                             <span>How often you ship?</span>
                                             <div class="input-group mb-3">
                                                 <select  name="how_often_shipping"
@@ -410,12 +410,12 @@
 
                                     {{-- New Row Button --}}
                                     <div class="row form-group">
-                                        <div class="col-5">&nbsp;</div>
-                                        <div class="col-2">
+                                        <div class="offset-md-3">&nbsp;</div>
+                                        <div class="col-md-5">
                                             <button type="submit" class="btn btn-outline-success btn-block btn-lg"><i
                                                     class="fa fa-save"></i> Save</button>
                                         </div>
-                                        <div class="col-5">&nbsp;</div>
+                                        
 
                                     </div>
                                 </form>

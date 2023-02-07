@@ -15,12 +15,7 @@
 
                     </div>
                     <div class="col-sm-4">&nbsp;</div>
-                    <div class="col-sm-6">
-                        <ol class="breadcrumb float-sm-right">
-                            <li class="breadcrumb-item"><a href="#">Home</a></li>
-                            <li class="breadcrumb-item active">View</li>
-                        </ol>
-                    </div>
+                    
                 </div>
             </div><!-- /.container-fluid -->
         </section>
@@ -44,7 +39,7 @@
                                 $customer_ids=$_GET['customer_id'];
                                 if(isset($_GET['driver_id']) && !empty($_GET['driver_id']))
                                 $driver_ids=$_GET['driver_id'];
-                                if(isset($_GET['quote_status']) && !empty($_GET['quote_status']))
+                               if(isset($_GET['quote_status']) && !empty($_GET['quote_status']))
                                 $quote_status=$_GET['quote_status'];
                             @endphp
                                 <form id="search_form" method="GET" action="{{ route('scheduled.deliveries') }}">
@@ -54,10 +49,11 @@
                                     @if (isset($_GET['page']) && $_GET['page']>0)
                                     <input type="hidden" name="page" value="{{($_GET['page']+1)}}">    
                                     @endif
-                                    
-                                <table class="table table-bordered table-striped">
-                                    <tr>
-                                        <td>
+                                <div class="wrapper" style="background: #f8f8f8; padding: 20px 10px; margin-bottom: 2%;">
+                                    <div class="row">    
+                                     <div class="col-xs-12 col-sm-12 col-md-4 col-lg-5 border-right">
+										<div class="row">
+                                       <div class="col-md-6">
                                             <label>From</label>
                                             <div class="input-group date" id="from_date" data-target-input="nearest">
                                                 <input required type="text" value="{{ isset($_GET['from_date'])?$_GET['from_date']:'' }}" name="from_date" placeholder="From date" class="form-control datetimepicker-input" data-target="#from_date"/>
@@ -70,8 +66,8 @@
                                                 </div>
                                             @enderror
                                             </div>
-                                        </td>
-                                        <td>
+                                        </div>
+                                        <div class="col-md-6">
                                             <label>To</label>
                                             <div class="input-group date" id="to_date" data-target-input="nearest">
                                                 <input required type="text" value="{{ isset($_GET['to_date'])?$_GET['to_date']:'' }}" name="to_date" placeholder="To Date" class="form-control datetimepicker-input" data-target="#to_date"/>
@@ -84,25 +80,38 @@
                                                 </div>
                                             @enderror
                                             </div>
-                                        </td>
+                                        </div>
+									</div>
+								</div>
                                         @if ($user->group_id==config('constants.groups.admin'))
                                        
-                                        <td>
-                                            <label>Select Customer</label>
+                                       <div class="col-xs-12 col-sm-12 col-md-5 col-lg-4 border-right">
+                                           <div class="row"> 
+											<div class="col-md-6">
+											<label>Select Customer</label>
                                             <select name="customer_id[]" class="form-control select2" multiple="multiple" data-placeholder="Select Customer" style="width: 100%;">
                                             {!!get_customers_options($customer_ids)!!}
                                             </select>
-                                        </td>
-                                        <td>
+                                        </div>
+                                        <div class="col-md-6">
                                             <label>Select Driver</label>
                                             <select name="driver_id[]" class="form-control select2" multiple="multiple" data-placeholder="Select Driver" style="width: 100%;">
                                                 {!!get_drivers_options($driver_ids)!!}
                                             </select>
-                                        </td>
+											</div>
+											</div><!--/row-->
+                                        </div>
                                         @endif
-                                        <td><button onclick="$('#search_form').submit()" style="margin-top: 32px;" type="button" class="btn btn-block btn-primary"><i class="fa fa-search"></i>Search</button></td>
-                                        <td><a href="{{route('scheduled.deliveries')}}" style="margin-top: 32px;" type="button" class="btn btn-block btn-secondary"><i class="fa fa-undo"></i> Cancel</a></td>
-                                    </tr>
+                                       <div class="col-xs-12 col-sm-12 col-md-3 col-lg-3">
+                                           <div class="row"> 
+											<div class="col-md-6">
+												<button onclick="$('#search_form').submit()" style="margin-top: 32px;" type="button" class="btn btn-block btn-primary"><i class="fa fa-search"></i>Search</button></td>
+											</div>
+										<div class="col-md-6">	
+										<a href="{{route('scheduled.deliveries')}}" style="margin-top: 32px;" type="button" class="btn btn-block btn-secondary"><i class="fa fa-undo"></i> Cancel</a></td>
+									 </div>
+									</div><!--/row-->
+								</div>
                                    
                                        
                                         {{-- <td>
@@ -113,14 +122,15 @@
 
                                         </td> --}}
                                        
-                                </table>
+                                </div><!--/row-->
+							</div><!--/wrapper-->
                                 </form>
                                 <div class="row" style="margin-bottom: 15px;">
-                                    <div class="col-4">
+                                    <div class="col-lg-4 col-md-12 ">
                                     <input class="form-control" onkeyup="search_delivery()" type="text" id="qsearch" name="qsearch" placeholder="Type PO Number to search">
                                     </div>
                                 </div>
-                                <table id="example1" class="table table-bordered table-striped">
+                                <table id="example1" class="table table-bordered table-striped table-responsive">
                                     <thead>
                                         <tr>
                                             <th>Quote Type</th>
@@ -131,7 +141,7 @@
                                             <th>Drop-off Street Address</th>
                                             <th>Drop-off Phone</th>
                                             <th>Customer</th>
-                                            <th>Created at</th>
+                                            <th>Assigned to</th>
                                             <th>Action</th>
                                         </tr>
                                     </thead>
@@ -185,7 +195,15 @@
                                                @endif
                                                 
                                             </td> --}}
-                                            <td>{{formate_date(strtotime($data['created_at']),true)}}</td>
+                                            <td>
+                                                @php
+                                                    if($data['driver_id']>0){
+                                                        echo 'Driver :'.$data['driver']['name'];
+                                                    }else{
+                                                        echo 'Sub :'.$data['sub']['business_name'] .'<br> Status:'.sub_status_msg($data['sub_status']);
+                                                    }
+                                                @endphp
+                                            </td>
                                             <td>
                                                
                                                 <a href="{{route('deliveries.view',$data['id']) }}"
@@ -231,7 +249,7 @@
                                             <th>Drop-off Street Address</th>
                                             <th>Drop-off Phone</th>
                                             <th>Customer</th>
-                                            <th>Status</th>
+                                            <th>Assigned to</th>
                                             <th>Action</th>
                                         </tr>
                                         <tr>

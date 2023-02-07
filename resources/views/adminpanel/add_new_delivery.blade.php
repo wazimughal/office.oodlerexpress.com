@@ -57,23 +57,23 @@
                                     <input type="hidden" name="quote_type" value="single" id="quote_type">
 
                                     <div class="row form-group">
-                                        <div class="col-3">&nbsp;</div>
-                                        <div class="col-6">
+                                        <div class="offset-md-3"></div>
+                                        <div class="col-md-6">
                                             <div class="input-group mb-3">
-                                                <div class="btn-group">
-                                                    <button onclick=select_quote_type('single') id="single"  type="button" style="width: 300px" class="active btn btn-primary">Single Unit</button>
-                                                    <button onclick=select_quote_type('multi')  id="multi" type="button" style="width: 300px" class="btn btn-primary">Multi Unit</button>
+                                                <div class="btn-group w-100">
+                                                    <button onclick=select_quote_type('single') id="single"  type="button" class="active btn btn-primary">Single Unit</button>
+                                                    <button onclick=select_quote_type('multi')  id="multi" type="button" class="btn btn-primary">Multi Unit</button>
                                                   </div>
                                             </div>
                                         </div>
-                                        <div class="col-3">&nbsp;</div>
+                                        
                                     </div>
                                     <div style="display: none;" id="multi_unit_data">
                                     
                                     </div>
                                     <div class="row form-group">
-                                        <div class="col-4">&nbsp;</div>
-                                        <div class="col-4">
+                                        <div class="offset-md-4"></div>
+                                        <div class="col-md-4">
                                             <div class="input-group mb-3">
                                                 <div class="form-group clearfix">
                                                     <label>Delivery type </label>&nbsp;
@@ -95,11 +95,11 @@
                                                 @enderror
                                             </div>
                                         </div>
-                                        <div class="col-3">&nbsp;</div>
+                                        
                                     </div>
                                     <div class="row form-group">
-                                        <div class="col-3">&nbsp;</div>
-                                        <div class="col-6">
+                                        <div class="offset-md-3">&nbsp;</div>
+                                        <div class="col-md-6">
                                             <div class="input-group mb-3">
                                                 <input value="{{ old('po_number') }}" placeholder="Please enter PO Number" type="text" name="po_number" required
                                                     class=" form-control @error('po_number') is-invalid @enderror">
@@ -113,14 +113,14 @@
                                                     addresses, please submit them as separate POs.</span> --}}
                                             </div>
                                         </div>
-                                        <div class="col-3">&nbsp;</div>
+                                        
                                     </div>
 
 
                                     {{-- End --}}
                                     <div class="row form-group">
-                                        <div class="col-1">&nbsp;</div>
-                                        <div class="col-5">
+                                        <div class="offset-md-1">&nbsp;</div>
+                                        <div class="col-md-5">
                                             <label>Pickup Address</label>
                                             <div class="input-group mb-3">
                                                 <input placeholder="Pickup street address" type="text"
@@ -134,10 +134,10 @@
                                             </div>
 
                                         </div>
-                                        <div class="col-5">
+                                        <div class="col-md-5">
 
                                             <div class="input-group mb-3" style="margin-top:2rem;">
-                                                <input required value="{{ old('pickup_unit1') }}" placeholder="Unit/STE"  type="text" name="pickup_unit1"
+                                                <input  value="{{ old('pickup_unit1') }}" placeholder="Unit/STE"  type="text" name="pickup_unit1"
                                                     class=" form-control @error('pickup_unit1') is-invalid @enderror">
                                                 @error('pickup_unit1')
                                                     <div class="invalid-feedback">
@@ -146,11 +146,11 @@
                                                 @enderror
                                             </div>
                                         </div>
-                                        <div class="col-1">&nbsp;</div>
+                                        
                                     </div>
-                                    <div class="row form-group">
-                                        <div class="col-1">&nbsp;</div>
-                                        <div class="col-5">
+                                    {{-- <div class="row form-group">
+                                        <div class="offset-md-1">&nbsp;</div>
+                                        <div class="col-md-5">
                                             <div class="input-group mb-3">
                                                 <input required value="{{ old('pickup_city1') }}" placeholder="City Name"  type="text" name="pickup_city1"
                                                     class=" form-control @error('pickup_city1') is-invalid @enderror">
@@ -161,7 +161,7 @@
                                                 @enderror
                                             </div>
                                         </div>
-                                        <div class="col-5">
+                                        <div class="col-md-5">
                                             <div class="input-group mb-3">
                                                 <input required value="{{ old('pickup_state1') }}" placeholder="State Name"  type="text" name="pickup_state1"
                                                     class=" form-control @error('pickup_state1') is-invalid @enderror">
@@ -173,13 +173,13 @@
                                             </div>
 
                                         </div>
-                                        <div class="col-1">&nbsp;</div>
-                                    </div>
+                                        
+                                    </div> --}}
                                     <div class="row form-group">
-                                        <div class="col-1">&nbsp;</div>
-                                        <div class="col-5">
+                                        <div class="offset-md-1">&nbsp;</div>
+                                        <div class="col-md-5">
                                             <div class="input-group mb-3">
-                                                <input required value="{{ old('pickup_zipcode1') }}" placeholder="Zip Code"  type="text" name="pickup_zipcode1"
+                                                <input value="{{ old('pickup_zipcode1') }}" placeholder="Zip Code"  type="text" name="pickup_zipcode1"
                                                     class=" form-control @error('pickup_zipcode1') is-invalid @enderror">
                                                 @error('pickup_zipcode1')
                                                     <div class="invalid-feedback">
@@ -188,9 +188,9 @@
                                                 @enderror
                                             </div>
                                         </div>
-                                        <div class="col-5">
+                                        <div class="col-md-5">
                                             <div class="input-group mb-3">
-                                                <input placeholder="Contact Number" type="text" name="pickup_contact_number1" value="{{ old('pickup_contact_number1') }}"
+                                                <input placeholder="Contact No.(e.g +18633335555)" type="text" name="pickup_contact_number1" value="{{ old('pickup_contact_number1') }}"
                                                     class=" form-control @error('pickup_contact_number1') is-invalid @enderror">
                                                 @error('pickup_contact_number1')
                                                     <div class="invalid-feedback">
@@ -199,11 +199,22 @@
                                                 @enderror
                                             </div>
                                         </div>
-                                        <div class="col-1">&nbsp;</div>
+                                        
                                     </div>
                                     <div class="row form-group">
-                                        <div class="col-1">&nbsp;</div>
-                                        <div class="col-5">
+                                        <div class="offset-md-1">&nbsp;</div>
+                                        {{-- <div class="col-md-5">
+                                            <div class="input-group mb-3">
+                                                <input required value="{{ old('pickup_email1') }}" placeholder="Email"  type="text" name="pickup_email1"
+                                                    class=" form-control @error('pickup_email1') is-invalid @enderror">
+                                                @error('pickup_email1')
+                                                    <div class="invalid-feedback">
+                                                        {{ $message }}
+                                                    </div>
+                                                @enderror
+                                            </div>
+                                        </div> --}}
+                                        <div class="col-md-5">
                                             <div class="input-group date" id="pick_up_reservationdate1" data-target-input="nearest">
                                                 <input type="text" id="pickup_date1" value="{{ old('pickup_date1') }}" required name="pickup_date1" placeholder="Pick Up date" class="form-control datetimepicker-input" data-target="#reservationdate"/>
                                                 <div class="input-group-append" data-target="#pick_up_reservationdate1" data-toggle="datetimepicker">
@@ -211,11 +222,8 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="col-2">&nbsp;</div>
-                                        <div class="col-3">
-                                            &nbsp;
-                                        </div>
-                                        <div class="col-1">&nbsp;</div>
+                                        
+                                        
                                     </div>
                                     {{-- List of items --}}
                                    <?php
@@ -223,8 +231,8 @@
                                       foreach($customer_products as $key=>$data){
                                         ?>
                                         <div class="row form-group">
-                                          <div class="col-1">&nbsp;</div>
-                                          <div class="col-10 text-center card-header alert-secondary ">
+                                          <div class="offset-md-1">&nbsp;</div>
+                                          <div class="col-md-10 text-center card-header alert-secondary ">
                                             <label>{{$data['name']}}</label>
                                           </div>
                                         </div>
@@ -233,8 +241,8 @@
                                         foreach($data['products'] as $k=>$proData){ ?>
                                         <div id="item_row1_{{$proData['id']}}">
                                          <div class="row form-group">
-                                          <div class="col-1">&nbsp;</div>
-                                          <div class="col-4">
+                                          <div class="offset-md-1">&nbsp;</div>
+                                          <div class="col-md-4">
                                               <div class="form-group clearfix">
                                                   <div class="icheck-primary d-inline">
                                                       <input type="hidden" name="product_details1[{{$proData['id']}}][cat_id][]" value="{{$data['id']}}">
@@ -247,22 +255,22 @@
                                               </div>
   
                                           </div>
-                                          <div class="col-1">
+                                          <div class="col-md-1">
                                               <div class="input-group mb-3">
                                                   <input placeholder="Quantity" value="1" type="number" name="product_details1[{{$proData['id']}}][item_quantity][]" class=" form-control" required>
                                               </div>
                                           </div>
-                                          <div class="col-1">
+                                          <div class="col-md-1">
                                               <div class="input-group mb-3">
                                                   <select name="product_details1[{{$proData['id']}}][product_sizes][]"  class="form-control">@php echo get_product_sizes($proData['sizes']); @endphp</select>
                                               </div>
                                           </div>
-                                          <div class="col-3">
+                                          <div class="col-md-3">
                                               <div class="input-group mb-3">
                                                   <input placeholder="Description" type="text" name="product_details1[{{$proData['id']}}][item_description][]"  class=" form-control @error('delivery_type') is-invalid @enderror">
                                               </div>
                                           </div>
-                                          <div class="col-1"><div style="width: 90px; float:right;" onclick="addmore_items1({{$proData['id']}},'{{$data['slug']}}')"
+                                          <div class="col-md-1"><div style="width: 90px; float:right;" onclick="addmore_items1({{$proData['id']}},'{{$data['slug']}}')"
                                             class="btn btn-success btn-block btn-sm"><i class="fas fa-plus"></i> Add
                                             more</div></div>
                                       </div>
@@ -281,12 +289,12 @@
                                    
                                    <div id="new_pickup_{{$i}}" style="display: none;">
                                     <div class="row form-group">
-                                        <div class="col-1">&nbsp;</div>
-                                        <div class="col-5">
+                                        <div class="offset-md-1">&nbsp;</div>
+                                        <div class="col-md-5">
                                             <label>Pickup Address {{$i}}</label>
                                             <div class="input-group mb-3">
                                                 <input placeholder="Pickup street address" type="text"
-                                                    name="pickup_street_address{{$i}}" value="{{ old('pickup_street_address'.$i) }}"
+                                                id="pickup_street_address{{$i}}" name="pickup_street_address{{$i}}" value="{{ old('pickup_street_address'.$i) }}"
                                                     class=" form-control @error('pickup_street_address'.$i) is-invalid @enderror">
                                                 @error('pickup_street_address'.$i)
                                                     <div class="invalid-feedback">
@@ -296,7 +304,7 @@
                                             </div>
 
                                         </div>
-                                        <div class="col-5">
+                                        <div class="col-md-5">
 
                                             <div class="input-group mb-3" style="margin-top:2rem;">
                                                 <input value="{{ old('pickup_unit'.$i) }}" placeholder="Unit/STE"  type="text" name="pickup_unit{{$i}}"
@@ -308,11 +316,11 @@
                                                 @enderror
                                             </div>
                                         </div>
-                                        <div class="col-1">&nbsp;</div>
+                                        
                                     </div>
-                                    <div class="row form-group">
-                                        <div class="col-1">&nbsp;</div>
-                                        <div class="col-5">
+                                    {{-- <div class="row form-group">
+                                        <div class="offset-md-1">&nbsp;</div>
+                                        <div class="col-md-5">
                                             <div class="input-group mb-3">
                                                 <input value="{{ old('pickup_city'.$i) }}" placeholder="City Name"  type="text" name="pickup_city{{$i}}"
                                                     class=" form-control @error('pickup_city'.$i) is-invalid @enderror">
@@ -323,7 +331,7 @@
                                                 @enderror
                                             </div>
                                         </div>
-                                        <div class="col-5">
+                                        <div class="col-md-5">
                                             <div class="input-group mb-3">
                                                 <input value="{{ old('pickup_state'.$i) }}" placeholder="State Name"  type="text" name="pickup_state{{$i}}"
                                                     class=" form-control @error('pickup_state'.$i) is-invalid @enderror">
@@ -336,11 +344,11 @@
 
                                         </div>
                                         
-                                        <div class="col-1">&nbsp;</div>
-                                    </div>
+                                        
+                                    </div> --}}
                                     <div class="row form-group">
-                                        <div class="col-1">&nbsp;</div>
-                                        <div class="col-5">
+                                        <div class="offset-md-1">&nbsp;</div>
+                                        <div class="col-md-5">
                                             <div class="input-group mb-3">
                                                 <input value="{{ old('pickup_zipcode'.$i) }}" placeholder="Zip Code"  type="text" name="pickup_zipcode{{$i}}"
                                                     class=" form-control @error('pickup_zipcode'.$i) is-invalid @enderror">
@@ -351,9 +359,9 @@
                                                 @enderror
                                             </div>
                                         </div>
-                                        <div class="col-5">
+                                        <div class="col-md-5">
                                             <div class="input-group mb-3">
-                                                <input placeholder="Contact Number" type="text" name="pickup_contact_number{{$i}}" value="{{ old('pickup_contact_number'.$i) }}"
+                                                <input placeholder="Contact No.(e.g +18633335555)" type="text" name="pickup_contact_number{{$i}}" value="{{ old('pickup_contact_number'.$i) }}"
                                                     class=" form-control @error('pickup_contact_number'.$i) is-invalid @enderror">
                                                 @error('pickup_contact_number'.$i)
                                                     <div class="invalid-feedback">
@@ -362,11 +370,23 @@
                                                 @enderror
                                             </div>
                                         </div>
-                                        <div class="col-1">&nbsp;</div>
+                                        
                                     </div>
                                     <div class="row form-group">
-                                        <div class="col-1">&nbsp;</div>
-                                        <div class="col-5">
+                                        <div class="offset-md-1"></div>
+                                        
+                                        {{-- <div class="col-md-5">
+                                            <div class="input-group mb-3">
+                                                <input value="{{ old('pickup_email'.$i) }}" placeholder="Email"  type="text" name="pickup_email{{$i}}"
+                                                    class=" form-control @error('pickup_email'.$i) is-invalid @enderror">
+                                                @error('pickup_email'.$i)
+                                                    <div class="invalid-feedback">
+                                                        {{ $message }}
+                                                    </div>
+                                                @enderror
+                                            </div>
+                                        </div> --}}
+                                        <div class="col-md-5">
                                             <div class="input-group date" id="pick_up_reservationdate{{$i}}" data-target-input="nearest">
                                                 <input type="text" value="{{ old('pickup_date'.$i) }}" id="pickup_date{{$i}}" name="pickup_date{{$i}}" placeholder="Pick Up date" class="form-control datetimepicker-input" data-target="#reservationdate"/>
                                                 <div class="input-group-append" data-target="#pick_up_reservationdate{{$i}}" data-toggle="datetimepicker">
@@ -374,11 +394,7 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="col-2">&nbsp;</div>
-                                        <div class="col-3">
-                                            &nbsp;
-                                        </div>
-                                        <div class="col-1">&nbsp;</div>
+                                        
                                     </div>
                                     {{-- List of items --}}
                                    <?php
@@ -386,8 +402,8 @@
                                       foreach($customer_products as $key=>$data){
                                         ?>
                                         <div class="row form-group">
-                                          <div class="col-1">&nbsp;</div>
-                                          <div class="col-10 text-center card-header alert-secondary ">
+                                          <div class="offset-md-1">&nbsp;</div>
+                                          <div class="col-md-10 p-1 rounded pt-2 text-center card-header alert-secondary ">
                                             <label>{{$data['name']}}</label>
                                           </div>
                                         </div>
@@ -396,8 +412,8 @@
                                         foreach($data['products'] as $k=>$proData){ ?>
                                         <div id="item_row{{$i}}_{{$proData['id']}}">
                                          <div class="row form-group">
-                                          <div class="col-1">&nbsp;</div>
-                                          <div class="col-4">
+                                          <div class="offset-md-3">&nbsp;</div>
+                                          <div class="col-md-4">
                                               <div class="form-group clearfix">
                                                   <div class="icheck-primary d-inline">
                                                       <input type="hidden" name="product_details{{$i}}[{{$proData['id']}}][cat_id][]" value="{{$data['id']}}">
@@ -410,22 +426,22 @@
                                               </div>
   
                                           </div>
-                                          <div class="col-1">
+                                          <div class="col-md-1">
                                               <div class="input-group mb-3">
                                                   <input placeholder="Quantity" value="1" type="number" name="product_details{{$i}}[{{$proData['id']}}][item_quantity][]" class=" form-control">
                                               </div>
                                           </div>
-                                          <div class="col-1">
+                                          <div class="col-md-1">
                                               <div class="input-group mb-3">
                                                   <select name="product_details{{$i}}[{{$proData['id']}}][product_sizes][]"  class="form-control">@php echo get_product_sizes($proData['sizes']); @endphp</select>
                                               </div>
                                           </div>
-                                          <div class="col-3">
+                                          <div class="col-md-3">
                                               <div class="input-group mb-3">
                                                   <input placeholder="Description" type="text" name="product_details{{$i}}[{{$proData['id']}}][item_description][]"  class=" form-control @error('delivery_type') is-invalid @enderror">
                                               </div>
                                           </div>
-                                          <div class="col-1"><div style="width: 90px; float:right;" onclick="addmore_items{{$i}}({{$proData['id']}},'{{$data['slug']}}')"
+                                          <div class="col-md-1"><div style="width: 90px; float:right;" onclick="addmore_items{{$i}}({{$proData['id']}},'{{$data['slug']}}')"
                                             class="btn btn-success btn-block btn-sm"><i class="fas fa-plus"></i> Add
                                             more</div></div>
                                       </div>
@@ -441,15 +457,15 @@
                                    @endfor
 {{-- END --}}
                                     <div id="add_new_pickup_btn" class="row form-group">
-                                        <div class="col-5">&nbsp;</div>
-                                        <div class="col-2">
+                                        <div class="offset-md-4">&nbsp;</div>
+                                        <div class="col-md-4 mt-3">
                                             <span onclick="add_new_pickup()" class="btn btn-outline-success btn-block btn-lg"><i class="fa fa-plus"></i> Add Stop</span>
                                         </div>
-                                        <div class="col-5">&nbsp;</div>
+                                        
                                     </div>
                                     <div class="row form-group">
-                                        <div class="col-1">&nbsp;</div>
-                                        <div class="col-5">
+                                        <div class="offset-md-1">&nbsp;</div>
+                                        <div class="col-md-5">
                                             <label>Drop off Address</label>
                                             <div class="input-group mb-3">
                                                 <input required placeholder="Drop off address" type="text" id="drop_off_street_address" name="drop_off_street_address" value="{{ old('drop_off_street_address') }}"
@@ -462,7 +478,7 @@
                                             </div>
 
                                         </div>
-                                        <div class="col-5">
+                                        <div class="col-md-5">
 
                                             <div class="input-group mb-3" style="margin-top:2rem;">
                                                 <input placeholder="Unit/STE" type="text" name="drop_off_unit" value="{{ old('drop_off_unit') }}"
@@ -474,11 +490,11 @@
                                                 @enderror
                                             </div>
                                         </div>
-                                        <div class="col-1">&nbsp;</div>
+                                        
                                     </div>
-                                    <div class="row form-group">
-                                        <div class="col-1">&nbsp;</div>
-                                        <div class="col-5">
+                                    {{-- <div class="row form-group">
+                                        <div class="offset-md-1">&nbsp;</div>
+                                        <div class="col-md-5">
                                             <div class="input-group mb-3">
                                                 <input required placeholder="City Name" type="text" name="drop_off_city" value="{{ old('drop_off_city') }}"
                                                 class=" form-control @error('drop_off_city') is-invalid @enderror">
@@ -489,7 +505,7 @@
                                                 @enderror
                                             </div>
                                         </div>
-                                        <div class="col-5">
+                                        <div class="col-md-5">
                                             <div class="input-group mb-3">
                                                 <input required placeholder="State" type="text" name="drop_off_state" value="{{ old('drop_off_state') }}"
                                                 class=" form-control @error('drop_off_state') is-invalid @enderror">
@@ -501,13 +517,13 @@
                                             </div>
 
                                         </div>
-                                        <div class="col-1">&nbsp;</div>
-                                    </div>
+                                        
+                                    </div> --}}
                                     <div class="row form-group">
-                                        <div class="col-1">&nbsp;</div>
-                                        <div class="col-5">
+                                        <div class="offset-md-1">&nbsp;</div>
+                                        <div class="col-md-5">
                                             <div class="input-group mb-3">
-                                                <input required placeholder="Zip Code" type="text" name="drop_off_zipcode" value="{{ old('drop_off_zipcode') }}"
+                                                <input  placeholder="Zip Code" type="text" name="drop_off_zipcode" value="{{ old('drop_off_zipcode') }}"
                                                 class=" form-control @error('drop_off_zipcode') is-invalid @enderror">
                                                 <div id="otherzipcode2"></div>
                                                 @error('drop_off_zipcode')
@@ -517,9 +533,9 @@
                                                 @enderror
                                             </div>
                                         </div>
-                                        <div class="col-5">
+                                        <div class="col-md-5">
                                             <div class="input-group mb-3">
-                                                <input required placeholder="Contact Number" value="{{ old('drop_off_contact_number') }}" type="text" name="drop_off_contact_number"
+                                                <input  placeholder="Contact No.(e.g +18633335555)" value="{{ old('drop_off_contact_number') }}" type="text" name="drop_off_contact_number"
                                                     class=" form-control @error('drop_off_contact_number') is-invalid @enderror">
                                                 @error('drop_off_contact_number')
                                                     <div class="invalid-feedback">
@@ -528,11 +544,26 @@
                                                 @enderror
                                             </div>
                                         </div>
-                                        <div class="col-1">&nbsp;</div>
+                                        
                                     </div>
                                     <div class="row form-group">
-                                        <div class="col-1">&nbsp;</div>
-                                        <div class="col-10">
+                                        <div class="offset-md-1">&nbsp;</div>
+                                        {{-- <div class="col-md-5">
+                                            <div class="input-group mb-3">
+                                                <input  placeholder="Email" value="{{ old('drop_off_email') }}" type="text" name="drop_off_email"
+                                                    class=" form-control @error('drop_off_email') is-invalid @enderror">
+                                                @error('drop_off_email')
+                                                    <div class="invalid-feedback">
+                                                        {{ $message }}
+                                                    </div>
+                                                @enderror
+                                            </div>
+                                        </div> --}}
+                                        
+                                    </div>
+                                    <div class="row form-group">
+                                        <div class="offset-md-1">&nbsp;</div>
+                                        <div class="col-md-10">
                                             <div class="input-group mb-3">
                                                 <textarea placeholder="Special pickup or delivery instructions "  name="drop_off_instructions"
                                                     class=" form-control @error('drop_off_instructions') is-invalid @enderror">{{ old('drop_off_instructions') }}</textarea>
@@ -543,11 +574,11 @@
                                                 @enderror
                                             </div>
                                         </div>
-                                        <div class="col-1">&nbsp;</div>
+                                        
                                     </div>
                                     <div class="row form-group">
-                                        <div class="col-1">&nbsp;</div>
-                                        <div class="col-5">
+                                        <div class="offset-md-1">&nbsp;</div>
+                                        <div class="col-md-2">
                                             <span class="col-form-label">Select Delivery Date</span>
                                             <div class="input-group date" id="reservationdate" data-target-input="nearest">
                                                 <input required type="text" value="{{ old('drop_off_date') }}" name="drop_off_date" placeholder="Delivery date" class="form-control datetimepicker-input" data-target="#reservationdate"/>
@@ -561,10 +592,25 @@
                                             @enderror
                                             </div>
                                         </div>
-                                        <div class="col-5">
+                                        <div class="col-md-2 align-center text-center">
+                                            <span class="col-form-label ">Assign to Driver/Sub</span>
+                                            <div class="form-group clearfix mt-1">
+                                                <div class="icheck-primary d-inline ml-1">
+                                                  <input onclick="$('#drivers_options').show();$('#subs_options').hide();" type="radio" value="1" id="radioPrimary1" name="assign_to" checked>
+                                                  <label for="radioPrimary1"> Driver</label>
+                                                </div>
+                                                <div class="icheck-primary d-inline ml-3">
+                                                  <input  onclick="$('#subs_options').show();$('#drivers_options').hide();" type="radio" value="2" id="radioPrimary2" name="assign_to">
+                                                  <label for="radioPrimary2"> Sub</label>
+                                                </div>
+                                                
+                                              </div>
+
+                                        </div>
+                                        <div id="drivers_options" class="col-md-4">
                                             <span class="col-form-label">Select Driver</span>
                                             <div class="input-group mb-3" >
-                                                <select placeholder="select Driver" name="driver_id" class="select2bs4 form-control @error('photographer_expense[]') is-invalid @enderror">
+                                                <select placeholder="select Driver" name="driver_id" class="select2bs4 form-control">
                                                     {!!get_drivers_options()!!}
                                                 </select>
                                                 @error('driver_id')
@@ -574,11 +620,27 @@
                                                 @enderror
                                             </div>
                                         </div>
-                                        <div class="col-1">&nbsp;</div>
+                                        <div id="subs_options" class="col-md-6" style="display: none">
+                                            <span class="col-form-label">Select Subs</span>
+                                            <div class="input-group mb-3" >
+                                                <select placeholder="select Sub" name="sub_id" class="select2bs4 form-control">
+                                                    {!!get_subs_options()!!}
+                                                </select>
+                                                &nbsp;<input type="number" name="quoted_price_for_sub" required
+                                                value="{{ old('quoted_price_for_sub') }}"
+                                                placeholder="Price for Sub in USD" class="form-control">
+                                                @error('quoted_price_for_sub')
+                                                    <div class="invalid-feedback">
+                                                        {{ $message }}
+                                                    </div>
+                                                @enderror
+                                            </div>
+                                        </div>
+                                        
                                     </div>
                                     <div class="row form-group">
-                                        <div class="col-1">&nbsp;</div>
-                                        <div class="col-sm-3">
+                                        <div class="offset-md-1">&nbsp;</div>
+                                        <div class="col-md-3">
                                             <label>Delivery Cost</label>
                                             <input type="number" name="quoted_price" required
                                                 value="{{ old('quoted_price') }}"
@@ -590,7 +652,7 @@
                                             @enderror
                                         </div>
 
-                                        <div class="col-sm-3">
+                                        <div class="col-md-3">
                                             <label>Extra Charges
                                             </label>
                                             <div class="input-group mb-2"><input type="number"
@@ -600,7 +662,7 @@
                                                     class="form-control">
                                             </div>
                                         </div>
-                                        <div class="col-sm-4">
+                                        <div class="col-md-4">
                                             <label>Reason for Extra Charge</label>
                                             <div class="input-group mb-2"><input type="text"
                                                     name="reason_for_extra_charges"
@@ -613,11 +675,11 @@
                                     </div>
                                    
                                     <div class="row form-group">
-                                        <div class="col-5">&nbsp;</div>
-                                        <div class="col-2">
+                                        <div class="offset-md-4">&nbsp;</div>
+                                        <div class="col-md-4">
                                             <button type="submit" class="btn btn-outline-success btn-block btn-lg"><i class="fa fa-save"></i> Save</button>
                                         </div>
-                                        <div class="col-5">&nbsp;</div>
+                                        
 
                                     </div>
                                 </form>
@@ -717,9 +779,9 @@
                     $('#quote_type').val('single');
                 }else{
                     
-                    multi_unit_html ='<div class="row form-group"><div class="col-4">&nbsp;</div><div class="col-3"><div class="input-group mb-2"><div class="form-group clearfix"><label>Is there an elevator? </label>&nbsp;<div class="icheck-primary d-inline"><input type="radio" id="elevator1" value="1" name="elevator" checked><label for="elevator1">Yes </label></div> &nbsp;<div class="icheck-primary d-inline"><input type="radio" value="0" id="elevator2" name="elevator"><label for="elevator2">No</label></div></div></div></div><div class="col-3">&nbsp;</div></div>';
-                    multi_unit_html +='<div class="row form-group"><div class="col-4">&nbsp;</div><div class="col-3"><label>How Many Appartments?</label><div class="input-group mb-2"><input type="number" name="no_of_appartments" value="0" required class="form-control"></div></div><div class="col-3">&nbsp;</div></div>';
-                    multi_unit_html +='<div class="row form-group"><div class="col-4">&nbsp;</div><div class="col-3"><div id="listof_floors"><label>List All Floors</label><div class="input-group mb-2"><input type="text" name="list_of_floors[]" placeholder="Floor?" required class="form-control"></div></div><div style="width: 90px; float:right;" onclick="addmore_floors()" class="btn btn-success btn-block btn-sm"><i class="fas fa-plus"></i> Add more</div></div> <div class="col-3">&nbsp;</div></div>';
+                    multi_unit_html ='<div class="row form-group"><div class="offset-md-3"></div><div class="col-md-5"><div class="input-group mb-2"><div class="form-group clearfix"><label>Is there an elevator? </label>&nbsp;<div class="icheck-primary d-inline"><input type="radio" id="elevator1" value="1" name="elevator" checked><label for="elevator1">Yes </label></div> &nbsp;<div class="icheck-primary d-inline"><input type="radio" value="0" id="elevator2" name="elevator"><label for="elevator2">No</label></div></div></div></div></div>';
+                    multi_unit_html +='<div class="row form-group"><div class="offset-md-3">&nbsp;</div><div class="col-md-6"><label>How Many Appartments?</label><div class="input-group mb-2"><input type="number" name="no_of_appartments" value="0" required class="form-control"></div></div></div>';
+                    multi_unit_html +='<div class="row form-group"><div class="offset-md-3">&nbsp;</div><div class="col-md-6"><div id="listof_floors"><label>List All Floors</label><div class="input-group mb-2"><input type="text" name="list_of_floors[]" placeholder="Floor?" required class="form-control"></div></div><div style="width: 90px; float:right;" onclick="addmore_floors()" class="btn btn-success btn-block btn-sm"><i class="fas fa-plus"></i> Add more</div></div> </div>';
                     
                     $('#multi_unit_data').html(multi_unit_html);
                     $('#multi_unit_data').show('slow');

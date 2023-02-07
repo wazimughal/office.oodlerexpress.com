@@ -54,33 +54,38 @@
                                     <input type="hidden" name="page" value="{{($_GET['page']+1)}}">    
                                     @endif
                                     
-                                <table class="table table-bordered table-striped">
-                                    <tr>
-                                        <td>
+                                <div class="wrapper" style="background: #f8f8f8; padding: 20px 10px; margin-bottom: 2%;">
+                                    <div class="row"> 
+                                        <div class="col-xs-12 col-sm-3 col-md-3 col-lg-3 border-right">
                                             <span>Select Customer</span>
                                             <select name="customer_id[]" class="form-control select2" multiple="multiple" data-placeholder="Select Customer" style="width: 100%;">
                                             {!!get_customers_options($customer_ids)!!}
                                             </select>
-                                        </td>
-                                        <td>
+                                        </div>
+                                        <div class="col-xs-12 col-sm-3 col-md-3 col-lg-3 border-right">
                                             <span>Select Driver</span>
                                             <select name="driver_id[]" class="form-control select2" multiple="multiple" data-placeholder="Select Driver" style="width: 100%;">
                                                 {!!get_drivers_options($driver_ids)!!}
                                             </select>
-                                        </td>
-                                        <td>
+                                        </div>
+                                        <div class="col-xs-12 col-sm-3 col-md-3 col-lg-3 border-right">
                                             <span>Select Status</span>
                                             <select name="quote_status[]" class="form-control select2" multiple="multiple" data-placeholder="Select Quote Status" style="width: 100%;">
                                                 {!!get_quote_status_options($quote_status, true)!!}
                                                 </select>
 
-                                        </td>
-                                        <td><button onclick="$('#search_form').submit()" style="margin-top: 24px;" type="button" class="btn btn-block btn-primary"><i class="fa fa-search"></i>Search</button></td>
-                                        <td><button onclick="$('#export_xls').val('export_xls');$('#search_form').submit()" style="margin-top: 24px;" type="button" class="btn btn-block btn-success"><i class="fa fa-download"></i> Excel</button></td>
-                                    </tr>
-                                </table>
+                                        </div>
+										<div class="col-xs-12 col-sm-3 col-md-3 col-lg-3">
+											<div class="row">
+													<div class="col-md-6"><button onclick="$('#search_form').submit()" style="margin-top: 24px;" type="button" class="btn btn-block btn-primary"><i class="fa fa-search"></i>Search</button></div>
+												<div class="col-md-6"><button onclick="$('#export_xls').val('export_xls');$('#search_form').submit()" style="margin-top: 24px;" type="button" class="btn btn-block btn-success"><i class="fa fa-download"></i> Excel</button></div>
+											</div>
+										</div>
+								</div><!--/row end here-->
+							</div><!--/wraper end here-->
+							
                                 </form>
-                                <table id="example1" class="table table-bordered table-striped">
+                                <table id="example1" class="table table-bordered table-striped table-responsive">
                                     <thead>
                                         <tr>
                                             <th>Quote Type</th>

@@ -245,7 +245,7 @@
                                         </div>
                                         <div class="col-5">
                                             <div class="input-group mb-3">
-                                                <input placeholder="Contact Number" type="text" name="pickup_contact_number1"  value="{{ old('pickup_contact_number1') }}"
+                                                <input placeholder="Contact No.(e.g +18633335555)" type="text" name="pickup_contact_number1"  value="{{ old('pickup_contact_number1') }}"
                                                     class=" form-control @error('pickup_contact_number1') is-invalid @enderror">
                                                 @error('pickup_contact_number1')
                                                     <div class="invalid-feedback">
@@ -258,7 +258,7 @@
                                     </div>
                                     <div class="row form-group">
                                         <div class="col-1">&nbsp;</div>
-                                        <div class="col-5">
+                                        {{-- <div class="col-5">
                                             <div class="input-group mb-3">
                                                 <input placeholder="Email" type="text" name="pickup_email1" required value="{{ old('pickup_email1') }}"
                                                     class=" form-control @error('pickup_email1') is-invalid @enderror">
@@ -268,7 +268,7 @@
                                                     </div>
                                                 @enderror
                                             </div>
-                                        </div>
+                                        </div> --}}
                                         <div class="col-5">
                                             <div class="input-group date" id="pick_up_reservationdate1" data-target-input="nearest">
                                                 <input type="text" id="pickup_date1" value="{{ old('pickup_date1') }}" required name="pickup_date1" placeholder="Pick Up date" class="form-control datetimepicker-input" data-target="#reservationdate"/>
@@ -415,7 +415,7 @@
                                         </div>
                                         <div class="col-5">
                                             <div class="input-group mb-3">
-                                                <input placeholder="Contact Number" type="text" name="pickup_contact_number{{$i}}" value="{{ old('pickup_contact_number'.$i) }}"
+                                                <input placeholder="Contact No.(e.g +18633335555)" type="text" name="pickup_contact_number{{$i}}" value="{{ old('pickup_contact_number'.$i) }}"
                                                     class=" form-control @error('pickup_contact_number'.$i) is-invalid @enderror">
                                                 @error('pickup_contact_number'.$i)
                                                     <div class="invalid-feedback">
@@ -428,7 +428,7 @@
                                     </div>
                                     <div class="row form-group">
                                         <div class="col-1">&nbsp;</div>
-                                        <div class="col-5">
+                                        {{-- <div class="col-5">
                                             <div class="input-group mb-3">
                                                 <input placeholder="Email" type="text" name="pickup_email{{$i}}" value="{{ old('pickup_email'.$i) }}"
                                                     class=" form-control @error('pickup_email'.$i) is-invalid @enderror">
@@ -438,7 +438,7 @@
                                                     </div>
                                                 @enderror
                                             </div>
-                                        </div>
+                                        </div> --}}
                                         <div class="col-5">
                                             <div class="input-group date" id="pick_up_reservationdate{{$i}}" data-target-input="nearest">
                                                 <input type="text" value="{{ old('pickup_date'.$i) }}" id="pickup_date{{$i}}" name="pickup_date{{$i}}" placeholder="Pick Up date" class="form-control datetimepicker-input" data-target="#reservationdate"/>
@@ -588,7 +588,7 @@
                                         </div>
                                         <div class="col-5">
                                             <div class="input-group mb-3">
-                                                <input placeholder="Contact Number" value="{{ old('drop_off_contact_number') }}" type="text" name="drop_off_contact_number"
+                                                <input placeholder="Contact No.(e.g +18633335555)" value="{{ old('drop_off_contact_number') }}" type="text" name="drop_off_contact_number"
                                                     class=" form-control @error('drop_off_contact_number') is-invalid @enderror">
                                                 @error('drop_off_contact_number')
                                                     <div class="invalid-feedback">
@@ -616,7 +616,7 @@
                                     </div>
                                     <div class="row form-group">
                                         <div class="col-1">&nbsp;</div>
-                                        <div class="col-5">
+                                        {{-- <div class="col-5">
                                             <div class="input-group mb-3">
                                                 <input required placeholder="Email" value="{{ old('drop_off_email') }}" type="text" name="drop_off_email"
                                                     class=" form-control @error('drop_off_email') is-invalid @enderror">
@@ -626,7 +626,7 @@
                                                     </div>
                                                 @enderror
                                             </div>
-                                        </div>
+                                        </div> --}}
                                         <div class="col-5">
                                             <div class="input-group date" id="reservationdate" data-target-input="nearest">
                                                 <input required type="text" value="{{ old('drop_off_date') }}" name="drop_off_date" placeholder="Delivery date" class="form-control datetimepicker-input" data-target="#reservationdate"/>

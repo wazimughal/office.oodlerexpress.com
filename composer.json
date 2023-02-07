@@ -13,7 +13,9 @@
         "laravel/tinker": "^2.7",
         "laravel/ui": "^3.4",
         "maatwebsite/excel": "^3.1",
-        "psr/simple-cache": "^2.0"
+        "psr/simple-cache": "^2.0",
+        "quickbooks/v3-php-sdk": "^6.1",
+        "twilio/sdk": "^6.44"
     },
     "require-dev": {
         "fakerphp/faker": "^1.9.1",

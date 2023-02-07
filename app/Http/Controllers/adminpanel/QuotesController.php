@@ -21,6 +21,8 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel; // To export import excel
+use Exception;
+use Twilio\Rest\Client; // used to send SMS
 
 // Used for Email Section
 use App\Mail\EmailTemplate;
@@ -73,7 +75,28 @@ class QuotesController extends Controller
 		
 
       }
+        public function open_balance_deliveries(Request $req){
+            $user=Auth::user();
 
+
+            $customer_id=NULL;
+            if($req->customer_id>0)
+            $customer_id=$req->customer_id;
+           
+            $where_clause=[
+            ['status', '>=', config('constants.quote_status.quote_submitted')],
+            ['is_active', '=', 1],
+        ];
+
+            $quotesData=$this->quotes
+            ->with(['quote_agreed_cost','invoices','customer','driver','sub'])
+            ->where('customer_id', $customer_id)
+            ->where($where_clause)
+            ->orderBy('created_at', 'desc')->paginate(config('constants.per_page'));
+            //->orderBy('created_at', 'desc')->get()->toArray();p($quotesData); die;
+
+            return view('adminpanel.open_balance_deliveries',get_defined_vars()); 
+        }
       public function deliveries(Request $req){
         $user=Auth::user();
 
@@ -113,6 +136,7 @@ class QuotesController extends Controller
             ->with('quote_products')
             ->with('customer')
             ->with('driver')
+            ->with('sub')
             ->where($where_clause)
             ->orderBy('created_at', 'desc');
             if(
@@ -360,7 +384,6 @@ class QuotesController extends Controller
 
       }
       public function view_delivery($id){
-        
         $user=Auth::user();
         $products=$this->product_categories->with('products')
             ->where('is_active', '=', 1)
@@ -380,6 +403,7 @@ class QuotesController extends Controller
             'delivery_documents_for_admin',
             'delivery_documents_for_driver',
             'driver',
+            'sub',
             'quote_prices',
             'comments',
             'delivery_notes',
@@ -388,7 +412,7 @@ class QuotesController extends Controller
 
         $where_clause[]=['id',$id];
         $where_clause[]=['status','>=',config('constants.quote_status.delivery')];
-     
+    // p($where_clause);
           $quotesData=$this->quotes
            ->with($relations)
            ->where('id', $id)
@@ -396,7 +420,7 @@ class QuotesController extends Controller
            ->orderBy('created_at', 'desc')->get()->toArray();
 
            if(empty($quotesData)){
-            echo 'There is something wrong'; die;
+            echo 'There is something wrong  '; die;
            }
            
           $quotesData=$quotesData[0];
@@ -796,15 +820,37 @@ $pdf_blade_path='adminpanel/invoice_pdf';
     }
     public function save_add_to_delivery($id,Request $request){
        
-        $validator=$request->validate([
-            'driver_id'=>'required',
-        ]);
+        
+        if(isset($request['assign_to']) && $request['assign_to']==1){
+            $validatorArray=['driver_id'=>'required'];
+
+            $data_to_update['driver_id']=$request['driver_id'];
+            $data_to_update['status']=config('constants.quote_status.delivery');
+
+            $data_to_update['sub_id']=NULL;
+            $data_to_update['quoted_price_for_sub']=NULL;
+            $data_to_update['assign_to']=1;
+            $flashMsg='Driver assigned Successfully !';
+        }
+        else{
+            $validatorArray=['sub_id'=>'required'];
+            $validatorArray=['quoted_price_for_sub'=>'required'];
+
+            $data_to_update['sub_id']=$request['sub_id'];
+            $data_to_update['status']=config('constants.quote_status.delivery');
+            $data_to_update['quoted_price_for_sub']=$request['quoted_price_for_sub'];
+            $data_to_update['sub_status']=0;
+            $data_to_update['assign_to']=2;
+            $flashMsg='Sub assigned Successfully !';
+
+        }
+        $validator=$request->validate($validatorArray);
         
         $driverData=$this->users->where('id',$request['driver_id'])->get('email')->toArray();
         $driverData=$driverData[0];
 
-        $this->quotes->where('id',$id)->update(['driver_id'=>$request['driver_id'],'status'=>config('constants.quote_status.delivery')]);
-        $request->session()->flash('alert-success', 'Driver assigned Successfully !');
+        $this->quotes->where('id',$id)->update($data_to_update);
+        $request->session()->flash('alert-success', $flashMsg);
 
             // Email Section
                 
@@ -824,24 +870,56 @@ $pdf_blade_path='adminpanel/invoice_pdf';
                 $dataArray['emailMsg']='Email Sent Successfully';
             }
 
-            $mailData['body_message']='You are assigned a new delivery, having PO Number:'.$request['po_number'].'. Please login to the CRM and look for details';
-            $mailData['subject']='New Delivery Assigned';
-
-            $emailAdd=[
-                        //config('constants.admin_email'),
-                        $driverData['email'],
-                        
-                    ];
+            if($request['assign_to']==1){
                 
-                
+                $assign_to='Driver';
+                $mailData['body_message']='You are assigned a new delivery, having PO Number:'.$request['po_number'].'. Please login to the CRM and look for details';
+                $mailData['subject']='New Delivery Assigned';
+                $emailAdd=[
+                            //config('constants.admin_email'),
+                            $driverData['email'],
+                        ];
+            }
+            else{
 
+                $assign_to='Sub';
+
+                DB::table('quote_prices')->insert([
+                    'quoted_price' => $request['quoted_price_for_sub'],
+                    'slug' => 'quoted_price_for_sub',
+                    'quoted_uid' => get_session_value('id'),
+                    'quote_id' =>$id,
+                    'quote_price_for' =>2
+                ]);
+
+                    $sub=$this->users->where(['id'=>$request['sub_id']])->get(['name','business_email','email'])->first();
+
+                    $mailData['body_message']='You are assigned a new delivery, having PO Number:'.$request['po_number'].'.please click approve to be added to the delivery schedule. if you have any questions please feel free to contact us at 718-218-5239';
+                    $mailData['subject']='New Delivery Assigned';
+                    $mailData['body_message'] .='<table width="100%" border="1">
+                    <tr><td>Delivery Cost  :</td><td>$'.$request['quoted_price_for_sub'].'</td></tr>';
+                    $mailData['body_message'] .='<tr><td colspan="2">'. quote_data_for_mail($id, config('constants.groups.sub')).'</td></tr>';
+                    $mailData['body_message'] .='</table>';
+                    $mailData['subject']='Your New Delivery From Oodler Express';
+                
+                    $mailData['button_title']='APPROVE';
+                    $mailData['button_link']=route('sub_action',['quote_id' => $id,'action'=>base64_encode('accept')]);
+                    $mailData['button_title2']='Reject';
+                    $mailData['button_link2']=route('sub_action',['quote_id' => $id,'action'=>base64_encode('reject')]);
+
+                    $emailAdd=[
+                                $sub->email,
+                            ];
+                   
+            }
+            
             if(Mail::to($emailAdd)->send(new EmailTemplate($mailData))){
                 $dataArray['emailMsg']='Email Sent Successfully';
             }
 
 
         // Activity Log
-        $activityComment='Mr.'.get_session_value('name').' assigned driver to quote having PO number : '.$request['po_number'];
+        $activityComment='Mr.'.get_session_value('name').' assigned '.$assign_to.' to quote having PO number : '.$request['po_number'];
         $activityData=array(
             'user_id'=>get_session_value('id'),
             'action_taken_on_id'=>$id,
@@ -1436,26 +1514,38 @@ $pdf_blade_path='adminpanel/invoice_pdf';
         
         
        }
-  
+       
         return view('adminpanel/add_new_delivery',get_defined_vars());
     }
     public function save_new_delivery_data($customer_id,Request $request){
        
-        $validator=$request->validate([
+        $validatorArray=[
             'quote_type'=>'required',
             'business_type'=>'required',
             'po_number'=>'required',
             'pickup_street_address1'=>'required',
-            //'pickup_contact_number1'=>'required',
             'pickup_date1'=>'required',
             'drop_off_street_address'=>'required',
-            //'drop_off_contact_number'=>'required',
             'drop_off_date'=>'required',
-            'driver_id'=>'required',
             'quoted_price'=>'required',
-        ]);
+        ];
+        if(isset($request['assign_to']) && $request['assign_to']==1){
+            $validatorArray['driver_id']='required';
+            $this->quotes->driver_id=$request['driver_id'];
+        }
+        else{
+            $validatorArray['sub_id']='required';
+            $validatorArray['quoted_price_for_sub']='required';
+            $this->quotes->sub_id=$request['sub_id'];
+            $this->quotes->quoted_price_for_sub=$request['quoted_price_for_sub'];
+            
+        }
+        
+
+        $validator=$request->validate($validatorArray);
         
          
+        $this->quotes->assign_to=$request['assign_to'];
         $this->quotes->quote_type=$request['quote_type'];
         $this->quotes->elevator=$request['elevator'];
         $this->quotes->no_of_appartments=$request['no_of_appartments'];
@@ -1465,10 +1555,11 @@ $pdf_blade_path='adminpanel/invoice_pdf';
        
         $this->quotes->pickup_street_address=$request['pickup_street_address1'];
         $this->quotes->pickup_unit=$request['pickup_unit1'];
-        $this->quotes->pickup_state=$request['pickup_state1'];
-        $this->quotes->pickup_city=$request['pickup_city1'];
+        // $this->quotes->pickup_state=$request['pickup_state1'];
+        // $this->quotes->pickup_city=$request['pickup_city1'];
         $this->quotes->pickup_zipcode=$request['pickup_zipcode1'];
         $this->quotes->pickup_contact_number=$request['pickup_contact_number1'];
+        $this->quotes->pickup_email=$request['pickup_email1'];
         $this->quotes->pickup_date=$request['pickup_date1'];
         $this->quotes->drop_off_street_address=$request['drop_off_street_address'];
         $this->quotes->drop_off_unit=$request['drop_off_unit'];
@@ -1476,11 +1567,12 @@ $pdf_blade_path='adminpanel/invoice_pdf';
         $this->quotes->drop_off_city=$request['drop_off_city'];
         $this->quotes->drop_off_zipcode=$request['drop_off_zipcode'];
         $this->quotes->drop_off_contact_number=$request['drop_off_contact_number'];
+        $this->quotes->drop_off_email=$request['drop_off_email'];
         $this->quotes->drop_off_instructions=$request['drop_off_instructions'];
         $this->quotes->drop_off_date=$request['drop_off_date'];
         
         $this->quotes->customer_id=$customer_id;
-        $this->quotes->driver_id=$request['driver_id'];
+        //$this->quotes->driver_id=$request['driver_id'];
         $this->quotes->status=config('constants.quote_status.delivery');
         
         
@@ -1496,6 +1588,19 @@ $pdf_blade_path='adminpanel/invoice_pdf';
        $this->quote_prices->quoted_uid=get_session_value('id');
        $this->quote_prices->quote_id=$this->quotes->id;
        $this->quote_prices->save();
+       
+       // if Sub is being added then we need to save its price
+       if(isset($request['assign_to']) && $request['assign_to']==2){
+       
+                DB::table('quote_prices')->insert([
+                    'quoted_price' => $request['quoted_price_for_sub'],
+                    'slug' => 'quoted_price_for_sub',
+                    'quoted_uid' => get_session_value('id'),
+                    'quote_id' =>$this->quotes->id,
+                    'quote_price_for' =>2
+                ]);
+
+       }
 
        foreach($request['product_details1'] as $key=>$productData){
             
@@ -1503,10 +1608,11 @@ $pdf_blade_path='adminpanel/invoice_pdf';
 
             DB::table('pickup_dropoff_address')->insert([
                 ['pickup_street_address' => $request['pickup_street_address1'],
-                 'pickup_state' =>$request['pickup_state1'],
-                 'pickup_city' => $request['pickup_city1'],
+                //  'pickup_state' =>$request['pickup_state1'],
+                //  'pickup_city' => $request['pickup_city1'],
                  'pickup_zipcode' => $request['pickup_zipcode1'],
                  'pickup_contact_number' => $request['pickup_contact_number1'],
+                 'pickup_email' => $request['pickup_email1'],
                  'pickup_date' => $request['pickup_date1'],
                  'drop_off_street_address' => $request['drop_off_street_address'],
                  'drop_off_unit' => $request['drop_off_unit'],
@@ -1514,6 +1620,7 @@ $pdf_blade_path='adminpanel/invoice_pdf';
                  'drop_off_city' => $request['drop_off_city'],
                  'drop_off_zipcode' => $request['drop_off_zipcode'],
                  'drop_off_contact_number' => $request['drop_off_contact_number'],
+                 'drop_off_email' => $request['drop_off_email'],
                  'drop_off_instructions' => $request['drop_off_instructions'],
                  'drop_off_date' => $request['drop_off_date'],
                  'quote_id' => $this->quotes->id,
@@ -1556,10 +1663,11 @@ $pdf_blade_path='adminpanel/invoice_pdf';
 
             DB::table('pickup_dropoff_address')->insert([
                 ['pickup_street_address' => $request['pickup_street_address2'],
-                 'pickup_state' =>$request['pickup_state2'],
-                 'pickup_city' => $request['pickup_city2'],
+                //  'pickup_state' =>$request['pickup_state2'],
+                //  'pickup_city' => $request['pickup_city2'],
                  'pickup_zipcode' => $request['pickup_zipcode2'],
                  'pickup_contact_number' => $request['pickup_contact_number2'],
+                 'pickup_email' => $request['pickup_email2'],
                  'pickup_date' => $request['pickup_date2'],
                  'drop_off_street_address' => $request['drop_off_street_address'],
                  'drop_off_unit' => $request['drop_off_unit'],
@@ -1567,6 +1675,7 @@ $pdf_blade_path='adminpanel/invoice_pdf';
                  'drop_off_city' => $request['drop_off_city'],
                  'drop_off_zipcode' => $request['drop_off_zipcode'],
                  'drop_off_contact_number' => $request['drop_off_contact_number'],
+                 'drop_off_email' => $request['drop_off_email'],
                  'drop_off_instructions' => $request['drop_off_instructions'],
                  'drop_off_date' => $request['drop_off_date'],
                  'quote_id' => $this->quotes->id,
@@ -1608,10 +1717,11 @@ $pdf_blade_path='adminpanel/invoice_pdf';
 
             DB::table('pickup_dropoff_address')->insert([
                 ['pickup_street_address' => $request['pickup_street_address3'],
-                 'pickup_state' =>$request['pickup_state3'],
-                 'pickup_city' => $request['pickup_city3'],
+                //  'pickup_state' =>$request['pickup_state3'],
+                //  'pickup_city' => $request['pickup_city3'],
                  'pickup_zipcode' => $request['pickup_zipcode3'],
                  'pickup_contact_number' => $request['pickup_contact_number3'],
+                 'pickup_email' => $request['pickup_email3'],
                  'pickup_date' => $request['pickup_date3'],
                  'drop_off_street_address' => $request['drop_off_street_address'],
                  'drop_off_unit' => $request['drop_off_unit'],
@@ -1619,6 +1729,7 @@ $pdf_blade_path='adminpanel/invoice_pdf';
                  'drop_off_city' => $request['drop_off_city'],
                  'drop_off_zipcode' => $request['drop_off_zipcode'],
                  'drop_off_contact_number' => $request['drop_off_contact_number'],
+                 'drop_off_email' => $request['drop_off_email'],
                  'drop_off_instructions' => $request['drop_off_instructions'],
                  'drop_off_date' => $request['drop_off_date'],
                  'quote_id' => $this->quotes->id,
@@ -1650,6 +1761,35 @@ $pdf_blade_path='adminpanel/invoice_pdf';
            
         }
         
+    }
+
+    // if Sub is selected then send an email to sub for approve or reject
+    if(isset($request['assign_to']) && $request['assign_to']==2){
+    
+    $sub=$this->users->where(['id'=>$request['sub_id']])->get(['name','business_email','email'])->first();
+
+    $mailData['body_message']='You are assigned a new delivery, having PO Number:'.$request['po_number'].'.please click approve to be added to the delivery schedule. if you have any questions please feel free to contact us at 718-218-5239';
+    $mailData['subject']='New Delivery Assigned';
+    $mailData['body_message'] .='<table width="100%" border="1">
+    <tr><td>Delivery Cost  :</td><td>$'.$request['quoted_price_for_sub'].'</td></tr>';
+    $mailData['body_message'] .='<tr><td colspan="2">'. quote_data_for_mail($this->quotes->id, config('constants.groups.sub')).'</td></tr>';
+    // if(isset($request['description']) && $request['description']!='')
+    // $mailData['body_message'] .='<tr><td>Additional Notes :</td><td>'.$request['description'].'</td></tr>';
+    $mailData['body_message'] .='</table>';
+    $mailData['subject']='Your New Delivery From Oodler Express';
+ 
+    $mailData['button_title']='APPROVE';
+    $mailData['button_link']=route('sub_action',['quote_id' => $this->quotes->id,'action'=>base64_encode('accept')]);
+    $mailData['button_title2']='Reject';
+    $mailData['button_link2']=route('sub_action',['quote_id' => $this->quotes->id,'action'=>base64_encode('reject')]);
+
+    $emailAdd=[
+                $sub->email,
+            ];
+    if(Mail::to($emailAdd)->send(new EmailTemplate($mailData))){
+        $dataArray['emailMsg']='Email Sent Successfully';
+    }
+
     }
         
         $mailData['body_message']='you have received a new request for a quote from customer '.quote_data_for_mail($this->quotes->id);
@@ -1712,11 +1852,11 @@ $pdf_blade_path='adminpanel/invoice_pdf';
             'po_number'=>'required',
             'pickup_street_address1'=>'required',
             //'pickup_contact_number1'=>'required',
-            'pickup_email1'=>'required',
+            //'pickup_email1'=>'required',
             'pickup_date1'=>'required',
             'drop_off_street_address'=>'required',
             //'drop_off_contact_number'=>'required',
-            'drop_off_email'=>'required',
+            //'drop_off_email'=>'required',
             'drop_off_date'=>'required',
         ]);
         
@@ -2270,6 +2410,82 @@ $pdf_blade_path='adminpanel/invoice_pdf';
 
         
      }
+    
+    public function sub_action($quote_id,$action){
+        
+        $action=base64_decode($action);
+        
+        //$quote_data_to_update['status']=config('constants.quote_status.declined');
+        $quote_data_to_update['sub_status']=2;
+        $quote_data_to_update['assign_to']=1;
+
+        $activityComment='Sub Declined the Delivery';
+        $msg= 'we have canceled this delivery for you, let us know if you have any other query. Thank you';
+        $actionMsg='declined';
+        $mailData['subject']='New Delivery Declined ';
+
+        if($action=='accept'){
+            $quote_data_to_update['status']=config('constants.quote_status.delivery');
+            $quote_data_to_update['sub_status']=1;
+            
+            $activityComment='Sub approved the delivery';
+            $actionMsg='approved';
+            $msg="Thank you, you have been confirmed";
+            $mailData['subject']='New Delivery Accepted by the Sub ';  
+            
+        }else{
+            $this->quote_prices->where(['quote_id'=>$quote_id,'quote_price_for'=>2])->delete();
+            $quote_data_to_update['sub_id']=NULL;
+            $quote_data_to_update['quoted_price_for_sub']=NULL;
+            $quote_data_to_update['assign_to']=1;
+            $quote_data_to_update['sub_status']=0;
+            
+        }
+        
+
+        $quoteData=$this->quotes->with(['customer','sub'])
+            ->where('id',$quote_id)
+            ->get()
+            ->toArray();
+            $quoteData=$quoteData[0];
+        
+            $where_clause=[
+                ['id','=',$quote_id],
+                ['sub_id','>', 0],
+                //['status','<', config('constants.quote_status.delivery')],
+            ];
+            
+            $updated=$this->quotes->where($where_clause)->update($quote_data_to_update);
+          
+            $activityData=array(
+                'user_id'=>$quoteData['sub']['id'],
+                'action_taken_on_id'=>$quote_id,
+                'action_slug'=>'sub_status_changed_by_sub',
+                'comments'=>$activityComment,
+                'others'=>'quotes',
+                'created_at'=>date('Y-m-d H:I:s',time()),
+            );
+            $activityID=log_activity($activityData);  
+            if($updated){
+                
+               
+                $mailData['body_message']='This email is to let you know that delivery having PO No.:'.$quoteData['po_number'].' has been '.$actionMsg.' by the sub on '.date('d/m/Y');   
+                $toEmail=[
+                    config('constants.admin_email'),
+                    //$quoteData['customer']['email']
+                ];
+
+                if(Mail::to($toEmail)->send(new EmailTemplate($mailData))){
+                //    echo 'Thank you, Your Booking has been confirmed';
+                }
+                echo $msg;
+            }
+            
+            else
+            echo 'Link expired';
+            exit;
+
+        }
     public function customer_action($quote_id,$action){
         
         $action=base64_decode($action);
@@ -2360,6 +2576,28 @@ $pdf_blade_path='adminpanel/invoice_pdf';
             
             return view('adminpanel/calender_schedule',get_defined_vars());
         } 
+
+        public function sendSMS($receiverNumber = "+923007731712",$message = "This is the test messagee"){
+             try {
+     
+                 $account_sid = getenv("TWILIO_SID");
+                 $auth_token = getenv("TWILIO_TOKEN");
+                 $twilio_number = getenv("TWILIO_FROM");
+     
+                 $client = new Client($account_sid, $auth_token);
+                 $client->messages->create($receiverNumber, [
+                     'from' => $twilio_number, 
+                     'body' => $message]);
+     
+                 return true;
+     
+             } catch (Exception $e) {
+                 //dd("Error: ". $e->getMessage());
+                
+             }
+             return false;
+             // END
+        }
     public function ajaxcall($id, Request $req){
         $dataArray['error']='No';
         $dataArray['title']='Action Taken';
@@ -2673,59 +2911,211 @@ $pdf_blade_path='adminpanel/invoice_pdf';
                 
 
         }
+        elseif(isset($req['action']) && $req['action']=='dirver_activity_for_sms')
+        {
+            $dataArray['title']='Driver Activity';
+            $dataArray['error']='No';
+            $current_time=time();
+
+            $quoteData=$this->quotes->where('id',$id)->with(array('customer','driver'))->get()->toArray();
+            $quoteData=$quoteData[0];
+            $receiverNumber = "+923007731712";
+
+            if(isset($req['activity']) && $req['activity']=='arrived_at_pickup'){
+
+                $result=$this->quotes->where('id','=',$id)->update(array('arrived_at_pickup'=>$current_time)); 
+                $message='Mr.'.$quoteData['driver']['name'].' arrived at pick-up address '.$quoteData['pickup_street_address'].' to pick-up the delivery having PO Number: '.$quoteData['po_number'].' at '.date(config('constants.date_and_time'),$current_time);   
+               
+                if(!$this->sendSMS($receiverNumber,$message))
+                $dataArray['title']='There is some issue in sending SMS';
+                
+            }elseif(isset($req['activity']) && $req['activity']=='arriving_at_dropoff'){
+
+                $result=$this->quotes->where('id','=',$id)->update(array('arriving_at_dropoff'=>$current_time)); 
+                $message='Mr.'.$quoteData['driver']['name'].' on the way to address '.$quoteData['drop_off_street_address'].' to drop-off the delivery having PO Number: '.$quoteData['po_number'].' and will reach there at estimated_time: '.date(config('constants.date_and_time'),$current_time);  
+                
+                if(!$this->sendSMS($receiverNumber,$message))
+                $dataArray['title']='There is some issue in sending SMS';
+
+            }
+
+            if($dataArray['error']=='No'){
+                $dataArray['msg']='Mr.'.get_session_value('name').', Performed activity for delivery';
+                  // Activity Logged
+             $activityID=log_activity(array(
+                'user_id'=>get_session_value('id'),
+                'action_taken_on_id'=>$id,
+                'action_slug'=>'driver_delivery_activity_sms',
+                'comments'=>'Mr.'.get_session_value('name').' performed activity for delivery',
+                'others'=>'quotes',
+                'created_at'=>date('Y-m-d H:I:s',time()),
+            ));
+            }
+
+
+        }
+        elseif(isset($req['action']) && $req['action']=='dirver_activity_for_time')
+        {
+            $dataArray['title']='Driver Activity';
+            $dataArray['error']='No';
+            $selected_date=$req['date_of_booking'];
+            $selected_time=$req['time_of_booking'];
+
+            $date_time= $selected_date.' '.$selected_time;
+            $current_time=$str_time_date=strtotime($date_time); 
+               // echo date(config('constants.date_and_time'),$str_time_date); exit;
+
+            $quoteData=$this->quotes->where('id',$id)->with(array('customer','driver'))->get()->toArray();
+            $quoteData=$quoteData[0];
+            $receiverNumber = "+923007731712";
+
+            if(isset($req['key']) && $req['key']=='reached_at_pickup'){
+                $to_update_data['reached_at_pickup']=$current_time;
+                $to_update_data['arrived_at_pickup']=$selected_time;
+                
+
+                $result=$this->quotes->where('id','=',$id)->update($to_update_data); 
+                $pick_up_contact_message='Hello
+                 This message is to confirm that the Oodler Express driver will be arrived at pick up point on '.$selected_time ;   
+                 
+                 if(isset($quoteData['pickup_contact_number']) && !empty($quoteData['pickup_contact_number']))
+                 $receiverNumber=$quoteData['pickup_contact_number'];
+
+                if(!$this->sendSMS($receiverNumber,$pick_up_contact_message))
+                $dataArray['title']='There is some issue in sending SMS to Pick Up Contact';
+
+                $drop_off_contact_message='Hello,
+                 this message is to inform you that the Oodler Express driver has arrived at the pickup address for PO Number: '.$quoteData['po_number'].' the driver will safely load the shipment. please lookout for another text when the driver is on it\'s way to the delivery.
+                 if you have any questions, contact us at 845-325-4892';
+
+                if(isset($quoteData['drop_off_contact_number']) && !empty($quoteData['drop_off_contact_number']))
+                $receiverNumber=$quoteData['drop_off_contact_number'];
+
+                if(!$this->sendSMS($receiverNumber,$drop_off_contact_message))
+                $dataArray['title']='There is some issue in sending SMS to Drop Off Contact';
+                
+            }elseif(isset($req['key']) && $req['key']=='on_the_way'){
+                $to_update_data['on_the_way']=$current_time;
+                $to_update_data['arriving_at_dropoff']=$selected_time;
+
+                $result=$this->quotes->where('id','=',$id)->update($to_update_data); 
+               
+                $message='Hello, This message is to inform you that a delivery from '.$quoteData['customer']['name'].' just got picked up and is on the way to it\'s delivery location. 
+                Carrier Name: Oodler Express
+                the drivers estimated time of arrival is '.$selected_time.'. For any questions you can contact us at 845-325-4892';
+                 
+                 if(isset($quoteData['drop_off_contact_number']) && !empty($quoteData['drop_off_contact_number']))
+                 $receiverNumber=$quoteData['drop_off_contact_number'];
+                 //$receiverNumber = "+923007731712";
+                if(!$this->sendSMS($receiverNumber,$message))
+                $dataArray['title']='There is some issue in sending SMS to Drop Off Contact Number';
+                 
+                if(isset($quoteData['pickup_contact_number']) && !empty($quoteData['pickup_contact_number']))
+                 $receiverNumber=$quoteData['pickup_contact_number'];
+                 //$receiverNumber = "+923007731712";
+                if(!$this->sendSMS($receiverNumber,$message))
+                $dataArray['title']='There is some issue in sending SMS to Pick up Contact Number';
+
+            }
+
+            if($dataArray['error']=='No'){
+                $dataArray['msg']='Mr.'.get_session_value('name').', Performed activity for delivery';
+                  // Activity Logged
+             $activityID=log_activity(array(
+                'user_id'=>get_session_value('id'),
+                'action_taken_on_id'=>$id,
+                'action_slug'=>'driver_delivery_time_updated',
+                'comments'=>'Mr.'.get_session_value('name').' performed activity for delivery',
+                'others'=>'quotes',
+                'created_at'=>date('Y-m-d H:I:s',time()),
+            ));
+            }
+
+
+        }
         elseif(isset($req['action']) && $req['action']=='dirver_activity')
         {
 
             $dataArray['title']='Driver Activity';
-            $current_time=time();
+            
             $quoteData=$this->quotes->where('id',$id)->with(array('customer','driver'))->get()->toArray();
             $quoteData=$quoteData[0];
+
+            $current_time=time();
+            $receiverNumber = "+923007731712";
 
             $emailAdd=[
                 config('constants.admin_email'),
                 $quoteData['customer']['email'],
-                $quoteData['driver']['email'],
             ];
-            if(isset($quoteData['pickup_email']) && !empty($quoteData['pickup_email']))
-            $emailAdd[]=$quoteData['pickup_email'];
-            if(isset($quoteData['drop_off_email']) && !empty($quoteData['drop_off_email']))
-            $emailAdd[]=$quoteData['drop_off_email'];
+            
+            if(isset($quoteData['driver']['email']) && !empty($quoteData['driver']['email']))
+            $emailAdd[]=$quoteData['driver']['email'];
+      
         //     p($emailAdd);
         //    p( $quoteData); die;
 
             if(isset($req['activity']) && $req['activity']=='reached_at_pickup'){
-                $result=$this->quotes->where('id','=',$id)->update(array('reached_at_pickup'=>$current_time)); 
-                $mailData['subject']='Mr.'.$quoteData['driver']['name'].' reached at pick-up having PO#:'.$quoteData['po_number'];  
-                $mailData['body_message']='Mr.'.$quoteData['driver']['name'].' reached at pick-up address <strong>'.$quoteData['pickup_street_address'].'</strong> to pick-up the delivery having PO Number: '.$quoteData['po_number'].' at '.date(config('constants.date_and_time'),$current_time);  
+                
+                //$result=$this->quotes->where('id','=',$id)->update(array('reached_at_pickup'=>$current_time)); 
+                // Sending SMS
+                $time_of_arriving= date("h:i:sa");
+                $to_update_data['reached_at_pickup']=$current_time;
+                $to_update_data['arrived_at_pickup']=$time_of_arriving;
+                $result=$this->quotes->where('id','=',$id)->update($to_update_data); 
+
+                $drop_off_contact_message=$pick_up_contact_message='Hello, this message is to inform you that the Oodler Express driver has arrived at the pickup address for PO Number: '.$quoteData['po_number'].' the driver will safely load the shipment. please lookout for another text when the driver is on it\'s way to the delivery.
+               if you have any questions, contact us at 845-325-4892';
+
+                if(isset($quoteData['pickup_contact_number']) && !empty($quoteData['pickup_contact_number']))
+                $receiverNumber=$quoteData['pickup_contact_number'];
+                
+                $receiverNumber = "+923007731712";
+               if(!$this->sendSMS($receiverNumber,$pick_up_contact_message))
+               $dataArray['title']='There is some issue in sending SMS to Pick Up Contact Number';
+           
+              if(isset($quoteData['drop_off_contact_number']) && !empty($quoteData['drop_off_contact_number']))
+              $receiverNumber=$quoteData['drop_off_contact_number'];
+              
+              $receiverNumber = "+923007731712";
+              if(!$this->sendSMS($receiverNumber,$drop_off_contact_message))
+              $dataArray['title']='There is some issue in sending SMS to Drop Off Contact Number';
+
+                //$mailData['subject']='Mr.'.$quoteData['driver']['name'].' reached at pick-up having PO#:'.$quoteData['po_number'];  
+                //$mailData['body_message']='Mr.'.$quoteData['driver']['name'].' reached at pick-up address <strong>'.$quoteData['pickup_street_address'].'</strong> to pick-up the delivery having PO Number: '.$quoteData['po_number'].' at '.date(config('constants.date_and_time'),$current_time);  
             
-                if(Mail::to($emailAdd)->send(new EmailTemplate($mailData))){
-                    $dataArray['emailMsg']='Email Sent Successfully';
-                    $req->session()->flash('alert-success', 'Email Notification sent');
-                }
+                // if(Mail::to($emailAdd)->send(new EmailTemplate($mailData))){
+                //     $dataArray['emailMsg']='Email Sent Successfully';
+                     
+                //  }
+
+                 
+               
             }
             
             elseif(isset($req['activity']) && $req['activity']=='picked_up'){
                 
                 $result=$this->quotes->where('id','=',$id)->update(array('picked_up'=>$current_time)); 
-                $mailData['subject']='Mr.'.$quoteData['driver']['name'].' picked up the delivery having PO#:'.$quoteData['po_number'];  
-                $mailData['body_message']='Mr.'.$quoteData['driver']['name'].' picked up the delivery from the address <strong>'.$quoteData['pickup_street_address'].'</strong> having PO Number: '.$quoteData['po_number'].' at '.date(config('constants.date_and_time'),$current_time);  
+                //$mailData['subject']='Mr.'.$quoteData['driver']['name'].' picked up the delivery having PO#:'.$quoteData['po_number'];  
+                //$mailData['body_message']='Mr.'.$quoteData['driver']['name'].' picked up the delivery from the address <strong>'.$quoteData['pickup_street_address'].'</strong> having PO Number: '.$quoteData['po_number'].' at '.date(config('constants.date_and_time'),$current_time);  
             }
             
             elseif(isset($req['activity']) && $req['activity']=='on_the_way'){
                 $result=$this->quotes->where('id','=',$id)->update(array('on_the_way'=>$current_time)); 
-                $mailData['subject']='Mr.'.$quoteData['driver']['name'].' on the way to drop-off the devlivery having PO#:'.$quoteData['po_number'];  
-                $mailData['body_message']='Mr.'.$quoteData['driver']['name'].' on the way to address <strong>'.$quoteData['drop_off_street_address'].'</strong> to drop-off the delivery having PO Number: '.$quoteData['po_number'].' at '.date(config('constants.date_and_time'),$current_time);  
                 
-                if(Mail::to($emailAdd)->send(new EmailTemplate($mailData))){
-                    $dataArray['emailMsg']='Email Sent Successfully';
-                    $req->session()->flash('alert-success', 'Email Notification sent');
-                }
+                //$mailData['subject']='Mr.'.$quoteData['driver']['name'].' on the way to drop-off the devlivery having PO#:'.$quoteData['po_number'];  
+                //$mailData['body_message']='Mr.'.$quoteData['driver']['name'].' on the way to address <strong>'.$quoteData['drop_off_street_address'].'</strong> to drop-off the delivery having PO Number: '.$quoteData['po_number'].' at '.date(config('constants.date_and_time'),$current_time);  
+                // if(Mail::to($emailAdd)->send(new EmailTemplate($mailData))){
+                //     $dataArray['emailMsg']='Email Sent Successfully';
+                //     $req->session()->flash('alert-success', 'Email Notification sent');
+                // }
+                
             }
             
             elseif(isset($req['activity']) && $req['activity']=='reached_at_dropoff'){
                 $result=$this->quotes->where('id','=',$id)->update(array('reached_at_dropoff'=>$current_time));
-                $mailData['subject']='Mr.'.$quoteData['driver']['name'].' reached at drop-off on address for delivery having PO#:'.$quoteData['po_number'];  
-                $mailData['body_message']='Mr.'.$quoteData['driver']['name'].' reached at address <strong>'.$quoteData['drop_off_street_address'].'</strong> to drop-off the delivery having PO Number: '.$quoteData['po_number'].' at '.date(config('constants.date_and_time'),$current_time);               
+                //$mailData['subject']='Mr.'.$quoteData['driver']['name'].' reached at drop-off on address for delivery having PO#:'.$quoteData['po_number'];  
+                //$mailData['body_message']='Mr.'.$quoteData['driver']['name'].' reached at address <strong>'.$quoteData['drop_off_street_address'].'</strong> to drop-off the delivery having PO Number: '.$quoteData['po_number'].' at '.date(config('constants.date_and_time'),$current_time);               
             }
             
             elseif(isset($req['activity']) && $req['activity']=='delivered'){
@@ -2743,9 +3133,13 @@ $pdf_blade_path='adminpanel/invoice_pdf';
                     echo json_encode($dataArray); exit;
                 }
                 else{
+                    $driverName='Driver';
+                    if(isset($quoteData['driver']['name']))
+                    $driverName='Mr.'.$quoteData['driver']['name'];
+
                     $result=$this->quotes->where('id','=',$id)->update(array('delivered'=>$current_time,'status'=>config('constants.quote_status.complete')));             
-                    $mailData['subject']='Mr.'.$quoteData['driver']['name'].' delivered the delivery having PO#:'.$quoteData['po_number'];  
-                    $mailData['body_message']='Mr.'.$quoteData['driver']['name'].' delivered the delivery at address <strong>'.$quoteData['drop_off_street_address'].'</strong> having PO Number'.$quoteData['po_number'].' on '.date(config('constants.date_and_time'),$current_time);  
+                    $mailData['subject']=$driverName.' delivered the delivery having PO#:'.$quoteData['po_number'];  
+                    $mailData['body_message']=$driverName.' delivered the delivery at address <strong>'.$quoteData['drop_off_street_address'].'</strong> having PO Number'.$quoteData['po_number'].' on '.date(config('constants.date_and_time'),$current_time);  
                     
                  
 
@@ -2784,24 +3178,7 @@ $pdf_blade_path='adminpanel/invoice_pdf';
             
             
 
-        // Email Section
-
-        //  $emailAdd=[
-        //             config('constants.admin_email'),
-        //             $quoteData['customer']['email'],
-        //             $quoteData['driver']['email'],
-        //         ];
-               
-        // if(isset($quoteData['pickup_email']) && !empty($quoteData['pickup_email']))
-        // $emailAdd[]=$quoteData['pickup_email'];
-        // if(isset($quoteData['drop_off_email']) && !empty($quoteData['drop_off_email']))
-        // $emailAdd[]=$quoteData['drop_off_email'];
-
-        // if(Mail::to($emailAdd)->send(new EmailTemplate($mailData))){
-        //     $dataArray['emailMsg']='Email Sent Successfully';
-        //     $req->session()->flash('alert-success', 'Email Notification sent');
-        // }
-    //
+   
 
 
             if($result){
@@ -2935,6 +3312,165 @@ $pdf_blade_path='adminpanel/invoice_pdf';
             ));
             }
        }
+       else if(isset($req['action']) && $req['action']=='assign_driver_sub'){
+            $dataArray['title']='Assigned Driver/Sub';
+            $dataArray['error']='No';
+            
+            $quoteData=$this->quotes->where('id',$id)->get('po_number')->first();
+
+            $data_to_update=[];
+            if($req['data']['assign_to']==1){
+                $assgin_to='Driver';
+                if(isset($req['data']['driver_id']) && $req['data']['driver_id']>0){}else{
+                    $dataArray['error']='yes';
+                    $dataArray['msg']='You must have to select the Driver';
+                    echo json_encode($dataArray); exit;
+                   }
+                $dataArray['reload']='yes';
+
+                $data_to_update['sub_id']=NULL;
+                $data_to_update['quoted_price_for_sub']=NULL;
+                $data_to_update['assign_to']=$req['data']['assign_to'];
+                $data_to_update['sub_status']=0;
+                $data_to_update['driver_id']=$req['data']['driver_id'];
+                $this->quotes->where(['id'=>$id])->update($data_to_update);
+
+                $driver=$this->users->where(['id'=>$req['data']['sub_id']])->get(['name','business_email','email'])->first();
+                $mailData['body_message']='You are assigned a new delivery, having PO Number:'.$quoteData->po_number.'. Please login to the CRM and look for details';
+                $mailData['subject']='New Delivery Assigned';
+    
+                $emailAdd=[
+                            config('constants.admin_email'),
+                            $driver->email,
+                            
+                        ];
+                if(Mail::to($emailAdd)->send(new EmailTemplate($mailData))){
+                    $dataArray['emailMsg']='Email Sent Successfully';
+                }
+                
+            }else{
+                
+                if(isset($req['data']['sub_id']) && $req['data']['sub_id']>0){}else{
+                     $dataArray['error']='yes';
+                     
+                     $dataArray['msg']='You must have to select the sub';
+                     echo json_encode($dataArray); exit;
+                    }
+                    if($req['data']['quoted_price_for_sub']==''){
+                     
+                        $dataArray['error']='yes';
+                        $dataArray['msg']='Price for the sub is required and it should be a number';
+                        echo json_encode($dataArray); exit;
+                    }
+                
+                $dataArray['reload']='yes';   
+                $assgin_to='Sub';
+                $data_to_update['sub_id']=$req['data']['sub_id'];
+                $data_to_update['quoted_price_for_sub']=$req['data']['quoted_price_for_sub'];
+                $data_to_update['assign_to']=$req['data']['assign_to'];
+                $data_to_update['sub_status']=0;
+                
+                $this->quotes->where(['id'=>$id])->update($data_to_update);
+                DB::table('quote_prices')->insert([
+                    'quoted_price' => $req['data']['quoted_price_for_sub'],
+                    'slug' => 'quoted_price_for_sub',
+                    'quoted_uid' => get_session_value('id'),
+                    'quote_id' =>$id,
+                    'quote_price_for' =>2
+                ]);
+
+                   
+                    // if Sub is selected then send an email to sub for approve or reject
+                        $sub=$this->users->where(['id'=>$req['data']['sub_id']])->get(['name','business_email','email'])->first();
+                    
+                        $mailData['body_message']='You are assigned a new delivery, having PO Number:'.$quoteData->po_number.'.please click approve to be added to the delivery schedule. if you have any questions please feel free to contact us at 718-218-5239';
+                        $mailData['subject']='New Delivery Assigned';
+                        $mailData['body_message'] .='<table width="100%" border="1">
+                        <tr><td>Delivery Cost  :</td><td>$'.$req['data']['quoted_price_for_sub'].'</td></tr>';
+                        $mailData['body_message'] .='<tr><td colspan="2">'. quote_data_for_mail($id, config('constants.groups.sub')).'</td></tr>';
+                        $mailData['body_message'] .='</table>';
+                        $mailData['subject']='Your New Delivery From Oodler Express';
+                    
+                        $mailData['button_title']='APPROVE';
+                        $mailData['button_link']=route('sub_action',['quote_id' => $id,'action'=>base64_encode('accept')]);
+                        $mailData['button_title2']='Reject';
+                        $mailData['button_link2']=route('sub_action',['quote_id' => $id,'action'=>base64_encode('reject')]);
+                    
+                        $emailAdd=[
+                                    $sub->email,
+                                ];
+                        if(Mail::to($emailAdd)->send(new EmailTemplate($mailData))){
+                            $dataArray['emailMsg']='Email Sent Successfully';
+                        }
+                    
+                        
+            }
+           
+
+            $dataArray['msg']=$activityComment='Mr.'.get_session_value('name').' assigned to the '.$assgin_to;
+            $dataArray['msg']=$activityComment.' successfully!';
+            // Activity Logged
+            $activityID=log_activity(array(
+            'user_id'=>get_session_value('id'),
+            'action_taken_on_id'=>$id,
+            'action_slug'=>'delivery_assign_to_'.$assgin_to,
+            'comments'=>$activityComment,
+            'others'=>'quotes',
+            'created_at'=>date('Y-m-d H:I:s',time()),
+            ));
+
+       }
+       else if(isset($req['action']) && $req['action']=='change_sub_status'){
+        $dataArray['title']='Sub Status ';
+        $dataArray['error']='No';
+        $dataArray['msg']=$activityComment='Mr.'.get_session_value('name').' changed the sub status';
+        
+       $sub_status=$req['data']['sub_status'];
+       // $sub_status=$req['sub_status'];
+        
+            $data_to_update['sub_status']=$sub_status;
+
+            $quoteData=$this->quotes->where('id',$id)->with('sub')->get()->toArray();
+            $quoteData=$quoteData[0];
+
+            if($sub_status==0){
+                $actionMsg='Pending';
+            }elseif($sub_status==1){
+                $actionMsg='Approved';
+            }elseif($sub_status==2){
+                $dataArray['reload']='yes';
+                $actionMsg='Removed';
+                $data_to_update['sub_id']=NULL;
+                $data_to_update['assign_to']=1;
+                $data_to_update['quoted_price_for_sub']=NULL;
+
+                $this->quote_prices->where(['quote_id'=>$id,'quote_price_for'=>2])->delete();
+            }
+            $result=$this->quotes->where('id','=',$id)->update($data_to_update);
+            
+
+
+            $mailData['body_message']='This email is to let you know that quote having PO No.:'.$quoteData['po_number'].' has been '.$actionMsg.' by the oodler Express on '.date(config('constants.date_formate'));   
+            $mailData['subject']='Delivery having PO No.:'.$quoteData['po_number'].' Sub Status on Oodler Express';
+            $toEmail=[
+                config('constants.admin_email'),
+                $quoteData['sub']['email']
+            ];
+
+            if(Mail::to($toEmail)->send(new EmailTemplate($mailData))){
+            //    echo 'Thank you, Your Booking has been confirmed';
+            } 
+                $dataArray['msg']=$activityComment.' successfully!';
+                // Activity Logged
+                $activityID=log_activity(array(
+                'user_id'=>get_session_value('id'),
+                'action_taken_on_id'=>$id,
+                'action_slug'=>'quote_status',
+                'comments'=>$activityComment,
+                'others'=>'quotes',
+                'created_at'=>date('Y-m-d H:I:s',time()),
+                ));
+        }
        else if(isset($req['action']) && $req['action']=='change_status'){
         $dataArray['title']='Quote Status ';
         

@@ -43,7 +43,7 @@
                                     <input class="form-control" onkeyup="search_leads()" type="text" id="qsearch" name="qsearch" placeholder="Type email or customer or business  name to search">
                                     </div>
                                 </div>
-                                <table id="example1" class="table table-bordered table-striped">
+                                <table id="example1" class="table table-bordered table-striped table-responsive">
                                     <thead>
                                         <tr>
                                             <th>Name</th>

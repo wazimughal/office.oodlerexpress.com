@@ -207,7 +207,7 @@
 
 
             var sendInfo = {
-                action: 'qsearch_customer',
+                action: 'qsearch_customer_reports',
                 qsearch: searchval,
             };
 

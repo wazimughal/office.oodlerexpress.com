@@ -50,6 +50,8 @@ return new class extends Migration
             $table->string('on_the_way')->nullable();
             $table->string('reached_at_dropoff')->nullable();
             $table->string('delivered')->nullable();
+            $table->string('arrived_at_pickup')->nullable();
+            $table->string('arriving_at_dropoff')->nullable();
 
             $table->tinyInteger('status')->default(0);
             $table->tinyInteger('quote_by')->default(0); //0: By Office , 1: by Website
@@ -58,8 +60,15 @@ return new class extends Migration
             $table->foreign('customer_id')->references('id')->on('users');
             $table->unsignedBigInteger('request_file_id')->default(0)->nullable();
 
+            $table->tinyInteger('assign_to')->default(1); //1: Driver , 2: Sub
+            $table->tinyInteger('sub_status')->default(0); //0: Pending to assign any Sub , 1: Accepted, 2:Rejected
+
             $table->unsignedBigInteger('driver_id')->nullable();
             $table->foreign('driver_id')->references('id')->on('users');
+            
+            $table->unsignedBigInteger('sub_id')->nullable();
+            $table->foreign('sub_id')->references('id')->on('users');
+            $table->string('quoted_price_for_sub')->nullable();
 
             $table->timestamps();
         });

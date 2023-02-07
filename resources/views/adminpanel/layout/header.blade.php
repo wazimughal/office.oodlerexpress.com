@@ -6,6 +6,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     @stack('title')
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    {{-- <link rel="icon" type="image/x-icon" href="{{ url('adminpanel/dist/img/logo_oodler.jpg') }}"> --}}
+
+        <link rel="icon" href="{{ url('adminpanel/dist/img/favicon1.png') }}" sizes="32x32" />
+        <link rel="icon" href="{{ url('adminpanel/dist/img/favicon2.png') }}" sizes="192x192" />
+        <link rel="apple-touch-icon" href="{{ url('adminpanel/dist/img/favicon3.png') }}" />
+        <meta name="msapplication-TileImage" content="{{ url('adminpanel/dist/img/favicon1.png') }}" />
+
     <!-- Google Font: Source Sans Pro -->
     <link rel="stylesheet"
         href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
@@ -24,12 +31,40 @@
     <link rel="stylesheet" href="{{ url('adminpanel/plugins/overlayScrollbars/css/OverlayScrollbars.min.css') }}">
     <!-- Daterange picker -->
     <link rel="stylesheet" href="{{ url('adminpanel/plugins/daterangepicker/daterangepicker.css') }}">
+	<!-- Custom Stylesheet -->
+    <link rel="stylesheet" href="{{ url('adminpanel/dist/css/custom.css') }}">
     @yield('head-js-css')
     <style>
         .layout-fixed .main-sidebar {
             overflow: scroll
         }
     </style>
+<style>
+
+.main-sidebar::-webkit-scrollbar {
+  width: 0.4em;
+}
+ 
+.main-sidebar::-webkit-scrollbar-track {
+  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+}
+ 
+.main-sidebar::-webkit-scrollbar-thumb {
+  background-color: #cf8e2f;
+  
+}
+.layout-fixed .main-sidebar {
+    overflow-y: scroll;
+    overflow-x: hidden;
+}
+
+/* If screen size is more than 1366px wide */
+@media screen and (min-width: 1366px) {
+ .table-responsive {
+    display: inline-table;
+  }
+}
+</style>
 </head>
 
 <body class="hold-transition sidebar-mini layout-fixed" style="position: relative;">

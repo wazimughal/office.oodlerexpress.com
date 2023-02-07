@@ -33,8 +33,8 @@
                             </div>
                             <div class="card-body">
                               <div class="row">
-                                <div class="col-3">&nbsp;</div>
-                                <div class="col-6">
+                                
+                                <div class="offset-lg-2 col-lg-8">
                                  <!-- flash-message -->
                                 <div class="flash-message">
                                   @foreach (['danger', 'warning', 'success', 'info'] as $msg)
@@ -45,13 +45,13 @@
                                   @endforeach
                                 </div> <!-- end .flash-message -->
                                 </div>
-                                <div class="col-3">&nbsp;</div>
+                               
                               </div>
                                 <form method="POST" action="{{ route('drivers.add') }}">
                                     @csrf
                                     <div class="row form-group">
-                                        <div class="col-3">&nbsp;</div>
-                                        <div class="col-6">
+                                       
+                                        <div class="offset-lg-2 col-lg-8">
                                           <div class="input-group mb-3">
                                             <input type="text" name="firstname" class="form-control @error('firstname') is-invalid @enderror"
                                                 placeholder="First name" value="{{ old('firstname') }}">
@@ -68,11 +68,11 @@
                     
                                         </div>
                                         </div>
-                                        <div class="col-3">&nbsp;</div>
+                                        
                                     </div>
                                     <div class="row form-group">
-                                        <div class="col-3">&nbsp;</div>
-                                        <div class="col-6">
+                                       
+                                        <div class="offset-lg-2 col-lg-8">
                                           <div class="input-group mb-3">
                                             <input type="text" name="lastname" class="form-control @error('lastname') is-invalid @enderror"
                                                 placeholder="Last name" value="{{ old('lastname') }}">
@@ -89,11 +89,11 @@
                     
                                         </div>
                                         </div>
-                                        <div class="col-3">&nbsp;</div>
+                                        
                                     </div>
                                     <div class="row form-group">
-                                        <div class="col-3">&nbsp;</div>
-                                        <div class="col-6">
+                                       
+                                        <div class="offset-lg-2 col-lg-8">
                                         <div class="input-group mb-3">
                                           <input type="email" name="email" class="form-control @error('email') is-invalid @enderror"
                                               placeholder="Email" value="{{ old('email') }}">
@@ -109,11 +109,11 @@
                                           @enderror
                                       </div>
                                         </div>
-                                        <div class="col-3">&nbsp;</div>
+                                        
                                     </div>
                                     <div class="row form-group">
-                                        <div class="col-3">&nbsp;</div>
-                                        <div class="col-6">
+                                       
+                                        <div class="offset-lg-2 col-lg-8">
                                         <div class="input-group mb-3">
                                           <input type="password" name="password" class="form-control @error('password') is-invalid @enderror"
                                               placeholder="Password" value="{{ old('password') }}">
@@ -129,11 +129,11 @@
                                           @enderror
                                       </div>
                                         </div>
-                                        <div class="col-3">&nbsp;</div>
+                                        
                                     </div>
                                     <div class="row form-group">
-                                        <div class="col-3">&nbsp;</div>
-                                        <div class="col-6">
+                                        
+                                        <div class="offset-lg-2 col-lg-8">
                                         <div class="input-group mb-3">
                                           <input type="text" name="phone" class="form-control @error('phone') is-invalid @enderror"
                                               placeholder="Phone" value="{{ old('phone') }}">
@@ -149,11 +149,11 @@
                                           @enderror
                                       </div>
                                         </div>
-                                        <div class="col-3">&nbsp;</div>
+                                        
                                     </div>
                                     <div class="row form-group">
-                                        <div class="col-3">&nbsp;</div>
-                                        <div class="col-6">
+                                       
+                                        <div class="offset-lg-2 col-lg-8">
                                         <div class="input-group mb-3">
                                           <input type="text" name="license_no" class="form-control @error('license_no') is-invalid @enderror"
                                               placeholder="License Number" value="{{ old('license_no') }}">
@@ -169,12 +169,12 @@
                                           @enderror
                                       </div>
                                         </div>
-                                        <div class="col-3">&nbsp;</div>
+                                       
                                     </div>
                                     
                                     <div class="row form-group">
-                                        <div class="col-3">&nbsp;</div>
-                                        <div class="col-6">
+                                       
+                                        <div class="offset-lg-2 col-lg-8">
                                             <div class="input-group mb-3">
                                                 <input type="text" name="city" class="form-control @error('city') is-invalid @enderror"
                                                 placeholder="City" value="{{ old('city') }}">
@@ -190,11 +190,11 @@
                                                 @enderror
                                             </div>
                                         </div>
-                                        <div class="col-3">&nbsp;</div>
+                                        
                                     </div>
                                     <div class="row form-group">
-                                        <div class="col-3">&nbsp;</div>
-                                        <div class="col-6">
+                                        
+                                        <div class="offset-lg-2 col-lg-8">
                                             <div class="input-group mb-3">
                                                 <input type="text" name="state" class="form-control @error('state') is-invalid @enderror"
                                                 placeholder="State" value="{{ old('state') }}">
@@ -210,12 +210,12 @@
                                                 @enderror
                                             </div>
                                         </div>
-                                        <div class="col-3">&nbsp;</div>
+                                        
                                     </div>
                                     
                                     <div class="row form-group">
-                                        <div class="col-3">&nbsp;</div>
-                                        <div class="col-6">
+                                       
+                                        <div class="offset-lg-2 col-lg-8">
                                         <div class="input-group mb-3">
                                           <input type="text" name="address" class="form-control @error('address') is-invalid @enderror"
                                               placeholder="Home Address" value="{{ old('address') }}">
@@ -231,16 +231,16 @@
                                           @enderror
                                       </div>
                                         </div>
-                                        <div class="col-3">&nbsp;</div>
+                                       
                                     </div>
                                     {{-- New Row Button --}}
                                     <div class="row form-group">
-                                        <div class="col-5">&nbsp;</div>
-                                        <div class="col-2">
-                                            <button type="submit" class="btn btn-outline-success btn-block btn-lg"><i
+                                        
+                                        <div class="offset-lg-3 col-lg-6">
+                                            <button type="submit" class="btn btn-success btn-block"><i
                                                     class="fa fa-save"></i> Save</button>
                                         </div>
-                                        <div class="col-5">&nbsp;</div>
+                                        
 
                                     </div>
                                 </form>
@@ -280,7 +280,7 @@
             selectOption = $('#city option:selected').text();
             
             if (selectOption == 'Other') {
-                otherCity ='<div class="row form-group"><div class="col-3">&nbsp;</div><div class="col-6"><div class="input-group mb-3"><input  type="text" name="othercity" class="form-control" placeholder="Please enter City" required></div></div><div class="col-3">&nbsp;</div></div>';
+                otherCity ='<div class="row form-group"><div class="col-3">&nbsp;</div><div class="offset-lg-2 col-lg-8"><div class="input-group mb-3"><input  type="text" name="othercity" class="form-control" placeholder="Please enter City" required></div></div><div class="col-3">&nbsp;</div></div>';
                 $('#othercity').html(otherCity);
             } else {
                 $('#othercity').html('');
@@ -290,7 +290,7 @@
             selectOption = $('#zipcode option:selected').text();
             
             if (selectOption == 'Other') {
-                otherZipCode ='<div class="row form-group"><div class="col-3">&nbsp;</div><div class="col-6"><div class="input-group mb-3"><input  type="text" name="otherzipcode" class="form-control" placeholder="Please enter Zip Code" required></div></div><div class="col-3">&nbsp;</div></div>';
+                otherZipCode ='<div class="row form-group"><div class="col-3">&nbsp;</div><div class="offset-lg-2 col-lg-8"><div class="input-group mb-3"><input  type="text" name="otherzipcode" class="form-control" placeholder="Please enter Zip Code" required></div></div><div class="col-3">&nbsp;</div></div>';
                 $('#otherzipcode').html(otherZipCode);
             } else {
                 $('#otherzipcode').html('');

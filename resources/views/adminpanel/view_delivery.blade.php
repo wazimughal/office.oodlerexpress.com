@@ -212,8 +212,8 @@
                                         <!-- /.card -->
                                         
                                             @if ($user->group_id==config('constants.groups.admin') || $user->group_id==config('constants.groups.customer'))
+                                            <div class="card">
                                             <?php if($quotesData['quote_prices']){  $k=1;?>
-                                                <div class="card">
                                                 <div class="card-header p-2">
                                                     <strong> Delivery Cost   </strong>
                                                 </div><!-- /.card-header -->
@@ -231,10 +231,7 @@
                                                                     <td>Price</td>
                                                                     <td>Extra</td>
                                                                     <td>Reason</td>
-                                                                    @if ($user->group_id==config('constants.groups.admin'))
-                                                                    <td>Description</td>    
-                                                                    @endif
-                                                                    
+                                                                    <td>Description</td>
                                                                     <td>Sent On</td>
                                                                     <td>Status</td>
                                                                 </tr>
@@ -244,9 +241,7 @@
                                                                     <td>${{ $data['extra_charges'] != '' ? $data['extra_charges'] : 0 }}
                                                                     </td>
                                                                     <td>{{ $data['reason_for_extra_charges'] }}</td>
-                                                                    @if ($user->group_id==config('constants.groups.admin'))
                                                                     <td>{{ $data['description'] }}</td>
-                                                                    @endif
                                                                     <td>{{ date('d/m/Y H:i:s', strtotime($data['created_at'])) }}
                                                                     </td>
                                                                     <td>
@@ -264,6 +259,7 @@
                                                                     </td>
                                                                 </tr>
                                                                 @php
+                                                                $delivery_cost=0;
                                                                   if ($data['status'] == 1){
                                                                     $delivery_cost=$data['quoted_price']+$data['extra_charges'];
                                                                   }  
@@ -835,11 +831,13 @@
                                     <!-- /.col -->
 
                                     <div class="col-md-4">
+                                      
+                                        @if ($user->group_id == config('constants.groups.customer') && $quotesData['driver_id']>0)
+                                        
                                         @php
-                                            $driver_activities = driver_activities();
-                                            
-                                        @endphp
-                                        @if ($user->group_id == config('constants.groups.customer'))
+                                        $driver_activities = driver_activities();
+                                        
+                                         @endphp
                                             <div class="card-header alert-secondary">
                                                 <h3 class="card-title">Delivery Status</h3>
                                             </div>
@@ -849,7 +847,7 @@
                                                         <input type="hidden" name="action"
                                                             value="driver_activity_update">
                                                         <input type="hidden" name="uid"
-                                                            value="{{ $quotesData['driver']['id'] }}">
+                                                            value="{{ @$quotesData['driver']['id'] }}">
                                                         <tbody>
                                                             <?php
                                                             
@@ -884,11 +882,82 @@
                                                 </table>
                                             </div>
                                         @endif
+                                        
+                                        @if (1==2)
+                                        <div class="card-header alert-secondary">
+                                            <h3 class="card-title">Driver Activities</h3>
+                                        </div>
+                                        <div class="table-responsive">
+                                            <table class="table">
+                                                
+                                                    <tbody>
+                                                        <tr><th class="text-center" colspan="2">Arrived at Pick up</th></tr>
+                                                        <form method="post" id="dirver_activity_for_sms">
+                                                            <input type="hidden" name="action"
+                                                                value="dirver_activity_for_sms">
+                                                            <input type="hidden" name="uid"
+                                                                value="{{ $quotesData['driver']['id'] }}">
+                                                        <tr>
+                                                            <td>
+                                                                    <div class="input-group date" id="arrived_at_datetime" data-target-input="nearest">
+                                                                        <input placeholder="Date & Time" name="arrived_at_pickup" type="text" value="{{ $quotesData['arrived_at_pickup'] }}" class="form-control datetimepicker-input" data-target="#arrived_at_datetime"/>
+                                                                        <div class="input-group-append" data-target="#arrived_at_datetime" data-toggle="datetimepicker">
+                                                                            <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                                                                        </div>
+                                                                    </div>
+                                                            </td>
+                                                           
+                                                            <td>
+                                                                <button onclick="do_action({{$quotesData['id']}},'dirver_activity_for_sms')" class=" float-right btn btn-success btn-block btn-sm"><i class="fa fa-save"></i> Save Changes</button>
+                                                            </td>
+                                                        </tr>
+                                                        </form>
 
-                                        @if ($user->group_id == config('constants.groups.admin') ||
-                                            ($user->group_id == config('constants.groups.driver') && !empty($quotesData['driver'])))
+                                                        <tr><th class="text-center" colspan="2">Arriving at Drop off</th></tr>
+                                                        <form method="post" id="dirver_activity_for_sms">
+                                                            <input type="hidden" name="action"
+                                                                value="dirver_activity_for_sms">
+                                                            <input type="hidden" name="activity"
+                                                                value="arriving_at_dropoff">
+                                                            <input type="hidden" name="uid"
+                                                                value="{{ $quotesData['driver']['id'] }}">
+                                                        <tr>
+                                                            <td>
+                                                                    <div class="input-group date" id="arriving_at_datetime" data-target-input="nearest">
+                                                                        <input placeholder="Date & Time" name="arriving_at_dropoff" type="text" value="{{ $quotesData['arriving_at_dropoff'] }}" class="form-control datetimepicker-input" data-target="#arriving_at_datetime"/>
+                                                                        <div class="input-group-append" data-target="#arriving_at_datetime" data-toggle="datetimepicker">
+                                                                            <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                                                                        </div>
+                                                                    </div>
+                                                            </td>
+                                                           
+                                                            <td>
+                                                                <button onclick="do_action({{$quotesData['id']}},'dirver_activity_for_sms')" class=" float-right btn btn-success btn-block btn-sm"><i class="fa fa-save"></i> Save Changes</button>
+                                                            </td>
+                                                        </tr>
+                                                        </form>
+                                                     
+                                                        
+
+                                                    </tbody>
+                                                </form>
+
+                                            </table>
+                                        </div>
+                                        @endif
+
+                                        
+                                        @if ( 
+                                                //(1==2) && // this is used to comment the whole section
+                                                (
+                                                $user->group_id == config('constants.groups.admin') ||
+                                                ($user->group_id == config('constants.groups.driver') && !empty($quotesData['driver']))
+                                                )
+                                               // && isset($quotesData['driver'])
+                                               // && !empty($quotesData['driver'])
+                                            )
                                             <div class="card-header alert-secondary">
-                                                <h3 class="card-title">Driver Activities</h3>
+                                                <h3 class="card-title">Driver Activities </h3>
                                             </div>
                                             <div class="table-responsive">
                                                 <table class="table">
@@ -896,7 +965,7 @@
                                                         <input type="hidden" name="action"
                                                             value="driver_activity_update">
                                                         <input type="hidden" name="uid"
-                                                            value="{{ $quotesData['driver']['id'] }}">
+                                                            value="{{ @$quotesData['driver']['id'] }}">
                                                         <tbody>
                                                             <?php
                                                             $driver_activities=driver_activities();
@@ -909,11 +978,8 @@
                                                                 
                                                              ?>
                                                             <tr>
-                                                                <th style="width:50%"><label>{{ $value }}
-                                                                    </label>&nbsp;
-                                                                </th>
+                                                                <th><label>{{ $value }}</label>&nbsp;</th>
                                                                 <td>
-
                                                                     <div class="icheck-primary d-inline">
                                                                         <input
                                                                             onclick="driver_activity('{{ $key }}','dirver_activity')"
@@ -924,7 +990,34 @@
                                                                         <label for="{{ $key }}"></label>
                                                                     </div>
                                                                 </td>
+                                                                @if($key!='reached_at_pickup-ignore' && $key!='on_the_way')
                                                                 <td id="{{ $key }}_time">{!! $quotesData[$key] != '' ? date(config('constants.date_and_time'), $quotesData[$key]) : '&nbsp;' !!}
+                                                                  @endif
+
+                                                                        @if($key=='reached_at_pickup-ignore' || $key=='on_the_way')
+                                                                        <td id="{{ $key }}_time">{!! $quotesData[$key] != '' ? date(config('constants.date_formate'), $quotesData[$key]) : '&nbsp;' !!}
+                                                                @php
+                                                                // echo '<br>';
+                                                                //     echo $date_time= $quotesData[$key] != '' ? date(config('constants.date_formate'), $quotesData[$key]).' 8:16 AM' : '';
+                                                                //     echo '<br>';
+                                                                //     echo  $str_time_date=strtotime($date_time); 
+                                                                //     echo '<br>';
+                                                                //     echo date(config('constants.date_and_time'),$str_time_date);
+                                                                @endphp
+                                                                            <br>
+                                                                            <input name="date_of_{{$key}}" type="hidden" value="{!! $quotesData[$key] != '' ? date(config('constants.date_formate'), $quotesData[$key]) : '' !!}">
+                                                                            <br>
+                                                                        <div class="input-group date" id="timepicker_{{$key}}" data-target-input="nearest">
+                                                                           
+                                                                        <input placeholder="Time" name="arriving_at_{{$key}}" id="arriving_at_{{$key}}" type="text" value="{{$key=='on_the_way'?$quotesData['arriving_at_dropoff']:$quotesData['arrived_at_pickup']}}" class="form-control datetimepicker-input" data-target="#timepicker_{{$key}}"/>
+                                                                                <div class="input-group-append" data-target="#timepicker_{{$key}}" data-toggle="datetimepicker">
+                                                                                    <div class="input-group-text"><i class="fa fa-clock"></i></div>
+                                                                                </div>
+                                                                        </div>
+                                                                        <br>
+                                                                        <div onclick="update_time({{$quotesData['id']}},'{{$key}}','dirver_activity_for_time')" class=" float-right btn btn-success btn-block btn-sm"><i class="fa fa-save"></i> Save Changes</div>
+                                                                    
+                                                                        @endif
                                                                 </td>
                                                             </tr>
                                                             <?php
@@ -939,6 +1032,129 @@
                                                     </form>
 
                                                 </table>
+                                            </div>
+                                            @endif 
+                                            {{-- This is end of Driver Activity if --}}
+                                            @if(isset($quotesData['sub_id']) && ($quotesData['sub_id']>0))
+                                            <div class="card-header alert-secondary">
+                                                <h3 class="card-title">Sub Information</h3>
+                                            </div>
+                                            <div class="table-responsive">
+                                                <table class="table">
+                                                    <form method="post" id="change_sub_status">
+                                                        <input type="hidden" name="action" value="change_sub_status">
+                                                        <input type="hidden" name="sub_id"
+                                                            value="{{ $quotesData['sub']['id'] }}">
+                                                        <tbody>
+                                                            <tr>
+                                                                <th style="width:50%">Business Name</th>
+                                                                <td>{{ $quotesData['sub']['business_name'] }}</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <th>Agreed amount</th>
+                                                                <td><span style="color:#db0707; font-weight:700; ">${{ $quotesData['quoted_price_for_sub'] }} </span></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <th> Contact Person Name</th>
+                                                                <td>{{ $quotesData['sub']['name'] }}</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <th>Email</th>
+                                                                <td>{{ $quotesData['sub']['email'] }}</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <th>Phone</th>
+                                                                <td>{{ $quotesData['sub']['phone'] }}</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <th>City/State/Zipcode</th>
+                                                                <td>{{ $quotesData['sub']['city'] }},{{ $quotesData['sub']['state'] }},{{ $quotesData['sub']['zipcode'] }}</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <th>Unit/STE</th>
+                                                                <td>{{ $quotesData['sub']['business_unit_ste'] }}</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <th>Business Address <Address></Address></th>
+                                                                <td>{{ $quotesData['sub']['business_address'] }}</td>
+                                                            </tr>
+                                                            
+                                                            <tr>
+                                                                <th>Business Tax ID</th>
+                                                                <td>{{ $quotesData['sub']['business_tax_id'] }} years
+                                                                </td>
+                                                            </tr>
+                                                            {{-- <tr>
+                                                                <th>Status</th>
+                                                                <td>{{ sub_status_msg($quotesData['sub_status'])}}
+                                                                </td>
+                                                            </tr> --}}
+                                                            <tr>
+                                                                <th>Status</th>
+                                                                <td>
+                                                                    <select name="sub_status" id="sub_action" onchange="do_action({{$quotesData['id']}},'change_sub_status')" class="form-control select2bs4">
+                                                                        <option {{$quotesData['sub_status']==0?'selected':''}} value="0"> Pending </option>
+                                                                        <option {{$quotesData['sub_status']==1?'selected':''}} value="1"> Approve </option>
+                                                                        <option {{$quotesData['sub_status']==2?'selected':''}} value="2">Remove</option>
+                                                                    </select>
+                                                                </td>
+                                                            </tr>
+                                                            
+                                                        </tbody>
+                                                    </form>
+    
+                                                </table>
+                                            </div>
+                                            @elseif(empty($quotesData['driver_id']) && empty($quotesData['sub_id']))
+                                            <div class="card-header alert-secondary">
+                                                <h3 class="card-title">Assign Driver/Sub</h3>
+                                            </div>
+                                            <div class="row form-group">
+                                                <div class="col-12">
+                                            <div class="table-responsive">
+                                                <form id="assign_driver_sub" method="post">
+                                                    @csrf
+                                                    <input type="hidden" name="quote_id" value="{{$quotesData['id']}}">
+                                                <table class="table" width="100%" style="width:100%">
+                                                    <tr>
+                                                    <th width="50%">Assign To</th>
+                                                    <td>
+                                                          
+                                                            <div class="form-group clearfix mt-1">
+                                                                <div class="icheck-primary d-inline ml-1">
+                                                                  <input onclick="$('#drivers_options').show();$('.subs_options').hide();" type="radio" value="1" id="radioPrimary1" name="assign_to" checked>
+                                                                  <label for="radioPrimary1"> Driver</label>
+                                                                </div>
+                                                                <div class="icheck-primary d-inline ml-3">
+                                                                  <input  onclick="$('.subs_options').show();$('#drivers_options').hide();" type="radio" value="2" id="radioPrimary2" name="assign_to">
+                                                                  <label for="radioPrimary2"> Sub</label>
+                                                                </div>
+                                                              </div>
+                                                    </td>
+                                                    </tr >
+                                                    <tr id="drivers_options"><td>Select Driver</td>
+                                                        <td>
+                                                        <select placeholder="select Driver" name="driver_id" class="select2bs4 form-control">
+                                                            {!!get_drivers_options()!!}
+                                                        </select>    
+                                                    </td>
+                                                    </tr>
+                                                    <tr class="subs_options" style="display: none;"><td>Select Sub</td>
+                                                        <td>
+                                                            <select placeholder="select Sub" name="sub_id" class="select2bs4 form-control">
+                                                                {!!get_subs_options()!!}
+                                                            </select>
+                                                        </td>
+                                                    </tr>
+                                                    <tr class="subs_options" style="display: none;">
+                                                        <td>Amount</td>
+                                                        <td><input type="number" name="quoted_price_for_sub" required
+                                                            value="{{ old('quoted_price_for_sub') }}"
+                                                            placeholder="Price for Sub in USD" class="form-control"></td>
+                                                    </tr>
+                                                    <tr><td>&nbsp;</td><td><div onclick=" do_action({{$quotesData['id']}},'assign_driver_sub')" class="btn btn-primary btn-block btn-sm"><i class="fas fa-save"></i> Save Changes</div></td></tr>
+                                                </table>
+                                                </form>
                                             </div>
                                         @endif
 
@@ -957,7 +1173,7 @@
                                                 <tbody>
                                                         <tr>
                                                             <th style="width:50%">Delivery Cost</th>
-                                                            <td style="width:50%">${{$delivery_cost}}</td>
+                                                            <td style="width:50%">${{isset($delivery_cost)?$delivery_cost:$delivery_cost=0;}}</td>
                                                         </tr>
                                                         <tr>
                                                             <th>Paid Amount 1</th>
@@ -1142,54 +1358,58 @@
             $('.select2bs4').select2({
                 theme: 'bootstrap4'
             });
+            //Date and time picker
+            $('#arrived_at_datetime').datetimepicker({ icons: { time: 'far fa-clock' } });
+            $('#arriving_at_datetime').datetimepicker({ icons: { time: 'far fa-clock' } });
+            //Timepicker
+            $('#timepicker_reached_at_pickup').datetimepicker({format: 'LT'});
+            $('#timepicker_on_the_way').datetimepicker({format: 'LT'});
+
         });
 
  
-function removeFile(id) {
+function update_time(id,key,action_name) {
+    if (confirm('Are you sure? you want to add time?')) 
+    {
+        date_of_booking= $('#date_of_'+key).val();
+        time_of_booking= $('#arriving_at_'+key).val();
+            var sendInfo = {
+                action: action_name,
+                key: key,
+                date_of_booking: date_of_booking,
+                time_of_booking: time_of_booking,
+                id: id
+            };
 
-
-if (confirm('Are you sure? you want to delete this file?')) {
-
-    var sendInfo = {
-        action: 'delteFile',
-        file_id: id
-    };
-
-    $.ajax({
-        url: "{{ route('quotes.ajaxcall',$id) }}",
-        data: sendInfo,
-        contentType: 'application/json',
-        error: function() {
-            alert('There is Some Error, Please try again !');
-        },
-        type: 'GET',
-        dataType: 'json',
-        success: function(data) {
-            if (data.error == 'No') {
-                $('#file_' + id).remove();
-                $(document).Toasts('create', {
-                    class: 'bg-success',
-                    title: data.title,
-                    subtitle: 'record',
-                    body: data.msg
-                });
-
-
-            } else {
-                $(document).Toasts('create', {
-                    class: 'bg-danger',
-                    title: data.title,
-                    subtitle: 'record',
-                    body: data.msg
-                });
+        $.ajax({
+            url: "{{ route('quotes.ajaxcall',$id) }}",
+            data: sendInfo,
+            contentType: 'application/json',
+            error: function() {
+                alert('There is Some Error, Please try again !');
+            },
+            type: 'GET',
+            dataType: 'json',
+            success: function(data) {
+                if (data.error == 'No') {
+                   
+                    $(document).Toasts('create', {
+                        class: 'bg-success',
+                        title: data.title,
+                        subtitle: 'record',
+                        body: data.msg
+                    });
+                } else {
+                    $(document).Toasts('create', {
+                        class: 'bg-danger',
+                        title: data.title,
+                        subtitle: 'record',
+                        body: data.msg
+                    });
+                }
             }
-
-        }
-
-    });
-
-}
-
+        });
+    }
 }
         function driver_activity(activity, action_name = '') {
             id = {{ $quotesData['id'] }};
@@ -1271,7 +1491,7 @@ if (confirm('Are you sure? you want to delete this file?')) {
                 data: sendInfo,
                 contentType: 'application/json',
                 error: function() {
-                    alert('There is Some Error, Please try again !');
+                    alert('There is Some Error, Please try again.. !');
                 },
                 type: 'GET',
                 dataType: 'json',
@@ -1301,7 +1521,7 @@ if (confirm('Are you sure? you want to delete this file?')) {
                         });
                     }
 
-                    if(action_name=='change_quote_driver' || action_name=='update_delivery_price')
+                    if(action_name=='change_quote_driver' || action_name=='update_delivery_price' || data.reload=='yes')
                     window.location='';
                     
                 }

@@ -46,7 +46,7 @@
                                     <input type="hidden" name="page" value="{{($_GET['page']+1)}}">    
                                     @endif
                                     
-                                <table class="table table-bordered table-striped">
+                                <table class="table table-bordered table-striped table-responsive">
                                     <tr>
                                         <td>
                                             <label>From</label>
@@ -102,7 +102,7 @@
                                     <input class="form-control" onkeyup="search_quote()" type="text" id="qsearch" name="qsearch" placeholder="Type PO Number to search">
                                     </div>
                                 </div>
-                                <table id="example1" class="table table-bordered table-striped">
+                                <table id="example1" class="table table-bordered table-striped table-responsive table-responsive">
                                     <thead>
                                         <tr>
                                             <th>Quote Type</th>

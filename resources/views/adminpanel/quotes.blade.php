@@ -11,7 +11,7 @@
             <div class="container-fluid">
                 <div class="row mb-2">
                     <div class="col-sm-4">
-                        <h1>View {{ $list_title }} </h1>
+                        <h1>View {{ $list_title }}</h1>
 
                     </div>
                     <div class="col-sm-4">
@@ -49,10 +49,10 @@
                                     @if (isset($_GET['page']) && $_GET['page'] > 0)
                                         <input type="hidden" name="page" value="{{ $_GET['page'] + 1 }}">
                                     @endif
-
-                                    <table class="table table-bordered table-striped">
-                                        <tr>
-                                            <td>
+									<div class="wrapper" style="background: #f8f8f8; padding: 20px 10px; margin-bottom: 2%;">
+                                    <div class="row">
+                                        
+                                            <div class="col-xs-12 col-sm-12 col-md-3 col-lg-3 border-right">
                                                 <label>From</label>
                                                 <div class="input-group date" id="from_date" data-target-input="nearest">
                                                     <input id="input_from_date" type="text"
@@ -70,8 +70,8 @@
                                                         </div>
                                                     @enderror
                                                 </div>
-                                            </td>
-                                            <td>
+                                            </div>
+                                            <div class="col-xs-12 col-sm-12 col-md-3 col-lg-3 border-right">
                                                 <label>To</label>
                                                 <div class="input-group date" id="to_date" data-target-input="nearest">
                                                     <input id="input_to_date" type="text"
@@ -88,40 +88,50 @@
                                                         </div>
                                                     @enderror
                                                 </div>
-                                            </td>
+                                            </div>
                                             @if ($user->group_id == config('constants.groups.admin'))
-                                                <td>
+                                                <div class="col-xs-12 col-sm-12 col-md-3 col-lg-3 border-right">
                                                     <label>Select Customer</label>
                                                     <select id="customer_ids" name="customer_id[]"
                                                         class="form-control select2bs4" multiple="multiple"
                                                         data-placeholder="Select Customer" style="width: 100%;">
                                                         {!! get_customers_options($customer_ids) !!}
                                                     </select>
-                                                </td>
-                                                {{-- <td>
+                                                </div>
+                                                
+									  {{-- <div class="col-xs-12 col-sm-12 col-md-3 col-lg-3 border-right">
                                             <label>Select Driver</label>
                                             <select name="driver_id[]" class="form-control select2bs4" multiple="multiple" data-placeholder="Select Driver" style="width: 100%;">
                                                 {!!get_drivers_options($driver_ids)!!}
                                             </select>
-                                        </td> --}}
+                                        </div> --}}
                                             @endif
-                                            <td><button onclick="$('#search_form').submit()" style="margin-top: 32px;"
+									<div class="col-xs-12 col-sm-12 col-md-3 col-lg-3"><!--buttons-->
+                                       <div class="row">
+									   <div class="col-lg-6">
+											<button onclick="$('#search_form').submit()" style="margin-top: 32px;"
                                                     type="button" class="btn btn-block btn-primary"><i
-                                                        class="fa fa-search"></i>Search</button></td>
-                                            <td><a href="{{ route('admin.quote.types', $type) }}" style="margin-top: 32px;"
+                                                        class="fa fa-search"></i>Search</button>
+										</div>
+                                            <div class="col-lg-6">
+												<a href="{{ route('admin.quote.types', $type) }}" style="margin-top: 32px;"
                                                     type="button" class="btn btn-block btn-secondary"><i
-                                                        class="fa fa-undo"></i> Cancel</a></td>
-                                        </tr>
+                                                        class="fa fa-undo"></i> Cancel</a>
+											</div>
+										</div>
+										</div><!--buttons main-->
+                                     </div><!--/row-->
+									</div><!--top_container-->
 
-                                    </table>
+                                    
                                 </form>
                                 <div class="row" style="margin-bottom: 15px;">
-                                    <div class="col-4">
+                                    <div class="col-xs-12 col-sm-12 col-lg-4">
                                         <input class="form-control" onkeyup="search_quote()" type="text" id="qsearch"
                                             name="qsearch" placeholder="Type PO Number to search">
                                     </div>
                                 </div>
-                                <table id="example1" class="table table-bordered table-striped">
+                                <table id="example1" class="table table-bordered table-striped table-responsive">
                                     <thead>
                                         <tr>
                                             <th>Quote Type</th>

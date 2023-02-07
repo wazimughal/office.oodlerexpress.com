@@ -29,9 +29,11 @@ return new class extends Migration
             $table->string('mobileno')->nullable();
             $table->string('business_name')->nullable();
             $table->string('business_email')->nullable();
+            $table->string('business_unit_ste')->nullable();
             $table->string('business_address')->nullable();
             $table->string('business_mobile')->nullable();
             $table->string('business_phone')->nullable();
+            $table->string('business_tax_id')->nullable();
             $table->string('years_in_business')->nullable();
             $table->string('designation')->nullable();
             $table->string('shipping')->nullable();
@@ -51,7 +53,7 @@ return new class extends Migration
             $table->tinyInteger('prioritise')->default(0)->nullable();
             $table->unsignedBigInteger('group_id');
             $table->foreign('group_id')->references('id')->on('groups');
-            
+            $table->unsignedBigInteger('quickbooks_customer_id');
             $table->rememberToken();
             $table->timestamps();
         });

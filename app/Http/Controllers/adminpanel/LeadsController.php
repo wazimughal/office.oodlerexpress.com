@@ -15,6 +15,11 @@ use Illuminate\Support\Facades\Auth;
 use App\Mail\EmailTemplate;
 use Illuminate\Support\Facades\Mail;
 
+// This is for QuickBooks Customer
+use QuickBooksOnline\API\DataService\DataService;
+use QuickBooksOnline\API\Core\Http\Serialization\XmlObjectSerializer;
+use QuickBooksOnline\API\Facades\Customer;
+
 class LeadsController extends Controller
 {
 
@@ -185,7 +190,36 @@ class LeadsController extends Controller
 
         return view('adminpanel/add_to_customer_leads',get_defined_vars());
     }
-    
+    public function createCustomer($data=[])
+    {
+        if(empty($data))
+        return false;
+
+        $config = config('quickbooks');
+        
+        $dataService = DataService::Configure([
+            'auth_mode' => 'oauth2',
+            'ClientID' => $config['client_id'],
+            'ClientSecret' => $config['client_secret'],
+            'RedirectURI' => $config['redirect_uri'],
+            'accessTokenKey' => $config['access_token'],
+            'refreshTokenKey' => $config['refresh_token'],
+            'QBORealmID' => $config['realm_id'],
+            'baseUrl' => $config['base_url']
+        ]);
+      
+        $dataService->throwExceptionOnError(true);
+        // Create a new customer object
+        $customer = Customer::create($data);
+        // Persist the customer to QuickBooks
+        $result = $dataService->Add($customer);
+        $error = $dataService->getLastError();
+
+            if ($error) 
+            return false;
+       
+            return $result->Id;
+    }
     public function save_add_to_customer($id,Request $request){
     
         $customerData=$this->users->where('id',$id)->get('email')->toArray();
@@ -227,6 +261,7 @@ class LeadsController extends Controller
        $data_to_update['business_address']=$this->users->business_address=$request['business_address'];
        $data_to_update['shipping_cat']=$this->users->shipping_cat=json_encode($request['shipping_cat']);
 
+
         $mailData['body_message']='Welcome to Oodler Express. We are happy to serve your business!. Please note that you have been assigned access to our Online Portal. Use your email '.$customerData['email'].' as your username and the following password <strong>'.$request['password'].'</strong>';
         $mailData['subject']='New Account Details - Oodler Express';
          $toEmail=[
@@ -237,7 +272,39 @@ class LeadsController extends Controller
 
         $request->session()->flash('alert-success', 'A new customer is added in the system');
         
-        $this->users->where('id',$id)->update($data_to_update);
+        
+
+       $customer= [
+                "GivenName" => $data_to_update['name'],
+                "ContactName" => $data_to_update['name'],
+                "FamilyName" => $data_to_update['name'],
+                "DisplayName" =>  $data_to_update['name'].'-'.$id,
+                "Organization" =>  $data_to_update['business_name'],
+                "CompanyName" =>  $data_to_update['business_name'],
+                "BusinessNumber" =>  $data_to_update['business_phone'],
+                "Mobile" =>  $data_to_update['mobileno'],
+                "AlternatePhone" =>  $data_to_update['mobileno'],
+                "OtherContactInfo" =>  $data_to_update['mobileno'],
+                "PrimaryEmailAddr" => [
+                    "Address" => $request['email']
+                ],
+               
+                "PrimaryPhone" => [
+                    "FreeFormNumber" => $data_to_update['mobileno']
+                ]
+            ];
+
+            $quickbooks_customer_id=$this->createCustomer($customer);
+            if($quickbooks_customer_id>0){
+                $request->session()->flash('alert-success', 'Customer added in QuickBooks too');
+                $data_to_update['quickbooks_customer_id']=$quickbooks_customer_id;
+            }
+            else
+            $request->session()->flash('alert-danger', 'Customer could not be added in QuickBooks');
+            
+            $this->users->where('id',$id)->update($data_to_update);
+
+
                     // Activity Log
                     $activityComment='Mr.'.get_session_value('name').' added new customer '.$this->users->name. 'from the leads' ;
                     $activityData=array(

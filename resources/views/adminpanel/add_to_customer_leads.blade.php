@@ -61,6 +61,7 @@
                                     // p($userData);
                                 @endphp
                                 <form method="POST" action="{{ route('admin.save_add_to_customer', $id) }}">
+                                    <input type="hidden" name="email" value="{{$userData['email']}}">
                                     @csrf
                                     <div class="row form-group">
                                         <div class="col-1">&nbsp;</div>

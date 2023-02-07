@@ -16,8 +16,8 @@
                     </div>
                     <div class="col-sm-2">
                         @if ($user->group_id==config('constants.groups.admin'))
-                        <a style="width:60%" href="{{ route('drivers.openform') }}"
-                            class="btn btn-block btn-success btn-lg">Add New <i class="fa fa-plus"></i></a>    
+                        <a href="{{ route('drivers.openform') }}"
+                            class="btn  btn-success">Add New <i class="fa fa-plus"></i></a>    
                         @endif
                          &nbsp; 
                         </div>
@@ -45,7 +45,7 @@
                             </div>
                             <!-- /.card-header -->
                             <div class="card-body">
-                                <table id="example1" class="table table-bordered table-striped">
+                                <table id="example1" class="table table-bordered table-striped table-responsive">
                                     <thead>
                                         <tr>
                                             <th>Name</th>

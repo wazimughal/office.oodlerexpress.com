@@ -18,7 +18,7 @@ class product_categories extends Model
          */
         public function products()
         {
-            return $this->hasMany(products::class, 'cat_id', 'id');
+            return $this->hasMany(products::class, 'cat_id', 'id')->where('is_active',1);
         }
     
 }

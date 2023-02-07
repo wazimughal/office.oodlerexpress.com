@@ -17,12 +17,21 @@ use App\Http\Controllers\adminpanel\LoginController;
 | contains the "web" middleware group. Now create something great!
 |
 */
-//Auth::routes();
+
+  
 Route::group(['prefix' => 'admin'], function () {
 
     Auth::routes();
 
 });
+
+
+
+Route::get('add-sales',[App\Http\Controllers\adminpanel\quickbooks::class,'add_quickbooks_sales'])->name('customer.add_quickbooks_sales');
+Route::get('make-payment',[App\Http\Controllers\adminpanel\quickbooks::class,'makePayment'])->name('customer.makepayment');
+Route::get('create-customer',[App\Http\Controllers\adminpanel\quickbooks::class,'createCustomer'])->name('create.customer');
+Route::get('/admin/send-sms',[App\Http\Controllers\adminpanel\QuotesController::class,'sendSMS'])->name('previous.sendSMS');
+
 // Route::get('/clearroute', function () {
 
 //     $exitCode = Artisan::call('route:cache');
@@ -144,6 +153,8 @@ Route::get('/admin/customer/quotes/{id}',[App\Http\Controllers\adminpanel\Quotes
 Route::any('admin/customers/ajaxcall/{id}',[App\Http\Controllers\adminpanel\CustomersController::class,'ajaxcall'])->name('admin.customers.ajaxcall');
 
 
+// Payment Management 
+Route::get('/delivery/open-balance',[App\Http\Controllers\adminpanel\QuotesController::class,'open_balance_deliveries'])->name('open_balance_deliveries');
 // Quotes Management 
 Route::get('/admin/quotes',[App\Http\Controllers\adminpanel\QuotesController::class,'quotes'])->name('admin.quotes');
 Route::get('/admin/quote/{type?}',[App\Http\Controllers\adminpanel\QuotesController::class,'quotes'])->name('admin.quote.types');
@@ -196,6 +207,7 @@ Route::get('/admin/drivers',[App\Http\Controllers\adminpanel\DriverController::c
 Route::get('admin/driver/{type?}',[App\Http\Controllers\adminpanel\DriverController::class,'drivers'])->name('drivers.type');
 Route::get('/admin/drivers/add-documents/{id}',[App\Http\Controllers\adminpanel\DriverController::class,'add_documents'])->name('drivers.add-documents');
 Route::any('/admin/drivers/upload-documents/{id}',[App\Http\Controllers\adminpanel\DriverController::class,'upload_documents'])->name('drivers.uploaddocuments');
+
 // For Testing Purpose
 //Route::any('dropzone/store/{id?}', [App\Http\Controllers\adminpanel\DriverController::class,'upload_documents'])->name('dropzone.store');
 Route::get('/admin/drivers/add',[App\Http\Controllers\adminpanel\DriverController::class,'adddrivers'])->name('drivers.openform');
@@ -203,12 +215,24 @@ Route::post('admin/drivers/add',[App\Http\Controllers\adminpanel\DriverControlle
 Route::get('/admin/drivers/edit/{id}',[App\Http\Controllers\adminpanel\DriverController::class,'edit_driver'])->name('drivers.open_edit_form');
 Route::post('admin/drivers/edit/{id}',[App\Http\Controllers\adminpanel\DriverController::class,'save_edit_driver'])->name('drivers.edit');
 Route::any('admin/drivers/ajaxcall/{id?}',[App\Http\Controllers\adminpanel\DriverController::class,'ajaxcall'])->name('drivers.ajaxcall');
+// subs Management 
+Route::get('/admin/subs',[App\Http\Controllers\adminpanel\DriverController::class,'subs'])->name('admin.subs');
+Route::get('admin/sub/{type?}',[App\Http\Controllers\adminpanel\DriverController::class,'subs'])->name('subs.type');
+Route::get('/admin/subs/add',[App\Http\Controllers\adminpanel\DriverController::class,'addsubs'])->name('subs.openform');
+Route::post('admin/subs/add',[App\Http\Controllers\adminpanel\DriverController::class,'add_new_sub'])->name('subs.add');
+Route::get('/admin/subs/edit/{id}',[App\Http\Controllers\adminpanel\DriverController::class,'edit_sub'])->name('subs.open_edit_form');
+Route::post('admin/subs/edit/{id}',[App\Http\Controllers\adminpanel\DriverController::class,'save_edit_sub'])->name('subs.edit');
+Route::any('admin/subs/ajaxcall/{id?}',[App\Http\Controllers\adminpanel\DriverController::class,'ajaxcall'])->name('subs.ajaxcall');
 
 
 });
 
 // Approve or Reject by The Customer
 Route::any('/customer/quote/action/{quote_id}/{action}',[App\Http\Controllers\adminpanel\QuotesController::class,'customer_action'])->name('customer_action');
+Route::any('/sub/quote/action/{quote_id}/{action}',[App\Http\Controllers\adminpanel\QuotesController::class,'sub_action'])->name('sub_action');
+Route::any('/driver/quotes-action/{id}/{action?}',[App\Http\Controllers\adminpanel\DriverController::class,'driver_action_taken'])->name('driver_action_taken');
+Route::any('/admin/drivers/files-documents/{id}',[App\Http\Controllers\adminpanel\DriverController::class,'driver_action_files'])->name('drivers.driver_action_files');
+
 Route::any('delete_quotes_without_po_number_cron',[App\Http\Controllers\adminpanel\QuotesController::class,'delete_quotes_without_po_number'])->name('delete_quotes_without_po_number');
 
 

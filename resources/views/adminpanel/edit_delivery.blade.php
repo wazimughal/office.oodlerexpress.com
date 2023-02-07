@@ -207,7 +207,7 @@
                                         </div>
                                         <div class="col-5">
                                             <div class="input-group mb-3">
-                                                <input placeholder="Contact Number" type="text" name="pickup_contact_number1" required value="{{ $quotesData['pickup_contact_number'] }}"
+                                                <input placeholder="Contact No.(e.g +18633335555)" type="text" name="pickup_contact_number1" required value="{{ $quotesData['pickup_contact_number'] }}"
                                                     class=" form-control @error('pickup_contact_number1') is-invalid @enderror">
                                                 @error('pickup_contact_number1')
                                                     <div class="invalid-feedback">
@@ -228,7 +228,7 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="col-5">
+                                        {{-- <div class="col-5">
                                             <div class="input-group mb-3">
                                                 <input placeholder="Pick up Email" type="text" name="pickup_email1" required value="{{ $quotesData['pickup_email'] }}"
                                                     class=" form-control @error('pickup_email1') is-invalid @enderror">
@@ -238,7 +238,7 @@
                                                     </div>
                                                 @enderror
                                             </div>
-                                        </div>
+                                        </div> --}}
                                         
                                         <div class="col-1">&nbsp;</div>
                                     </div>
@@ -370,7 +370,7 @@
                                         </div>
                                         <div class="col-5">
                                             <div class="input-group mb-3">
-                                                <input placeholder="Contact Number" type="text" name="pickup_contact_number{{$i}}" value="{{ $product_pickup_dropoff['pickup_contact_number']}}"
+                                                <input placeholder="Contact No.(e.g +18633335555)" type="text" name="pickup_contact_number{{$i}}" value="{{ $product_pickup_dropoff['pickup_contact_number']}}"
                                                     class=" form-control @error('pickup_contact_number'.$i) is-invalid @enderror">
                                                 @error('pickup_contact_number'.$i)
                                                     <div class="invalid-feedback">
@@ -391,7 +391,7 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="col-5">
+                                        {{-- <div class="col-5">
                                             <div class="input-group mb-3">
                                                 <input placeholder="Pick up Email" type="text" name="pickup_email{{$i}}" value="{{isset($product_pickup_dropoff['pickup_email'])?$product_pickup_dropoff['pickup_email']:''}}"
                                                     class=" form-control @error('pickup_email'.$i) is-invalid @enderror">
@@ -401,7 +401,7 @@
                                                     </div>
                                                 @enderror
                                             </div>
-                                        </div>
+                                        </div> --}}
                                         <div class="col-1">&nbsp;</div>
                                     </div>
                                     {{-- List of items --}}
@@ -512,7 +512,7 @@
                                         </div>
                                         <div class="col-5">
                                             <div class="input-group mb-3">
-                                                <input required placeholder="Contact Number" value="{{ $quotesData['drop_off_contact_number'] }}" type="text" name="drop_off_contact_number"
+                                                <input required placeholder="Contact No.(e.g +18633335555)" value="{{ $quotesData['drop_off_contact_number'] }}" type="text" name="drop_off_contact_number"
                                                     class=" form-control @error('drop_off_contact_number') is-invalid @enderror">
                                                 @error('drop_off_contact_number')
                                                     <div class="invalid-feedback">
@@ -553,7 +553,7 @@
                                             @enderror
                                             </div>
                                         </div>
-                                        <div class="col-5">
+                                        {{-- <div class="col-5">
                                             <div class="input-group mb-3">
                                                 <input required placeholder="Drop off Email" value="{{ $quotesData['drop_off_email'] }}" type="text" name="drop_off_email"
                                                     class=" form-control @error('drop_off_email') is-invalid @enderror">
@@ -563,7 +563,7 @@
                                                     </div>
                                                 @enderror
                                             </div>
-                                        </div>
+                                        </div> --}}
                                         <div class="col-1">&nbsp;</div>
                                     </div>
                                     

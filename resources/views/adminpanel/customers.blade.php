@@ -10,18 +10,18 @@
         <section class="content-header">
             <div class="container-fluid">
                 <div class="row mb-2">
-                    <div class="col-sm-2">
+                    <div class="col-sm-3">
                         <h1>View Customers </h1>
 
                     </div>
                     <div class="col-sm-3">
                         @if ($user->group_id == config('constants.groups.admin'))
-                            <a style="width:60%" href="{{ route('admin.customersaddform') }}"
-                                class="btn btn-block btn-success btn-lg">Add New <i class="fa fa-plus"></i></a>
+                            <a href="{{ route('admin.customersaddform') }}"
+                                class="btn  btn-success ">Add New <i class="fa fa-plus"></i></a>
                         @endif
 
                     </div>
-                    <div class="col-sm-1">&nbsp;</div>
+                    
                     <div class="col-sm-6">
                         {{-- <ol class="breadcrumb float-sm-right">
                             <li class="breadcrumb-item"><a href="#">Home</a></li>
@@ -44,13 +44,13 @@
                             <!-- /.card-header -->
                             <div class="card-body">
                                 <div class="row" style="margin-bottom: 15px;">
-                                    <div class="col-4">
+                                    <div class="col-lg-4 col-sm-8 col-xs-12">
                                         <input class="form-control" onkeyup="search_customers()" type="text"
                                             id="qsearch" name="qsearch"
                                             placeholder="Type email or customer or business  name to search">
                                     </div>
                                 </div>
-                                <table id="example1" class="table table-bordered table-striped">
+                                <table id="example1" class="table table-bordered table-striped table-responsive">
                                     <thead>
                                         <tr>
                                             <th>Name</th>

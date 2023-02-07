@@ -201,7 +201,7 @@
                                         <div class="col-5">
 
                                             <div class="input-group mb-3" style="margin-top:2rem;">
-                                                <input value="{{ $quotesData['pickup_unit'] }}" placeholder="Unit/STE"  type="text" name="pickup_unit1"
+                                                <input required value="{{ $quotesData['pickup_unit'] }}" placeholder="Unit/STE"  type="text" name="pickup_unit1"
                                                     class=" form-control @error('pickup_unit1') is-invalid @enderror">
                                                 @error('pickup_unit1')
                                                     <div class="invalid-feedback">
@@ -255,7 +255,7 @@
                                         </div>
                                         <div class="col-5">
                                             <div class="input-group mb-3">
-                                                <input placeholder="Contact Number" type="text" name="pickup_contact_number1"  value="{{ $quotesData['pickup_contact_number'] }}"
+                                                <input placeholder="Contact No.(e.g +18633335555)" type="text" name="pickup_contact_number1"  value="{{ $quotesData['pickup_contact_number'] }}"
                                                     class=" form-control @error('pickup_contact_number1') is-invalid @enderror">
                                                 @error('pickup_contact_number1')
                                                     <div class="invalid-feedback">
@@ -268,7 +268,7 @@
                                     </div>
                                     <div class="row form-group">
                                         <div class="col-1">&nbsp;</div>
-                                        <div class="col-5">
+                                        {{-- <div class="col-5">
                                             <div class="input-group mb-3">
                                                 <input placeholder="Email" type="text" name="pickup_email1" required value="{{ $quotesData['pickup_email'] }}"
                                                     class=" form-control @error('pickup_email1') is-invalid @enderror">
@@ -278,7 +278,7 @@
                                                     </div>
                                                 @enderror
                                             </div>
-                                        </div>
+                                        </div> --}}
                                         <div class="col-5">
                                             <div class="input-group date" id="pick_up_reservationdate1" data-target-input="nearest">
                                                 <input type="text" id="pickup_date1" value="{{ $quotesData['pickup_date'] }}" required name="pickup_date1" placeholder="Pick Up date" class="form-control datetimepicker-input" data-target="#reservationdate"/>
@@ -418,7 +418,7 @@
                                         </div>
                                         <div class="col-5">
                                             <div class="input-group mb-3">
-                                                <input placeholder="Contact Number" type="text" name="pickup_contact_number{{$i}}" value="{{ $product_pickup_dropoff['pickup_contact_number']}}"
+                                                <input placeholder="Contact No.(e.g +18633335555)" type="text" name="pickup_contact_number{{$i}}" value="{{ $product_pickup_dropoff['pickup_contact_number']}}"
                                                     class=" form-control @error('pickup_contact_number'.$i) is-invalid @enderror">
                                                 @error('pickup_contact_number'.$i)
                                                     <div class="invalid-feedback">
@@ -431,7 +431,7 @@
                                     </div>
                                     <div class="row form-group">
                                         <div class="col-1">&nbsp;</div>
-                                        <div class="col-5">
+                                        {{-- <div class="col-5">
                                             <div class="input-group mb-3">
                                                 <input placeholder="Email" type="text" name="pickup_email{{$i}}" value="{{ (isset($product_pickup_dropoff['pickup_email'])?$product_pickup_dropoff['pickup_email']:'') }}"
                                                     class=" form-control @error('pickup_email'.$i) is-invalid @enderror">
@@ -441,7 +441,7 @@
                                                     </div>
                                                 @enderror
                                             </div>
-                                        </div>
+                                        </div> --}}
                                         <div class="col-5">
                                             <div class="input-group date" id="pick_up_reservationdate{{$i}}" data-target-input="nearest">
                                                 <input type="text" value="{{ $product_pickup_dropoff['pickup_date']}}" id="pickup_date{{$i}}" name="pickup_date{{$i}}" placeholder="Pick Up date" class="form-control datetimepicker-input" data-target="#reservationdate"/>
@@ -561,7 +561,7 @@
                                         </div>
                                         <div class="col-5">
                                             <div class="input-group mb-3">
-                                                <input required placeholder="Contact Number" value="{{ $quotesData['drop_off_contact_number'] }}" type="text" name="drop_off_contact_number"
+                                                <input required placeholder="Contact No.(e.g +18633335555)" value="{{ $quotesData['drop_off_contact_number'] }}" type="text" name="drop_off_contact_number"
                                                     class=" form-control @error('drop_off_contact_number') is-invalid @enderror">
                                                 @error('drop_off_contact_number')
                                                     <div class="invalid-feedback">

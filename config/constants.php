@@ -8,13 +8,13 @@ return [
     'date_formate'=>'m/d/Y',
     'date_formate_us'=>'m/d/Y',
     'date_and_time'=>'m/d/Y h:i:s',
-    'per_page'=>2,
+    'per_page'=>10,
     // Costant Value ID set for the groups table for User ROLEs
     'groups' => [
         'admin' => 1,
         'customer' => 2,
         'driver' => 3,
-        'staff' =>4,
+        'sub' => 4,
         'subscriber' =>5,
     ],
     'quote_status' => [

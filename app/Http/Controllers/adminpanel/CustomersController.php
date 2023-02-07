@@ -19,6 +19,12 @@ use DateTime;
 // Import/Export Excelsheet
 use App\Exports\ExportCustomerDeliveryBalance;
 
+
+// This is for QuickBooks Customer
+use QuickBooksOnline\API\DataService\DataService;
+use QuickBooksOnline\API\Core\Http\Serialization\XmlObjectSerializer;
+use QuickBooksOnline\API\Facades\Customer;
+
 class CustomersController extends Controller
 {
 
@@ -198,7 +204,37 @@ class CustomersController extends Controller
        
         return view('adminpanel.reports.drivers',get_defined_vars());
     }
+    public function createCustomer($data=[])
+    {
+        if(empty($data))
+        return false;
 
+        $config = config('quickbooks');
+        
+        $dataService = DataService::Configure([
+            'auth_mode' => 'oauth2',
+            'ClientID' => $config['client_id'],
+            'ClientSecret' => $config['client_secret'],
+            'RedirectURI' => $config['redirect_uri'],
+            'accessTokenKey' => $config['access_token'],
+            'refreshTokenKey' => $config['refresh_token'],
+            'QBORealmID' => $config['realm_id'],
+            'baseUrl' => $config['base_url']
+        ]);
+      
+        $dataService->throwExceptionOnError(true);
+        // Create a new customer object
+        $customer = Customer::create($data);
+        // Persist the customer to QuickBooks
+        $result = $dataService->Add($customer);
+        $error = $dataService->getLastError();
+
+            if ($error) 
+            return false;
+            
+            return $result->Id;
+            
+    }
      public function save_new_customer(Request $request){
        
         $validator=$request->validate([
@@ -262,6 +298,38 @@ class CustomersController extends Controller
 
         $request->session()->flash('alert-success', 'Customer added! Please Check in Customers Tab');
         $this->users->save();
+
+        // Customer For QuickBooks
+        $request['name']=$request['firstname'].' '.$request['lastname'];
+        $customer= [
+            "GivenName" => $request['name'],
+            "ContactName" => $request['name'],
+            "FamilyName" => $request['name'],
+            "DisplayName" =>  $request['name'].'-'.$this->users->id,
+            "Organization" =>  $request['business_name'],
+            "CompanyName" =>  $request['business_name'],
+            "BusinessNumber" =>  $request['business_phone'],
+            "Mobile" =>  $request['mobileno'],
+            "AlternatePhone" =>  $request['mobileno'],
+            "OtherContactInfo" =>  $request['mobileno'],
+            "PrimaryEmailAddr" => [
+                "Address" => $request['email']
+            ],
+           
+            "PrimaryPhone" => [
+                "FreeFormNumber" => $request['mobileno']
+            ]
+        ];
+
+        $quickbooks_customer_id=$this->createCustomer($customer);
+        if($quickbooks_customer_id>0){
+            $request->session()->flash('alert-success', 'Customer added in QuickBooks too');
+            $this->users->where('id',$this->users->id)->update(['quickbooks_customer_id'=>$quickbooks_customer_id]);
+        }
+        else
+        $request->session()->flash('alert-danger', 'Customer could not be added in QuickBooks');
+        
+
                     // Activity Log
                     $activityComment='Mr.'.get_session_value('name').' Added new customer '.$this->users->name;
                     $activityData=array(
@@ -302,7 +370,7 @@ class CustomersController extends Controller
         }
             
         
-            return view('adminpanel/customers',get_defined_vars());
+            return view('adminpanel.customers',get_defined_vars());
     }
     public function editcustomer($id, Request $req){
         $user=Auth::user(); 
@@ -456,7 +524,7 @@ class CustomersController extends Controller
             }
 
         }
-        elseif(isset($req['action']) && $req['action']=='qsearch_customer')
+        elseif(isset($req['action']) && $req['action']=='qsearch_customer_reports')
         {
             $user=Auth::user();
             $dataArray['title']='Search Result';

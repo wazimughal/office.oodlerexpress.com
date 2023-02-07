@@ -46,6 +46,17 @@
                 data-accordion="false">
                 <!-- Add icons to the links using the .nav-icon class
                with font-awesome or any other icon font library -->
+                @if ($user->group_id == config('constants.groups.admin') || $user->group_id == config('constants.groups.customer'))
+                <li class="nav-item">
+                    <a href="{{ route('open_balance_deliveries') }}" class="nav-link bg-info">
+                        <i class="nav-icon far fa-calendar-alt"></i>
+                        <p>
+                            Make Payment
+
+                        </p>
+                    </a>
+                </li>
+                @endif
                 @if ($user->group_id == config('constants.groups.admin'))
                     <li class="nav-item menu-open {{ request()->segment(2) == 'dashboard' ? 'menu-open' : '' }}">
                         <a href="#" class="nav-link {{ request()->segment(2) == 'dashboard' ? 'active' : '' }}">
@@ -267,6 +278,42 @@
                     </li>
                
                 @if ($user->group_id == config('constants.groups.admin'))
+                    <li class="nav-item {{ request()->segment(2) == 'subs' ? 'menu-open' : '' }}">
+                        <a href="#" class="nav-link">
+                            <i class="nav-icon fa fa-images"></i>
+                            <p>
+                                Subs
+
+                                <i class="right fas fa-angle-left"></i>
+                                <span class="badge badge-info right">{{ $record_count['sub'] }}</span>
+                            </p>
+                        </a>
+                        <ul class="nav nav-treeview">
+
+                            <li class="nav-item">
+                                <a href="{{ route('admin.subs') }}" class="nav-link {{ request()->segment(2) == 'subs' &&  request()->segment(3) == '' ? 'active' : '' }}">
+                                    <i class="fa fa-images"></i>
+                                    <p> Subs List <span
+                                            class="badge badge-info right">{{ $record_count['sub'] }}</span></p>
+                                </a>
+                            </li>
+
+                            <li class="nav-item">
+                                <a href="{{ route('subs.openform') }}" class="nav-link {{ request()->segment(2) == 'subs' &&  request()->segment(3) == 'add' ? 'active' : '' }}">
+                                    <i class="fa fa-plus"></i>
+                                    <p>Add Sub</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('subs.type', 'trashed') }}" class="nav-link {{ request()->segment(2) == 'subs' &&  request()->segment(3) == 'trashed' ? 'active' : '' }}">
+                                    <i class="fa fa-images"></i>
+                                    <p> Trashed</p>
+                                </a>
+                            </li>
+
+
+                        </ul>
+                    </li>
                     <li class="nav-item {{ request()->segment(2) == 'drivers' ? 'menu-open' : '' }}">
                         <a href="#" class="nav-link">
                             <i class="nav-icon fa fa-images"></i>

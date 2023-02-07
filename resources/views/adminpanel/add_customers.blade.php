@@ -60,15 +60,15 @@
                                 <form method="POST" action="{{ route('admin.customers.save') }}">
                                     @csrf
                                     <div class="row form-group">
-                                        <div class="col-1">&nbsp;</div>
-                                        <div class="col-5">
+                                        
+                                        <div class="offset-lg-1 col-lg-5">
                                             <h3 class="title-form">Customer information: </h3>
                                         </div>
                                         
                                     </div>
                                     <div class="row form-group">
-                                        <div class="col-1">&nbsp;</div>
-                                        <div class="col-5">
+                                        
+                                        <div class="offset-lg-1 col-lg-5">
                                             <span>Frist Name</span>
                                             <div class="input-group mb-3">
                                                 <input type="text" name="firstname"
@@ -87,7 +87,7 @@
 
                                             </div>
                                         </div>
-                                        <div class="col-5">
+                                        <div class="col-lg-5">
                                             <span>Last Name</span>
                                             <div class="input-group mb-3">
                                                 <input type="text" name="lastname"
@@ -106,11 +106,11 @@
 
                                             </div>
                                         </div>
-                                        <div class="col-1">&nbsp;</div>
+                                        
                                     </div>
                                     <div class="row form-group">
-                                        <div class="col-1">&nbsp;</div>
-                                        <div class="col-5">
+                                       
+                                        <div class="offset-lg-1 col-lg-5">
                                             <span>Email</span>
                                             <div class="input-group mb-3">
                                                 <input type="email" name="email"
@@ -128,12 +128,12 @@
                                                 @enderror
                                             </div>
                                         </div>
-                                        <div class="col-5">
+                                        <div class="col-lg-5">
                                             <span>Customer Password</span>
                                             <div class="input-group mb-3">
                                                 <input type="password" name="password"
                                                     class="form-control @error('password') is-invalid @enderror"
-                                                    placeholder="Cell No." value="{{ old('password') }}">
+                                                    placeholder="Password " value="{{ old('password') }}">
                                                 <div class="input-group-append">
                                                     <div class="input-group-text">
                                                         <span class="fas fa-address-card"></span>
@@ -147,11 +147,11 @@
                                             </div>
                                         </div>
                                         
-                                        <div class="col-1">&nbsp;</div>
+                                        
                                     </div>
                                     <div class="row form-group">
-                                        <div class="col-1">&nbsp;</div>
-                                        <div class="col-5">
+                                        
+                                        <div class="offset-lg-1 col-lg-5">
                                             <span>Cell No.</span>
                                             <div class="input-group mb-3">
                                                 <input type="text" name="mobileno"
@@ -169,7 +169,7 @@
                                                 @enderror
                                             </div>
                                         </div>
-                                        <div class="col-5">
+                                        <div class="col-lg-5">
                                             <span>Position in Business</span>
                                             <div class="input-group mb-3">
                                                 <input type="text" name="designation"
@@ -187,20 +187,20 @@
                                                 @enderror
                                             </div>
                                         </div>
-                                        <div class="col-1">&nbsp;</div>
+                                        
                                     </div>
 
                                     {{-- Business Information --}}
                                     <div class="row form-group">
-                                        <div class="col-1">&nbsp;</div>
-                                        <div class="col-5">
+                                        
+                                        <div class="offset-lg-1 col-lg-5">
                                             <h3 class="title-form">Business information: </h3>
                                         </div>
                                         
                                     </div>
                                     <div class="row form-group">
-                                        <div class="col-1">&nbsp;</div>
-                                        <div class="col-5">
+                                        
+                                        <div class="offset-lg-1 col-lg-5">
                                             <span>Business Name</span>
                                             <div class="input-group mb-3">
                                                 <input type="text" name="business_name"
@@ -219,7 +219,7 @@
                                             </div>
                                         </div>
                                         
-                                        <div class="col-5">
+                                        <div class="col-lg-5">
                                             <span>Business Address</span>
                                             <div class="input-group mb-3">
                                                 <input type="text" name="business_address"
@@ -238,13 +238,13 @@
                                             </div>
                                         </div>
                                         
-                                        <div class="col-1">&nbsp;</div>
+                                        
                                     </div>
 
 
                                     <div class="row form-group">
-                                        <div class="col-1">&nbsp;</div>
-                                        <div class="col-5">
+                                        
+                                        <div class="offset-lg-1 col-lg-5">
                                             <span>City</span>
                                             <div class="input-group mb-3">
                                                 <input type="text" name="city"
@@ -262,7 +262,7 @@
                                                 @enderror
                                             </div>
                                         </div>
-                                        <div class="col-5">
+                                        <div class="col-lg-5">
                                             <span>State</span>
                                             <div class="input-group mb-3">
                                                 <input type="text" name="state"
@@ -282,11 +282,11 @@
                                             </div>
                                         </div>
                                         
-                                        <div class="col-1">&nbsp;</div>
+                                        
                                     </div>
                                     <div class="row form-group">
-                                        <div class="col-1">&nbsp;</div>
-                                        <div class="col-5">
+                                        
+                                        <div class="offset-lg-1 col-lg-5">
                                             <span>Zip Code</span>
                                             <div class="input-group mb-3">
                                                 <input type="text" name="zipcode"
@@ -307,7 +307,7 @@
                                             </div>
 
                                         </div>
-                                        <div class="col-5">
+                                        <div class="col-lg-5">
                                             <span>Business Email</span>
                                             <div class="input-group mb-3">
                                                 <input type="email" name="business_email"
@@ -326,11 +326,11 @@
                                             </div>
                                         </div>
                                         
-                                        <div class="col-1">&nbsp;</div>
+                                        
                                     </div>
                                     <div class="row form-group">
-                                        <div class="col-1">&nbsp;</div>
-                                        <div class="col-5">
+                                        
+                                        <div class="offset-lg-1 col-lg-5">
                                             <span>Business Phone</span>
                                             <div class="input-group mb-3">
                                                 <input type="text" name="business_phone"
@@ -348,7 +348,7 @@
                                                 @enderror
                                             </div>
                                         </div>
-                                        <div class="col-5">
+                                        <div class="col-lg-5">
                                             <span>How many years in Business?</span>
                                             <div class="input-group mb-3">
                                                 <input type="number" name="years_in_business"
@@ -366,11 +366,11 @@
                                                 @enderror
                                             </div>
                                         </div>
-                                        <div class="col-1">&nbsp;</div>
+                                        
                                     </div>
                                     <div class="row form-group">
-                                        <div class="col-1">&nbsp;</div>
-                                        <div class="col-5">
+                                        
+                                        <div class="offset-lg-1 col-lg-5">
                                             <span>What do you Ship?</span>
                                             <div class="input-group mb-3">
                                                 <select name="shipping_cat[]"  class="form-control select2bs4 @error('shipping_cat') is-invalid @enderror" multiple="multiple" data-placeholder="What do you Ship" >
@@ -389,7 +389,7 @@
                                                 @enderror
                                             </div>
                                         </div>
-                                        <div class="col-5">
+                                        <div class="col-lg-5">
                                             <span>How often you ship?</span>
                                             <div class="input-group mb-3">
                                                 <select  name="how_often_shipping"
@@ -411,14 +411,13 @@
                                                 @enderror
                                             </div>
                                         </div>
-                                        <div class="col-1">&nbsp;</div>
+                                        
                                     </div>
                                     
                                     {{-- New Row Button --}}
                                     <div class="row form-group">
-                                        <div class="col-5">&nbsp;</div>
-                                        <div class="col-2">
-                                            <button type="submit" class="btn btn-outline-success btn-block btn-lg"><i
+                                        <div class="offset-lg-3 col-lg-6">
+                                            <button type="submit" class="btn btn-success btn-block"><i
                                                     class="fa fa-save"></i> Submit</button>
                                         </div>
                                         <div class="col-5">&nbsp;</div>

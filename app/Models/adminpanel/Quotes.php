@@ -22,6 +22,10 @@ class Quotes extends Model
        {
            return $this->hasOne(users::class, 'id', 'driver_id');
        }
+    public function sub()
+       {
+           return $this->hasOne(users::class, 'id', 'sub_id');
+       }
     public function comments()
        {
            return $this->hasMany(comments::class, 'quote_id','id')->with('user')->where('comment_section','delivery');
@@ -36,11 +40,11 @@ class Quotes extends Model
        }
     public function quote_prices()
        {
-           return $this->hasMany(quote_prices::class,'quote_id','id');
+           return $this->hasMany(quote_prices::class,'quote_id','id')->where('quote_price_for',1);
        }
     public function quote_agreed_cost()
        {
-           return $this->hasOne(quote_prices::class,'quote_id','id')->where('status',1);
+           return $this->hasOne(quote_prices::class,'quote_id','id')->where('status',1)->where('quote_price_for',1);
        }
     public function invoices()
        {

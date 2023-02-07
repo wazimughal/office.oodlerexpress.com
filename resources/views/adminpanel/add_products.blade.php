@@ -33,8 +33,8 @@
                             </div>
                             <div class="card-body">
                               <div class="row">
-                                <div class="col-3">&nbsp;</div>
-                                <div class="col-6">
+                                
+                                <div class="offset-lg-1 col-lg-6">
                                  <!-- flash-message -->
                                 <div class="flash-message">
                                   @foreach (['danger', 'warning', 'success', 'info'] as $msg)
@@ -45,13 +45,13 @@
                                   @endforeach
                                 </div> <!-- end .flash-message -->
                                 </div>
-                                <div class="col-3">&nbsp;</div>
+                                
                               </div>
                                 <form method="POST" action="{{ route('products.add') }}">
                                     @csrf
                                     <div class="row form-group">
-                                        <div class="col-3">&nbsp;</div>
-                                        <div class="col-6">
+                                       
+                                        <div class="offset-lg-1 col-lg-6">
                                           <div class="input-group mb-3">
                                             <input type="text" name="name" class="form-control @error('name') is-invalid @enderror"
                                                 placeholder="Product Name" value="{{ old('name') }}">
@@ -68,11 +68,11 @@
                     
                                         </div>
                                         </div>
-                                        <div class="col-3">&nbsp;</div>
+                                        
                                     </div>
                                     <div class="row form-group">
-                                        <div class="col-3">&nbsp;</div>
-                                        <div class="col-6">
+                                        
+                                        <div class="offset-lg-1 col-lg-6">
                                           <div class="input-group mb-3">
                                             <textarea type="text" name="sizes" class="form-control @error('sizes') is-invalid @enderror"
                                                 placeholder="Product Sizes (e.g:  Size 1 Feet, 3 Feet ,9 Feet  )" >{{ old('sizes');}}</textarea>
@@ -89,11 +89,11 @@
                     
                                         </div>
                                         </div>
-                                        <div class="col-3">&nbsp;</div>
+                                        
                                     </div>
                                     <div class="row form-group">
-                                        <div class="col-3">&nbsp;</div>
-                                        <div class="col-6">
+                                        
+                                        <div class="offset-lg-1 col-lg-6">
                                           <div class="input-group mb-3">
                                             <textarea type="text" name="additional_notes" class="form-control @error('additional_notes') is-invalid @enderror"
                                                 placeholder="Addition Notes" >{{ old('additional_notes');}}</textarea>
@@ -110,27 +110,26 @@
                     
                                         </div>
                                         </div>
-                                        <div class="col-3">&nbsp;</div>
+                                       
                                     </div>
                                     <div class="row form-group">
-                                        <div class="col-3">&nbsp;</div>
-                                        <div class="col-6">
+                                        
+                                        <div class="offset-lg-1 col-lg-6">
                                             <div class="input-group mb-3">
                                             <select id="cat_id" onChange="changeProCategory()" name="cat_id" class="form-control select2bs4 @error('city') is-invalid @enderror" placeholder="Select City">@php echo getProductCatOptions(); @endphp</select>
                                             </div>
                                         </div>
-                                        <div class="col-3">&nbsp;</div>
+                                        
                                     </div>
                                     <div id="other_cat"></div>
                                     
                                     {{-- New Row Button --}}
                                     <div class="row form-group">
-                                        <div class="col-5">&nbsp;</div>
-                                        <div class="col-2">
+                                       <div class="offset-lg-1 col-lg-6">
                                             <button type="submit" class="btn btn-outline-success btn-block btn-lg"><i
                                                     class="fa fa-save"></i> Save</button>
                                         </div>
-                                        <div class="col-5">&nbsp;</div>
+                                        
 
                                     </div>
                                 </form>

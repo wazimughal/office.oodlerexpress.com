@@ -69,7 +69,7 @@ return [
     |
     */
 
-    'timezone' => 'UTC',
+    'timezone' => 'EST',
 
     /*
     |--------------------------------------------------------------------------
@@ -184,6 +184,8 @@ return [
         Barryvdh\DomPDF\ServiceProvider::class,
         // This is for Excel Import and Export  
         Maatwebsite\Excel\ExcelServiceProvider::class,
+        // This is for quickbook
+        //Myleshyson\LaravelQuickBooks\QuickBooksServiceProvider::class,
 
     ],
 

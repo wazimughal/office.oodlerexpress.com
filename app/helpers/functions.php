@@ -13,6 +13,18 @@ if(!function_exists('get_formatted_date')){
         return $formattedDate; 
     }
 }
+
+if(!function_exists('sub_status_msg')){
+    function sub_status_msg($status){
+        $msg='Pending';
+        if($status==1)
+        $msg='Accepted';
+        else if($status==2)
+        $msg='Rejected';
+        return $msg;
+    }
+}
+
 if(!function_exists('quote_status_msg')){
     function quote_status_msg($status){
         $msg='Submit Quote';
@@ -144,6 +156,30 @@ if(!function_exists('log_activity')){
 }
 
 
+// Get Options of Subs
+if(!function_exists('get_subs_options')){
+    function get_subs_options($selectID=NULL){
+    
+        $userData = App\Models\adminpanel\users::where('is_active',1)->where('group_id',config('constants.groups.sub'))->orderBy('id', 'desc')->get();
+        if($userData)
+         $userData=$userData->toArray();
+         $options='';
+         
+        foreach($userData as $key=>$data){
+            $selected='';
+            if(is_array($selectID)){
+                if(in_array($data['id'],$selectID))
+                $selected='selected';
+            }
+            elseif($selectID==$data['id']){
+                $selected='selected';
+            }
+            $options .='<option '.$selected.' value="'.$data['id'].'">'.$data['name'].'</option>';
+        }
+        
+     return $options;   
+    }
+}
 // Get Options of Drivers
 if(!function_exists('get_drivers_options')){
     function get_drivers_options($selectID=NULL){
@@ -310,7 +346,9 @@ if(!function_exists('get_product_sizes')){
     function get_product_sizes($sizes,$selectID=NULL){
     $product_sizes=explode(',',$sizes);
          $options='';
+         $options .='<option selected >Select Size</option>';
         foreach($product_sizes as $value){
+            if($value=='') continue;
             $selected='';
             $selectID=phpslug($selectID);
             $value2=phpslug($value);
@@ -566,6 +604,7 @@ if(!function_exists('get_record_count')){
             'admin'=>0,
             'customer'=>0,
             'driver'=>0,
+            'sub'=>0,
             'pending_quotes'=>0,
             'submitted_quotes'=>0,
             'approved_quotes'=>0,
@@ -583,20 +622,20 @@ if(!function_exists('get_record_count')){
             'total_products'=>0,
             'total_product_categories'=>0,
             ];
-
+            
         $product_info = DB::table('products')
                  ->select('is_active', DB::raw('count(*) as total'))
                  ->groupBy('is_active')
                  ->where('is_active',1)
                  ->get()->toArray();
-                 $product_info=$product_info[0];
+                 $product_info=isset($product_info[0])?$product_info[0]:[];
        
        $product_cat_info = DB::table('product_categories')
                  ->select('is_active', DB::raw('count(*) as total'))
                  ->groupBy('is_active')
                  ->where('is_active',1)
                  ->get()->toArray();
-                 $product_cat_info=$product_cat_info[0];
+                 $product_cat_info=isset($product_cat_info[0])?$product_cat_info[0]:[];
 
 
         $quoteWhere=array();
@@ -743,6 +782,8 @@ if(!function_exists('get_record_count')){
                         $retData['customer']=$userData->total;
                         elseif($userData->group_id==config('constants.groups.driver'))
                         $retData['driver']=$userData->total;
+                        elseif($userData->group_id==config('constants.groups.sub'))
+                        $retData['sub']=$userData->total;
                         elseif($userData->group_id==config('constants.groups.subscriber'))
                         $retData['total_leads']=$userData->total;
                      
@@ -779,8 +820,8 @@ if(!function_exists('prioritise')){
     }
 }
 if(!function_exists('quote_data_for_mail')){
-    function quote_data_for_mail($id){
-        $zipcodeData = App\Models\adminpanel\zipcode::where('is_active',1)->orderBy('id', 'asc')->get();
+    function quote_data_for_mail($id,$user_role='any'){
+        //$zipcodeData = App\Models\adminpanel\zipcode::where('is_active',1)->orderBy('id', 'asc')->get();
         $quotesData=App\Models\adminpanel\quotes::with('quote_products')
        ->with('customer')
        ->with('quote_prices')
@@ -794,7 +835,7 @@ if(!function_exists('quote_data_for_mail')){
         $quote_price='';
         $pickup_dropoff_address=array();
 
-      if(!empty($quotesData['quote_prices'])){
+      if(!empty($quotesData['quote_prices']) && $user_role=='any'){
         $quote_price='<tr><th colspan="2">Quoted Price</th></tr>
         <tr><td colspan="2"><table width="100%" border="1">
         <tr>
@@ -830,6 +871,11 @@ if(!function_exists('quote_data_for_mail')){
                     $quote_price .='</table>
                     </td><tr>';
     }
+    else if($user_role==config('constants.groups.sub')){
+        $quote_price='<tr><th colspan="2">Delivery Price</th></tr>
+        <tr><td><strong>Amount :</strong></td><td>$'.$quotesData['quoted_price_for_sub'].'</td></tr>';
+    }
+
     $multi_quote_html='';
 if($quotesData['quote_type']=='multi'){
     $multi_quote_html ='<tr>

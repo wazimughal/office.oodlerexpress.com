@@ -79,13 +79,11 @@
                                                             <div class="col-3">&nbsp;</div>
                                                             <div class="col-6">
 
-                                                                @if ($errors->any())
-                                                                    {{ implode('', $errors->all('<div>:message</div>')) }}
-                                                                @endif
+                                                               
                                                                 <!-- flash-message -->
-                                                                <div class="flash-message">
+                                                                <div class="flash-message alert-danger">
                                                                     @if ($errors->any())
-                                                                        {{ implode('', $errors->all('<div>:message</div>')) }}
+                                                                        {!! implode('', $errors->all('<div>:message</div>')) !!}
                                                                     @endif
 
                                                                     @foreach (['danger', 'warning', 'success', 'info'] as $msg)
@@ -240,7 +238,20 @@
                                                             @csrf
                                                             <input type="hidden" name="po_number" value="{{$quotesData['po_number']}}">
                                                             <div class="row form-group">
-                                                            <div class="col-6">
+                                                                <div class="col-md-3 align-center text-center">
+                                                                    <label class="col-form-label ">Assign to Driver/Sub</label>
+                                                                    <div class="form-group clearfix mt-1">
+                                                                        <div class="icheck-primary d-inline ml-1">
+                                                                          <input onclick="$('#drivers_options').show();$('.subs_options').hide();" type="radio" value="1" id="radioPrimary1" name="assign_to" {{($quotesData['assign_to']==1|| $quotesData['assign_to']=='')?'checked':''}} >
+                                                                          <label for="radioPrimary1"> Driver</label>
+                                                                        </div>
+                                                                        <div class="icheck-primary d-inline ml-3">
+                                                                          <input  onclick="$('.subs_options').show();$('#drivers_options').hide();" type="radio" value="2" id="radioPrimary2"  name="assign_to" {{($quotesData['assign_to']==2)?'checked':''}}>
+                                                                          <label for="radioPrimary2"> Sub</label>
+                                                                        </div>
+                                                                      </div>
+                                                                </div>
+                                                            <div id="drivers_options" class="col-md-4" {{($quotesData['assign_to']==2)?'style=display:none':''}}>
                                                                 <label class="col-form-label">Select Driver</label>
                                                                 <div class="input-group mb-3" >
                                                                     <select placeholder="select Driver" name="driver_id" class="select2bs4 form-control @error('photographer_expense[]') is-invalid @enderror">
@@ -253,11 +264,35 @@
                                                                     @enderror
                                                                 </div>
                                                             </div>
-                                                            <div class="col-2" style="margin-top: 2rem">&nbsp;</div>
-                                                            <div class="col-4" style="margin-top: 2rem">
+                                                            <div class="col-md-4 subs_options" {{($quotesData['assign_to']==1|| $quotesData['assign_to']=='')?'style=display:none':''}}>
+                                                                <label class="col-form-label">Select Sub</label>
+                                                                <div class="input-group mb-3" >
+                                                                    <select placeholder="select Sub" name="sub_id" class="select2bs4 form-control @error('photographer_expense[]') is-invalid @enderror">
+                                                                        {!!get_subs_options()!!}
+                                                                    </select>
+                                                                    @error('sub_id')
+                                                                        <div class="invalid-feedback">
+                                                                            {{ $message }}
+                                                                        </div>
+                                                                    @enderror
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-2 subs_options" {{($quotesData['assign_to']==1|| $quotesData['assign_to']=='')?'style=display:none':''}}>
+                                                                <label class="col-form-label">Amount</label>
+                                                                <input type="number" name="quoted_price_for_sub" 
+                                                                    value="{{ $quotesData['quoted_price_for_sub'] }}"
+                                                                    placeholder="Price for Sub in USD" class="form-control">
+                                                                    @error('quoted_price_for_sub')
+                                                                        <div class="invalid-feedback">
+                                                                            {{ $message }}
+                                                                        </div>
+                                                                    @enderror
+                                                            </div>
+                                                            
+                                                            <div class="col-md-2" style="margin-top: 2rem">
                                                                 <button type="submit"
                                                                     class=" float-right btn btn-success btn-block btn-lg"><i
-                                                                        class="fa fa-plus"></i> Add to Delivery</button>
+                                                                        class="fa fa-plus"></i>Delivery</button>
                                                             </div>
                                                             </div>
                                                         </form>

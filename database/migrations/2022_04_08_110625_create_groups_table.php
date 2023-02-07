@@ -43,10 +43,10 @@ return new class extends Migration
                         'description' => 'This is the driver role',
                     ],
                     [
-                        'title' => 'Staff',
-                        'role' => 'staff',
-                        'slug' => phpslug('staff'),
-                        'description' => 'This is the staff role',
+                        'title' => 'Sub',
+                        'role' => 'sub',
+                        'slug' => phpslug('sub'),
+                        'description' => 'This is the sub role',
                     ],
                     [
                         'title' => 'Subscriber',

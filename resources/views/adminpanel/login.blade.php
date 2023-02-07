@@ -5,6 +5,11 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{config('constants.app_name')}}<| Log in (v2)</title>
+    {{-- <link rel="icon" type="image/x-icon" href="{{ url('adminpanel/dist/img/logo_oodler.jpg') }}"> --}}
+    <link rel="icon" href="{{ url('adminpanel/dist/img/favicon1.png') }}" sizes="32x32" />
+        <link rel="icon" href="{{ url('adminpanel/dist/img/favicon2.png') }}" sizes="192x192" />
+        <link rel="apple-touch-icon" href="{{ url('adminpanel/dist/img/favicon3.png') }}" />
+        <meta name="msapplication-TileImage" content="{{ url('adminpanel/dist/img/favicon1.png') }}" />
 
     <!-- Google Font: Source Sans Pro -->
     <link rel="stylesheet"

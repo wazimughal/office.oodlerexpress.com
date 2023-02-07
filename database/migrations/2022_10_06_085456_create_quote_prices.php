@@ -24,6 +24,7 @@ return new class extends Migration
             $table->string('description')->nullable();
             $table->string('slug')->nullable();
             $table->tinyInteger('status')->default(1);//1:active, 0:in-active 2:history
+            $table->tinyInteger('quote_price_for')->default(1);//1:customer, 2:Sub
             $table->unsignedBigInteger('quoted_uid');
             $table->foreign('quoted_uid')->references('id')->on('users');
             $table->unsignedBigInteger('quote_id');
