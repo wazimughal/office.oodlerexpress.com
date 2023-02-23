@@ -98,11 +98,9 @@
 
                                                 @if ($user->group_id == config('constants.groups.admin'))
                                                     <a href="{{ route('delivery.add_delivery_form', $data['id']) }}"
-                                                        class="btn btn-success btn-block btn-sm"><i class="fas fa-plus"></i>
-                                                        Add Delivery</a>
+                                                        class="btn btn-success btn-block btn-sm"><i class="fas fa-plus"></i> Delivery</a>
                                                     <a href="{{ route('customer.quotes', $data['id']) }}"
-                                                        class="btn btn-primary btn-block btn-sm"><i class="fas fa-eye"></i>
-                                                        View all quotes</a>
+                                                        class="btn btn-primary btn-block btn-sm"><i class="fas fa-eye"></i> Quotes</a>
 
                                                     @if ($data['is_active'] == 2)
                                                         <button

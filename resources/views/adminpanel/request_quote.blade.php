@@ -232,7 +232,7 @@
                                     </div> --}}
                                     <div class="row form-group">
                                         <div class="col-1">&nbsp;</div>
-                                        <div class="col-5">
+                                        <div class="col-5" style="margin-top:35px;">
                                             <div class="input-group mb-3">
                                                 <input value="{{ old('pickup_zipcode1') }}" placeholder="Zip Code"  type="text" name="pickup_zipcode1"
                                                     class=" form-control @error('pickup_zipcode1') is-invalid @enderror">
@@ -244,9 +244,12 @@
                                             </div>
                                         </div>
                                         <div class="col-5">
+                                            <div style="color: #ce0e0e; padding:5px;clear:both" >Enter Cell# only if you agree to receive SMS to know the status of delivery! </div>
                                             <div class="input-group mb-3">
+                                                
                                                 <input placeholder="Contact No.(e.g +18633335555)" type="text" name="pickup_contact_number1"  value="{{ old('pickup_contact_number1') }}"
                                                     class=" form-control @error('pickup_contact_number1') is-invalid @enderror">
+                                                    
                                                 @error('pickup_contact_number1')
                                                     <div class="invalid-feedback">
                                                         {{ $message }}
@@ -258,17 +261,7 @@
                                     </div>
                                     <div class="row form-group">
                                         <div class="col-1">&nbsp;</div>
-                                        {{-- <div class="col-5">
-                                            <div class="input-group mb-3">
-                                                <input placeholder="Email" type="text" name="pickup_email1" required value="{{ old('pickup_email1') }}"
-                                                    class=" form-control @error('pickup_email1') is-invalid @enderror">
-                                                @error('pickup_email1')
-                                                    <div class="invalid-feedback">
-                                                        {{ $message }}
-                                                    </div>
-                                                @enderror
-                                            </div>
-                                        </div> --}}
+                                        
                                         <div class="col-5">
                                             <div class="input-group date" id="pick_up_reservationdate1" data-target-input="nearest">
                                                 <input type="text" id="pickup_date1" value="{{ old('pickup_date1') }}" required name="pickup_date1" placeholder="Pick Up date" class="form-control datetimepicker-input" data-target="#reservationdate"/>
@@ -372,34 +365,7 @@
                                         </div>
                                         <div class="col-1">&nbsp;</div>
                                     </div>
-                                    {{-- <div class="row form-group">
-                                        <div class="col-1">&nbsp;</div>
-                                        <div class="col-5">
-                                            <div class="input-group mb-3">
-                                                <input value="{{ old('pickup_city'.$i) }}" placeholder="City Name"  type="text" name="pickup_city{{$i}}"
-                                                    class=" form-control @error('pickup_city'.$i) is-invalid @enderror">
-                                                @error('pickup_city'.$i)
-                                                    <div class="invalid-feedback">
-                                                        {{ $message }}
-                                                    </div>
-                                                @enderror
-                                            </div>
-                                        </div>
-                                        <div class="col-5">
-                                            <div class="input-group mb-3">
-                                                <input value="{{ old('pickup_state'.$i) }}" placeholder="State Name"  type="text" name="pickup_state{{$i}}"
-                                                    class=" form-control @error('pickup_state'.$i) is-invalid @enderror">
-                                                @error('pickup_state'.$i)
-                                                    <div class="invalid-feedback">
-                                                        {{ $message }}
-                                                    </div>
-                                                @enderror
-                                            </div>
-
-                                        </div>
-                                        
-                                        <div class="col-1">&nbsp;</div>
-                                    </div> --}}
+                                    
                                     <div class="row form-group">
                                         <div class="col-1">&nbsp;</div>
                                         <div class="col-5">
@@ -574,7 +540,7 @@
                                     </div> --}}
                                     <div class="row form-group">
                                         <div class="col-1">&nbsp;</div>
-                                        <div class="col-5">
+                                        <div class="col-5" style="margin-top:35px;">
                                             <div class="input-group mb-3">
                                                 <input placeholder="Zip Code" type="text" name="drop_off_zipcode" value="{{ old('drop_off_zipcode') }}"
                                                 class=" form-control @error('drop_off_zipcode') is-invalid @enderror">
@@ -587,6 +553,7 @@
                                             </div>
                                         </div>
                                         <div class="col-5">
+                                            <div style="color: #ce0e0e; padding:5px;clear:both" >Enter Cell# only if you agree to receive SMS to know the status of delivery! </div>
                                             <div class="input-group mb-3">
                                                 <input placeholder="Contact No.(e.g +18633335555)" value="{{ old('drop_off_contact_number') }}" type="text" name="drop_off_contact_number"
                                                     class=" form-control @error('drop_off_contact_number') is-invalid @enderror">

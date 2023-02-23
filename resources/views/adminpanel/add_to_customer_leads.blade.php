@@ -39,7 +39,7 @@
                                             <div class="alert alert-danger">
                                                 <ul class="list-unstyled">
                                                     @foreach ($errors->all() as $error)
-                                                        <li>{{ $error }}</li>
+                                                        <li>{!! $error !!}</li>
                                                     @endforeach
                                                 </ul>
                                             </div>
@@ -49,7 +49,7 @@
                                             @foreach (['danger', 'warning', 'success', 'info'] as $msg)
                                                 @if (Session::has('alert-' . $msg))
                                                     <p class="alert alert-{{ $msg }}">
-                                                        {{ Session::get('alert-' . $msg) }} <a href="#" class="close"
+                                                        {!! Session::get('alert-' . $msg) !!} <a href="#" class="close"
                                                             data-dismiss="alert" aria-label="close">&times;</a></p>
                                                 @endif
                                             @endforeach
@@ -155,6 +155,25 @@
                                     <div class="row form-group">
                                         <div class="col-1">&nbsp;</div>
                                         <div class="col-5">
+                                            <span>Billing Email</span>
+                                            <div class="input-group mb-3">
+                                                <input type="text" name="billing_email"
+                                                    class="form-control @error('billing_email') is-invalid @enderror"
+                                                    placeholder="Billing Email Address"
+                                                    value="{{ $userData['billing_email'] }}">
+                                                <div class="input-group-append">
+                                                    <div class="input-group-text">
+                                                        <span class="fas fa-address-card"></span>
+                                                    </div>
+                                                </div>
+                                                @error('billing_email')
+                                                    <div class="invalid-feedback">
+                                                        {{ $message }}
+                                                    </div>
+                                                @enderror
+                                            </div>
+                                        </div>
+                                        <div class="col-5">
                                             <span>Cell No.</span>
                                             <div class="input-group mb-3">
                                                 <input type="text" name="mobileno"
@@ -172,6 +191,11 @@
                                                 @enderror
                                             </div>
                                         </div>
+                                        
+                                        <div class="col-1">&nbsp;</div>
+                                    </div>
+                                    <div class="row form-group">
+                                        <div class="col-1">&nbsp;</div>
                                         <div class="col-5">
                                             <span>Position in Business</span>
                                             <div class="input-group mb-3">
@@ -191,9 +215,8 @@
                                                 @enderror
                                             </div>
                                         </div>
-                                        <div class="col-1">&nbsp;</div>
+                                        <div class="col-6">&nbsp;</div>
                                     </div>
-
                                     {{-- Business Information --}}
                                     <div class="row form-group">
                                         <div class="col-1">&nbsp;</div>

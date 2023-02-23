@@ -9,5 +9,6 @@ return [
     'realm_id' => env('QUICKBOOKS_REALM_ID'),
     'base_url' => env('QUICKBOOKS_BASE_URL'),
     'api_url' => env('QUICKBOOKS_API_URL'),
+    'token_refresh_interval_before_expiry' => env('QUICKBOOKS_ACCESS_TOKEN_EXPIRY'),
 ];
 ?>

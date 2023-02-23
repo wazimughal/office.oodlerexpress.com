@@ -459,6 +459,13 @@
                                 </a>
                             </li>
                             <li class="nav-item">
+                                <a href="{{ route('subs.reports') }}"
+                                    class="nav-link {{ request()->segment(2) == 'reports' && request()->segment(3) == 'subs'? 'active' : '' }}">
+                                    <i class="fa fa-users"></i>
+                                    <p>Subs</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
                                 <a href="{{ route('customer.reports') }}"
                                     class="nav-link {{ request()->segment(2) == 'reports' && request()->segment(3) == 'customers'? 'active' : '' }}">
                                     <i class="fa fa-users"></i>

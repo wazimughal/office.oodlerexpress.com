@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\adminpanel\Users;
 use App\Models\adminpanel\Groups;
+use App\Models\adminpanel\quickbook_credentials;
 use App\Models\adminpanel\comments;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -17,8 +18,16 @@ use Illuminate\Support\Facades\Mail;
 
 // This is for QuickBooks Customer
 use QuickBooksOnline\API\DataService\DataService;
+use QuickBooksOnline\API\Exception\ServiceException;
 use QuickBooksOnline\API\Core\Http\Serialization\XmlObjectSerializer;
 use QuickBooksOnline\API\Facades\Customer;
+use GuzzleHttp\Client;
+
+// To Renew Access Token
+use QuickBooksOnline\API\Data\OAuth2\OAuth2LoginHelper;
+use QuickBooksOnline\API\Data\OAuth2\OAuth2AccessToken;
+use QuickBooksOnline\API\Core\OAuth\OAuth2\OAuth2AccessTokenEntity;
+
 
 class LeadsController extends Controller
 {
@@ -28,6 +37,7 @@ class LeadsController extends Controller
         $this->users= new Users;
         $this->groups= new Groups;
         $this->comments= new comments;
+        $this->quickbook_credentials= new quickbook_credentials;
       }
 
     public function addLeads(){
@@ -190,12 +200,99 @@ class LeadsController extends Controller
 
         return view('adminpanel/add_to_customer_leads',get_defined_vars());
     }
-    public function createCustomer($data=[])
-    {
-        if(empty($data))
-        return false;
+
+    public function get_quickbooks_access_token(){
 
         $config = config('quickbooks');
+        $client = new Client();
+        $response = $client->post('https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer', [
+            'form_params' => [
+                'grant_type' => 'refresh_token',
+                'refresh_token' => $config['refresh_token'],
+                'client_id' => $config['client_id'],
+                'client_secret' => $config['client_secret'],
+                'redirect_uri' => $config['redirect_uri'],
+                'scope' => 'com.intuit.quickbooks.accounting',
+                //'scope' => 'com.intuit.quickbooks.accounting, com.intuit.quickbooks.payment, openid, profile, email, phone, address',
+                'duration' => 3600,
+            ]
+        ]);
+        
+        return $newAccessToken = json_decode($response->getBody(), true)['access_token'];
+        
+    }
+    // Update QUICKBOOK ACCESS TOKEN
+    public function updated_access_token(){
+
+        $config = config('quickbooks');
+        
+        $qb_credentials=$this->quickbook_credentials->where('id',1)->get()->first();
+
+        $retData=$to_update_data=[];
+
+        if($qb_credentials->status==1){
+            $to_update_data['client_id']=$config['client_id']=$qb_credentials->client_id;
+            $to_update_data['client_secret']=$config['client_secret']=$qb_credentials->client_secret;
+            $to_update_data['redirect_uri']=$config['redirect_uri']=$qb_credentials->redirect_uri;
+            $to_update_data['access_token']=$config['access_token']=$qb_credentials->access_token;
+            $to_update_data['refresh_token']=$config['refresh_token']=$qb_credentials->refresh_token;
+            $to_update_data['realm_id']=$config['realm_id']=$qb_credentials->realm_id;
+            $to_update_data['base_url']=$config['base_url']=$qb_credentials->base_url;
+        }
+        
+        $dataService = DataService::Configure([
+            'auth_mode' => 'oauth2',
+            'ClientID' => $config['client_id'],
+            'ClientSecret' => $config['client_secret'],
+            'RedirectURI' => $config['redirect_uri'],
+            'accessTokenKey' => $config['access_token'],
+            'refreshTokenKey' => $config['refresh_token'],
+            'QBORealmID' => $config['realm_id'],
+            'baseUrl' => $config['base_url'],
+            'token_refresh_interval_before_expiry' => $config['token_refresh_interval_before_expiry']
+        ]);
+                   
+            $OAuth2LoginHelper = $dataService->getOAuth2LoginHelper();
+            $accessTokenObj = $OAuth2LoginHelper->
+            refreshAccessTokenWithRefreshToken($config['refresh_token']);
+            $accessTokenValue = $accessTokenObj->getAccessToken();
+            $refreshTokenValue = $accessTokenObj->getRefreshToken();
+
+            $to_update_data['client_id']=$qb_credentials->client_id;
+            $to_update_data['client_secret']=$qb_credentials->client_secret;
+            $to_update_data['redirect_uri']=$qb_credentials->redirect_uri;
+            $to_update_data['access_token']=$accessTokenValue;
+            $to_update_data['refresh_token']=$refreshTokenValue;
+            $to_update_data['realm_id']=$qb_credentials->realm_id;
+            $to_update_data['base_url']=$qb_credentials->base_url;
+            $to_update_data['updating_time']=time();
+            $to_update_data['status']=1;
+            $this->quickbook_credentials->where('id',1)->update($to_update_data);
+
+         $retData['access_token']=$accessTokenValue;
+         $retData['refresh_token']=$refreshTokenValue;
+
+         return $retData;
+
+    }
+    public function createCustomer($data=[])
+    {
+        $retData=[];
+        $retData['error']='NO';
+
+        if(empty($data)){
+            $retData['id']=0;
+            $retData['error']='YES';
+            $retData['message']='Customer information can\'t be Empty !';
+        }
+        
+
+        $config = config('quickbooks');
+        
+        $tokenData=$this->updated_access_token();
+        $config['access_token']=$tokenData['access_token'];
+        $config['refresh_token']=$tokenData['refresh_token'];
+        
         
         $dataService = DataService::Configure([
             'auth_mode' => 'oauth2',
@@ -207,27 +304,39 @@ class LeadsController extends Controller
             'QBORealmID' => $config['realm_id'],
             'baseUrl' => $config['base_url']
         ]);
-      
-        $dataService->throwExceptionOnError(true);
-        // Create a new customer object
-        $customer = Customer::create($data);
-        // Persist the customer to QuickBooks
-        $result = $dataService->Add($customer);
-        $error = $dataService->getLastError();
-
-            if ($error) 
-            return false;
        
-            return $result->Id;
+       
+            try{
+                $dataService->throwExceptionOnError(true);
+                // Create a new customer object
+                $customer = Customer::create($data);
+                // Persist the customer to QuickBooks
+                $result = $dataService->Add($customer);
+                //$error = $dataService->getLastError();
+                $retData['id']=$result->Id;
+                $retData['message']='QUICKBOOK:Customer Added Successfully !';
+                
+            }
+            catch (ServiceException $ex) {
+                $retData['id']=0;
+                $retData['error']='YES';
+                
+                $retData['message']='QUICKBOOK:'.$ex->getMessage();
+               
+            }
+            return  $retData;
+            
     }
     public function save_add_to_customer($id,Request $request){
     
         $customerData=$this->users->where('id',$id)->get('email')->toArray();
         $customerData=$customerData[0];
+        
         $validator=$request->validate([
             'firstname'=>'required',
             'lastname'=>'required',
             'mobileno'=>'required',
+            'billing_email'=>'required',
             'business_name'=>'required',
             'business_phone'=>'required',
             'business_address'=>'required',
@@ -241,6 +350,7 @@ class LeadsController extends Controller
         $data_to_update['name']=$this->users->name=$request['firstname'].' '.$request['lastname'];
         $data_to_update['firstname']=$this->users->firstname=$request['firstname'];
         $data_to_update['lastname']=$this->users->lastname=$request['lastname'];
+        $data_to_update['billing_email']=$this->users->lastname=$request['billing_email'];
         $data_to_update['mobileno']=$this->users->mobileno=$request['mobileno'];
         $data_to_update['designation']=$this->users->designation=$request['designation'];
         $data_to_update['password']=$this->users->password=Hash::make($request['password']);
@@ -253,26 +363,12 @@ class LeadsController extends Controller
        $data_to_update['street']=$this->users->street=$request['street'];
        $data_to_update['how_often_shipping']=$this->users->how_often_shipping=$request['how_often_shipping']; //
        
-        
-        
        $data_to_update['city']=$this->users->city=$request['city'];
        $data_to_update['state']=$this->users->state=$request['state'];
        $data_to_update['zipcode']= $this->users->zipcode=$request['zipcode'];
        $data_to_update['business_address']=$this->users->business_address=$request['business_address'];
        $data_to_update['shipping_cat']=$this->users->shipping_cat=json_encode($request['shipping_cat']);
 
-
-        $mailData['body_message']='Welcome to Oodler Express. We are happy to serve your business!. Please note that you have been assigned access to our Online Portal. Use your email '.$customerData['email'].' as your username and the following password <strong>'.$request['password'].'</strong>';
-        $mailData['subject']='New Account Details - Oodler Express';
-         $toEmail=[
-            $customerData['email']
-         ];
-        if(Mail::to($toEmail)->send(new EmailTemplate($mailData)))
-         $request->session()->flash('alert-info', 'Email Notification also sent to customer with password  ');
-
-        $request->session()->flash('alert-success', 'A new customer is added in the system');
-        
-        
 
        $customer= [
                 "GivenName" => $data_to_update['name'],
@@ -286,24 +382,37 @@ class LeadsController extends Controller
                 "AlternatePhone" =>  $data_to_update['mobileno'],
                 "OtherContactInfo" =>  $data_to_update['mobileno'],
                 "PrimaryEmailAddr" => [
-                    "Address" => $request['email']
+                    "Address" => $request['billing_email']
                 ],
-               
                 "PrimaryPhone" => [
                     "FreeFormNumber" => $data_to_update['mobileno']
                 ]
             ];
-
-            $quickbooks_customer_id=$this->createCustomer($customer);
-            if($quickbooks_customer_id>0){
-                $request->session()->flash('alert-success', 'Customer added in QuickBooks too');
-                $data_to_update['quickbooks_customer_id']=$quickbooks_customer_id;
-            }
-            else
-            $request->session()->flash('alert-danger', 'Customer could not be added in QuickBooks');
             
+            $QBcustomerData=$this->createCustomer($customer);
+            if($QBcustomerData['id']>0){
+                $request->session()->flash('alert-success', $QBcustomerData['message']);
+                $data_to_update['quickbooks_customer_id']=$QBcustomerData['id'];
+
+            }
+            else{
+                $request->session()->flash('alert-danger', $QBcustomerData['message']);
+                return redirect()->back();
+            }
+            
+            
+           
             $this->users->where('id',$id)->update($data_to_update);
 
+        $mailData['body_message']='Welcome to Oodler Express. We are happy to serve your business!. Please note that you have been assigned access to our Online Portal. Use your email '.$customerData['email'].' as your username and the following password <strong>'.$request['password'].'</strong>';
+        $mailData['subject']='New Account Details - Oodler Express';
+         $toEmail=[
+            $customerData['email']
+         ];
+        if(Mail::to($toEmail)->send(new EmailTemplate($mailData)))
+         $request->session()->flash('alert-info', 'Email Notification also sent to customer with password  ');
+
+        $request->session()->flash('alert-success', 'A new customer is added in the system');
 
                     // Activity Log
                     $activityComment='Mr.'.get_session_value('name').' added new customer '.$this->users->name. 'from the leads' ;

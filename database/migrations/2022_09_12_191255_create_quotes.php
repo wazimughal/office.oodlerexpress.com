@@ -69,6 +69,11 @@ return new class extends Migration
             $table->unsignedBigInteger('sub_id')->nullable();
             $table->foreign('sub_id')->references('id')->on('users');
             $table->string('quoted_price_for_sub')->nullable();
+            // All these are quickbooks information
+            $table->BigInteger('qb_service_id')->nullable();
+            $table->BigInteger('qb_invoice_id')->nullable();
+            $table->string('qb_invoice_no')->nullable();
+            $table->tinyInteger('payment_status')->default(0)->nullable();
 
             $table->timestamps();
         });

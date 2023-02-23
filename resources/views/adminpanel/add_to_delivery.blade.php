@@ -113,7 +113,28 @@
                                                             <div class="table-responsive">
                                                                 <table class="table">
                                                                     <tbody>
-                                                                  
+                                                                        @if (isset($quotesData['quote_products']) && empty($quotesData['quote_products']))
+                                                                        <tr>
+                                                                         <td colspan="2">
+                                                                             <strong>Pick Up Detail </strong> <br>
+                                                                             Date : {{ $quotesData['pickup_date'] }}<br>
+                                                                             Street Address
+                                                                             :{{ $quotesData['pickup_street_address'] }}<br>
+                                                                             Unit :{{ $quotesData['pickup_unit'] }}<br>
+                                                                             Contact No. :{{ $quotesData['pickup_contact_number'] }}<br>
+                                                                         </td>
+                                                                         <td colspan="2">
+                                                                             <strong>Drop-Off Detail </strong> <br>
+                                                                             Date : {{ $quotesData['drop_off_date'] }}<br>
+                                                                             Street Address
+                                                                             :{{ $quotesData['drop_off_street_address'] }}<br>
+                                                                             Unit :{{ $quotesData['drop_off_unit'] }}<br>
+                                                                             Contact No.
+                                                                             :{{ $quotesData['drop_off_contact_number'] }}<br>
+                                                                         </td>
+                                                                         
+                                                                     </tr>   
+                                                                        @endif
                                                                         @foreach ($quotesData['quote_products'] as $quote_product)
                                                                         @if (!in_array($quote_product['pickup_dropoff_order_number'],$pickup_dropoff_address))
                                                                         <tr>

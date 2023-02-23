@@ -12,12 +12,12 @@
                     <div class="col-sm-6">
                         <h1>View Delivery</h1>
                     </div>
-                    <div class="col-sm-6">
+                    {{-- <div class="col-sm-6">
                         <ol class="breadcrumb float-sm-right">
                             <li class="breadcrumb-item"><a href="{{ url('/') }}">Home</a></li>
                             <li class="breadcrumb-item active">View Delivery</li>
                         </ol>
-                    </div>
+                    </div> --}}
                 </div>
             </div><!-- /.container-fluid -->
         </section>
@@ -118,7 +118,29 @@
                                                             <div class="table-responsive">
                                                                 <table class="table">
                                                                     <tbody>
-                                                                     
+                                                                        <tbody>
+                                                                            @if (isset($quotesData['quote_products']) && empty($quotesData['quote_products']))
+                                                                            <tr>
+                                                                             <td colspan="2">
+                                                                                 <strong>Pick Up Detail </strong> <br>
+                                                                                 Date : {{ $quotesData['pickup_date'] }}<br>
+                                                                                 Street Address
+                                                                                 :{{ $quotesData['pickup_street_address'] }}<br>
+                                                                                 Unit :{{ $quotesData['pickup_unit'] }}<br>
+                                                                                 Contact No. :{{ $quotesData['pickup_contact_number'] }}<br>
+                                                                             </td>
+                                                                             <td colspan="2">
+                                                                                 <strong>Drop-Off Detail </strong> <br>
+                                                                                 Date : {{ $quotesData['drop_off_date'] }}<br>
+                                                                                 Street Address
+                                                                                 :{{ $quotesData['drop_off_street_address'] }}<br>
+                                                                                 Unit :{{ $quotesData['drop_off_unit'] }}<br>
+                                                                                 Contact No.
+                                                                                 :{{ $quotesData['drop_off_contact_number'] }}<br>
+                                                                             </td>
+                                                                             
+                                                                         </tr>   
+                                                                            @endif
                                                                         @foreach ($quotesData['quote_products'] as $quote_product)
                                                                         @if (!in_array($quote_product['pickup_dropoff_order_number'],$pickup_dropoff_address))
                                                                         <tr>
@@ -1035,7 +1057,7 @@
                                             </div>
                                             @endif 
                                             {{-- This is end of Driver Activity if --}}
-                                            @if(isset($quotesData['sub_id']) && ($quotesData['sub_id']>0))
+                                            @if(isset($quotesData['sub_id']) && ($quotesData['sub_id']>0) && ($user->group_id==config('constants.groups.admin') || $user->group_id==config('constants.groups.sub')))
                                             <div class="card-header alert-secondary">
                                                 <h3 class="card-title">Sub Information</h3>
                                             </div>
@@ -1192,9 +1214,11 @@
                                             </div>
                                         </div>
                                         @endif
-                                        @if (isset($quotesData['driver']) && !empty($quotesData['driver']))
+                                        @if (isset($quotesData['driver']) && !empty($quotesData['driver']) && $user->group_id!=config('constants.groups.customer'))
                                             <div class="card-header alert-secondary">
                                                 <h3 class="card-title">Driver Info</h3>
+                                                <div style="width:10ppx; float:right"><button onclick="do_action({{$quotesData['id']}},'remove_quote_driver')" class=" float-right btn btn-danger btn-block btn-sm"><i
+                                                    class="fa fa-trash"></i> Remove Driver</button></div>
                                             </div>
                                             @if ($user->group_id==config('constants.groups.admin'))
                                             <form id="change_quote_driver" method="post">
@@ -1277,6 +1301,11 @@
                                                             <th>Phone</th>
                                                             <td>{{ $quotesData['customer']['phone'] }}</td>
                                                         </tr>
+                                                        <tr>
+                                                            <th>Billing Email</th>
+                                                            <td>{{ $quotesData['customer']['billing_email'] }}</td>
+                                                        </tr>
+
                                                         <tr>
                                                             <th>Business Name</th>
                                                             <td>{{ $quotesData['customer']['business_name'] }}</td>
@@ -1487,7 +1516,7 @@ function update_time(id,key,action_name) {
             }
             $('#_loader').show();
             $.ajax({
-                url: "{{ route('quotes.ajaxcall',$quotesData['id']) }}" ,
+                url: "{{ route('quotes.ajaxcall',$quotesData['id']) }}?time={{time()}}" ,
                 data: sendInfo,
                 contentType: 'application/json',
                 error: function() {

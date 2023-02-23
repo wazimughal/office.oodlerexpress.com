@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('firstname')->nullable();
             $table->string('lastname')->nullable();
             $table->string('email')->unique();
+            $table->string('billing_email')->nullable()->default(NULL);
             $table->timestamp('email_verified_at')->nullable();
             $table->string('cnic')->nullable()->unique();
             $table->string('phone')->nullable();
@@ -53,7 +54,7 @@ return new class extends Migration
             $table->tinyInteger('prioritise')->default(0)->nullable();
             $table->unsignedBigInteger('group_id');
             $table->foreign('group_id')->references('id')->on('groups');
-            $table->unsignedBigInteger('quickbooks_customer_id');
+            $table->unsignedBigInteger('quickbooks_customer_id')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });

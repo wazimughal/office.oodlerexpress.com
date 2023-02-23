@@ -72,6 +72,7 @@ class AdminController extends Controller
         $request->validate([
             'email'=>'required|email',
              'password'=>'required',
+             'captcha' => 'required|captcha'
                
        ]);
        
@@ -124,7 +125,10 @@ class AdminController extends Controller
         }
         
     }
-    
+    public function reloadCaptcha()
+    {
+        return response()->json(['captcha'=> captcha_img()]);
+    }
     public function getlogin(Request $request){
         $data=array();
      

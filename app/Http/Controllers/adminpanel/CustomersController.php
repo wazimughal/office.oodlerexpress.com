@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\adminpanel\Users;
 use App\Models\adminpanel\Groups;
 use App\Models\adminpanel\Quotes;
+use App\Models\adminpanel\quickbook_credentials;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Auth;
@@ -22,8 +23,16 @@ use App\Exports\ExportCustomerDeliveryBalance;
 
 // This is for QuickBooks Customer
 use QuickBooksOnline\API\DataService\DataService;
+use QuickBooksOnline\API\Exception\ServiceException;
 use QuickBooksOnline\API\Core\Http\Serialization\XmlObjectSerializer;
 use QuickBooksOnline\API\Facades\Customer;
+use QuickBooksOnline\API\Facades\SalesReceipt;
+use QuickBooksOnline\API\Facades\Invoice;
+use GuzzleHttp\Client;
+// To Renew Access Token
+use QuickBooksOnline\API\Data\OAuth2\OAuth2LoginHelper;
+use QuickBooksOnline\API\Data\OAuth2\OAuth2AccessToken;
+use QuickBooksOnline\API\Core\OAuth\OAuth2\OAuth2AccessTokenEntity;
 
 class CustomersController extends Controller
 {
@@ -33,11 +42,12 @@ class CustomersController extends Controller
         $this->users= new Users;
         $this->groups= new Groups;
         $this->quotes= new Quotes;
+        $this->quickbook_credentials= new quickbook_credentials;
       }
       public function addcustomers(){
         $user=Auth::user(); 
        
-         return view('adminpanel/add_customers',compact('user'));
+         return view('adminpanel.add_customers',compact('user'));
      }
      public function report_customers(Request $req){
         $user=Auth::user();
@@ -204,13 +214,100 @@ class CustomersController extends Controller
        
         return view('adminpanel.reports.drivers',get_defined_vars());
     }
-    public function createCustomer($data=[])
-    {
-        if(empty($data))
-        return false;
+    public function get_quickbooks_access_token(){
+
+        $config = config('quickbooks');
+        $client = new Client();
+        $response = $client->post('https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer', [
+            'form_params' => [
+                'grant_type' => 'refresh_token',
+                'refresh_token' => $config['refresh_token'],
+                'client_id' => $config['client_id'],
+                'client_secret' => $config['client_secret'],
+                'redirect_uri' => $config['redirect_uri'],
+                'scope' => 'com.intuit.quickbooks.accounting',
+                //'scope' => 'com.intuit.quickbooks.accounting, com.intuit.quickbooks.payment, openid, profile, email, phone, address',
+                'duration' => 3600,
+            ]
+        ]);
+        
+        return $newAccessToken = json_decode($response->getBody(), true)['access_token'];
+        
+    }
+
+    // Update QUICKBOOK ACCESS TOKEN
+    public function updated_access_token(){
 
         $config = config('quickbooks');
         
+        $qb_credentials=$this->quickbook_credentials->where('id',1)->get()->first();
+
+        $retData=$to_update_data=[];
+
+        if($qb_credentials->status==1){
+            $to_update_data['client_id']=$config['client_id']=$qb_credentials->client_id;
+            $to_update_data['client_secret']=$config['client_secret']=$qb_credentials->client_secret;
+            $to_update_data['redirect_uri']=$config['redirect_uri']=$qb_credentials->redirect_uri;
+            $to_update_data['access_token']=$config['access_token']=$qb_credentials->access_token;
+            $to_update_data['refresh_token']=$config['refresh_token']=$qb_credentials->refresh_token;
+            $to_update_data['realm_id']=$config['realm_id']=$qb_credentials->realm_id;
+            $to_update_data['base_url']=$config['base_url']=$qb_credentials->base_url;
+        }
+        
+        $dataService = DataService::Configure([
+            'auth_mode' => 'oauth2',
+            'ClientID' => $config['client_id'],
+            'ClientSecret' => $config['client_secret'],
+            'RedirectURI' => $config['redirect_uri'],
+            'accessTokenKey' => $config['access_token'],
+            'refreshTokenKey' => $config['refresh_token'],
+            'QBORealmID' => $config['realm_id'],
+            'baseUrl' => $config['base_url'],
+            'token_refresh_interval_before_expiry' => $config['token_refresh_interval_before_expiry']
+        ]);
+                   
+            $OAuth2LoginHelper = $dataService->getOAuth2LoginHelper();
+            $accessTokenObj = $OAuth2LoginHelper->
+            refreshAccessTokenWithRefreshToken($config['refresh_token']);
+            $accessTokenValue = $accessTokenObj->getAccessToken();
+            $refreshTokenValue = $accessTokenObj->getRefreshToken();
+
+            $to_update_data['client_id']=$qb_credentials->client_id;
+            $to_update_data['client_secret']=$qb_credentials->client_secret;
+            $to_update_data['redirect_uri']=$qb_credentials->redirect_uri;
+            $to_update_data['access_token']=$accessTokenValue;
+            $to_update_data['refresh_token']=$refreshTokenValue;
+            $to_update_data['realm_id']=$qb_credentials->realm_id;
+            $to_update_data['base_url']=$qb_credentials->base_url;
+            $to_update_data['updating_time']=time();
+            $to_update_data['status']=1;
+            $this->quickbook_credentials->where('id',1)->update($to_update_data);
+
+         $retData['access_token']=$accessTokenValue;
+         $retData['refresh_token']=$refreshTokenValue;
+
+         return $retData;
+
+    }
+    public function createCustomer($data=[])
+    {
+        $retData=[];
+        $retData['error']='NO';
+
+        if(empty($data)){
+            $retData['id']=0;
+            $retData['error']='YES';
+            $retData['message']='Customer information can\'t be Empty !';
+        }
+
+        $config = config('quickbooks');
+
+        $tokenData=$this->updated_access_token();
+        $config['access_token']=$tokenData['access_token'];
+        $config['refresh_token']=$tokenData['refresh_token'];
+        
+        
+
         $dataService = DataService::Configure([
             'auth_mode' => 'oauth2',
             'ClientID' => $config['client_id'],
@@ -222,17 +319,25 @@ class CustomersController extends Controller
             'baseUrl' => $config['base_url']
         ]);
       
-        $dataService->throwExceptionOnError(true);
-        // Create a new customer object
-        $customer = Customer::create($data);
-        // Persist the customer to QuickBooks
-        $result = $dataService->Add($customer);
-        $error = $dataService->getLastError();
+        try{
+            $dataService->throwExceptionOnError(true);
+            // Create a new customer object
+            $customer = Customer::create($data);
+            // Persist the customer to QuickBooks
+            $result = $dataService->Add($customer);
+            //$error = $dataService->getLastError();
+            $retData['id']=$result->Id;
+            $retData['message']='QUICKBOOK:Customer Added Successfully !';
 
-            if ($error) 
-            return false;
+        }
+        catch (ServiceException $ex) {
+            $retData['id']=0;
+            $retData['error']='YES';
             
-            return $result->Id;
+            $retData['message']='QUICKBOOK:'.$ex->getMessage();
+           
+        }
+        return  $retData;
             
     }
      public function save_new_customer(Request $request){
@@ -241,6 +346,7 @@ class CustomersController extends Controller
             'firstname'=>'required',
             'lastname'=>'required',
             'email'=>'required|email|distinct|unique:users|min:5',
+            'billing_email'=>'required',
             'mobileno'=>'required',
             'business_name'=>'required',
             'business_phone'=>'required',
@@ -256,6 +362,7 @@ class CustomersController extends Controller
         $this->users->firstname=$request['firstname'];
         $this->users->lastname=$request['lastname'];
         $this->users->email=$request['email'];
+        $this->users->billing_email=$request['billing_email'];
         $this->users->mobileno=$request['mobileno'];
         $this->users->designation=$request['designation'];
         $this->users->password=Hash::make($request['password']);
@@ -288,16 +395,6 @@ class CustomersController extends Controller
         $this->users->shipping_cat=$shipping_cat;
 
   
-        $mailData['body_message']='Welcome To Oodler Express . You are added as Customer in Oodler Express, Please login to our CRM using email '.$request['email'].' and the password <strong>'.$request['password'].'</strong>';
-        $mailData['subject']='Welcom to Oodler Express (New Customer added)';
-        $toEmail=[
-            $request['email']
-        ];
-        if(Mail::to($toEmail)->send(new EmailTemplate($mailData)))
-        $request->session()->flash('alert-info', 'Email Notification also sent  ');
-
-        $request->session()->flash('alert-success', 'Customer added! Please Check in Customers Tab');
-        $this->users->save();
 
         // Customer For QuickBooks
         $request['name']=$request['firstname'].' '.$request['lastname'];
@@ -313,22 +410,42 @@ class CustomersController extends Controller
             "AlternatePhone" =>  $request['mobileno'],
             "OtherContactInfo" =>  $request['mobileno'],
             "PrimaryEmailAddr" => [
-                "Address" => $request['email']
+                "Address" => $request['billing_email']
             ],
+         
            
             "PrimaryPhone" => [
                 "FreeFormNumber" => $request['mobileno']
             ]
         ];
 
-        $quickbooks_customer_id=$this->createCustomer($customer);
-        if($quickbooks_customer_id>0){
-            $request->session()->flash('alert-success', 'Customer added in QuickBooks too');
-            $this->users->where('id',$this->users->id)->update(['quickbooks_customer_id'=>$quickbooks_customer_id]);
+         
+
+        $QB_customer=$this->createCustomer($customer);
+        if($QB_customer['id']>0){
+
+            $this->users->save();
+
+            //$request->session()->flash('alert-success', 'Customer added! Please Check in Customers Tab');
+            $request->session()->flash('alert-success', $QB_customer['message']);
+            $this->users->where('id',$this->users->id)->update(['quickbooks_customer_id'=>$QB_customer['id']]);
         }
-        else
-        $request->session()->flash('alert-danger', 'Customer could not be added in QuickBooks');
+        else{
+            $request->session()->flash('alert-danger', $QB_customer['message']);
+            return redirect()->back()->withInput();
+        }
         
+        
+        $mailData['body_message']='Welcome To Oodler Express . You are added as Customer in Oodler Express, Please login to our CRM using email '.$request['email'].' and the password <strong>'.$request['password'].'</strong>';
+        $mailData['subject']='Welcom to Oodler Express (New Customer added)';
+        $toEmail=[
+            $request['email']
+        ];
+        if(Mail::to($toEmail)->send(new EmailTemplate($mailData)))
+        $request->session()->flash('alert-info', 'Email Notification also sent  ');
+
+        
+
 
                     // Activity Log
                     $activityComment='Mr.'.get_session_value('name').' Added new customer '.$this->users->name;
@@ -390,7 +507,7 @@ class CustomersController extends Controller
 
         $customerData=$this->users->where('id',$id)->get('email')->toArray();
         $customerData=$customerData[0];
-        $validator=$request->validate([
+        $validatorArray=[
             'firstname'=>'required',
             'lastname'=>'required',
             'mobileno'=>'required',
@@ -399,13 +516,18 @@ class CustomersController extends Controller
             'business_address'=>'required',
             'business_email'=>'required',
             'shipping_cat'=>'required',
-        ]);
+        ];
+        if(isset($request['billing_email']) && $request['billing_email']!='')
+        $validatorArray['billing_email']='required';
+
+        $validator=$request->validate($validatorArray);
         
         // User Information
         $data_to_update['name']=$this->users->name=$request['firstname'].' '.$request['lastname'];
         $data_to_update['firstname']=$this->users->firstname=$request['firstname'];
         $data_to_update['lastname']=$this->users->lastname=$request['lastname'];
         $data_to_update['mobileno']=$this->users->mobileno=$request['mobileno'];
+        $data_to_update['billing_email']=$this->users->billing_email=$request['billing_email'];
         $data_to_update['designation']=$this->users->designation=$request['designation'];
         
         if(isset($request['password']) && !empty($request['password']))

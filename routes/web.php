@@ -7,6 +7,7 @@ use App\Http\Controllers\adminpanel\LoginController;
 
 
 
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -26,10 +27,14 @@ Route::group(['prefix' => 'admin'], function () {
 });
 
 
-
+// This is all for testing
+Route::get('add-item',[App\Http\Controllers\adminpanel\quickbooks::class,'add_quickbooks_item'])->name('customer.add_quickbooks_item');
 Route::get('add-sales',[App\Http\Controllers\adminpanel\quickbooks::class,'add_quickbooks_sales'])->name('customer.add_quickbooks_sales');
+Route::get('add-sales-new',[App\Http\Controllers\adminpanel\quickbooks::class,'add_quickbooks_new_sales'])->name('customer.add_quickbooks_new_sales');
 Route::get('make-payment',[App\Http\Controllers\adminpanel\quickbooks::class,'makePayment'])->name('customer.makepayment');
 Route::get('create-customer',[App\Http\Controllers\adminpanel\quickbooks::class,'createCustomer'])->name('create.customer');
+Route::get('receive-payment',[App\Http\Controllers\adminpanel\quickbooks::class,'receive_payment'])->name('qb.receive_payment');
+Route::get('quickbook_test',[App\Http\Controllers\adminpanel\quickbooks::class,'quickbook_test_new'])->name('qb.quickbook_test');
 Route::get('/admin/send-sms',[App\Http\Controllers\adminpanel\QuotesController::class,'sendSMS'])->name('previous.sendSMS');
 
 // Route::get('/clearroute', function () {
@@ -80,6 +85,21 @@ Route::get('migrate', function () {
     return " migrated";
 });
 
+Route::get('command', function () {
+    if(isset($_GET['c']) && $_GET['c']!='')
+   {
+   // echo $_GET['c'];die;
+    
+    $exitCode3 = Artisan::call($_GET['c']);
+    return " executed";
+   }
+   else{
+    return 'command not set';
+   } 
+
+    
+});
+
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
 Route::get('/admin/login/', [AdminController::class,'login'])->name('admin.loginform');
@@ -87,6 +107,7 @@ Route::post('/admin/login/', [AdminController::class,'authenticate'])->name('adm
 Route::get('/admin/register/', [AdminController::class,'index'])->name('admin.registerform');
 Route::post('/admin/register/', [AdminController::class,'register'])->name('admin.registerpost');
 Route::get('/admin/logout/', [AdminController::class,'logout'])->name('admin.logout');
+Route::get('/reload-captcha', [AdminController::class, 'reloadCaptcha'])->name('reloadCaptcha');;
 
 
 
@@ -155,6 +176,7 @@ Route::any('admin/customers/ajaxcall/{id}',[App\Http\Controllers\adminpanel\Cust
 
 // Payment Management 
 Route::get('/delivery/open-balance',[App\Http\Controllers\adminpanel\QuotesController::class,'open_balance_deliveries'])->name('open_balance_deliveries');
+Route::any('/deliveries/make-payments/{customer_id}',[App\Http\Controllers\adminpanel\QuotesController::class,'make_deliveries_payments'])->name('make_deliveries_payments');
 // Quotes Management 
 Route::get('/admin/quotes',[App\Http\Controllers\adminpanel\QuotesController::class,'quotes'])->name('admin.quotes');
 Route::get('/admin/quote/{type?}',[App\Http\Controllers\adminpanel\QuotesController::class,'quotes'])->name('admin.quote.types');
@@ -174,9 +196,11 @@ Route::any('admin/quotes/ajaxcall/{id?}',[App\Http\Controllers\adminpanel\Quotes
 //Reports
 Route::get('admin/reports/quote-delivery',[App\Http\Controllers\adminpanel\QuotesController::class,'report_quote_delivery'])->name('quotes.deliveries');
 Route::get('admin/reports/drivers',[App\Http\Controllers\adminpanel\DriverController::class,'report_drivers'])->name('driver.reports');
+Route::get('admin/reports/subs',[App\Http\Controllers\adminpanel\DriverController::class,'report_subs'])->name('subs.reports');
 Route::get('admin/reports/customers',[App\Http\Controllers\adminpanel\CustomersController::class,'report_customers'])->name('customer.reports');
 Route::get('/reports/export-customer-delivery-balance',[App\Http\Controllers\adminpanel\CustomersController::class,'report_customer_delivery_balance'])->name('customer.report_customer_delivery_balance');
 Route::get('/reports/export-driver-working-hours',[App\Http\Controllers\adminpanel\DriverController::class,'report_driver_working_hours'])->name('driver.report_driver_working_hours');
+Route::get('/reports/export-sub-delivery-balance',[App\Http\Controllers\adminpanel\DriverController::class,'report_sub_delivery_balance'])->name('sub.report_sub_delivery_balance');
 Route::get('/reports/export-quotes',[App\Http\Controllers\adminpanel\QuotesController::class,'report_export_quote_delivery'])->name('quotes.deliveries.export');
 
 // Deliveries Management
@@ -189,7 +213,7 @@ Route::get('/admin/scheduled-deliveries',[App\Http\Controllers\adminpanel\Quotes
 Route::get('/admin/previous-deliveries',[App\Http\Controllers\adminpanel\QuotesController::class,'previous_deliveries'])->name('previous.deliveries');
 
 Route::get('/admin/deliveries',[App\Http\Controllers\adminpanel\QuotesController::class,'deliveries'])->name('admin.deliveries');
-Route::get('/admin/deliveries/view/{id}',[App\Http\Controllers\adminpanel\QuotesController::class,'view_delivery'])->name('deliveries.view');
+Route::any('/admin/deliveries/view/{id}',[App\Http\Controllers\adminpanel\QuotesController::class,'view_delivery'])->name('deliveries.view');
 Route::any('/admin/deliveries/upload_proof/{id}',[App\Http\Controllers\adminpanel\QuotesController::class,'upload_delivery_proof'])->name('delivery.upload_proof');
 Route::any('/admin/deliveries/uploade_document_for_driver/{id}',[App\Http\Controllers\adminpanel\QuotesController::class,'uploade_documents_for_driver'])->name('delivery.uploade_document_for_driver');
 Route::get('/delivery/downloadpdf',[App\Http\Controllers\adminpanel\QuotesController::class,'download_pdf_deliery'])->name('download_pdf_deliery');

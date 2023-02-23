@@ -184,9 +184,9 @@ return [
         Barryvdh\DomPDF\ServiceProvider::class,
         // This is for Excel Import and Export  
         Maatwebsite\Excel\ExcelServiceProvider::class,
-        // This is for quickbook
-        //Myleshyson\LaravelQuickBooks\QuickBooksServiceProvider::class,
-
+        // This is for Captch composer require mews/captcha
+        Mews\Captcha\CaptchaServiceProvider::class,
+       
     ],
 
     /*
@@ -203,8 +203,8 @@ return [
     'aliases' => Facade::defaultAliases()->merge([
         'PDF' => Barryvdh\DomPDF\Facade::class,
         'Excel' => Maatwebsite\Excel\Facades\Excel::class,
-        // 'ExampleClass' => App\Example\ExampleClass::class,
-        //'Batch' => Mavinoo\Batch\BatchFacade::class,
+        'Captcha' => Mews\Captcha\Facades\Captcha::class,
+        
     ])->toArray(),
 
 ];

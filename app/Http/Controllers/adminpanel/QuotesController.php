@@ -13,9 +13,11 @@ use App\Models\adminpanel\quote_products;
 use App\Models\adminpanel\product_categories;
 use App\Models\adminpanel\files;
 use App\Models\adminpanel\quote_prices;
+use App\Models\adminpanel\quickbook_credentials;
 use App\Models\adminpanel\invoices;
 use App\Models\adminpanel\pickup_dropoff_address;
 use App\Models\adminpanel\comments;
+use App\Models\adminpanel\cardknox_transactions;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Gate;
@@ -36,6 +38,34 @@ use App\Exports\ExportQuotes;
 use DB;
 use PDF;
 
+// These all for QUICKBOOKS
+use QuickBooksOnline\API\Core\ServiceContext;
+use QuickBooksOnline\API\Exception\ServiceException;
+use QuickBooksOnline\API\DataService\DataService;
+use QuickBooksOnline\API\Core\Http\Serialization\XmlObjectSerializer;
+use QuickBooksOnline\API\Facades\Customer;
+use QuickBooksOnline\API\Facades\Item;
+use QuickBooksOnline\API\Facades\SalesReceipt;
+use QuickBooksOnline\API\Facades\Invoice;
+use QuickBooksOnline\API\Facades\Line;
+//use GuzzleHttp\Client;
+use QuickBooksOnline\API\PlatformService\PlatformService;
+use QuickBooksOnline\API\Diagnostics\Logger;
+use QuickBooksOnline\API\Diagnostics\LoggerLevel;
+use QuickBooksOnline\API\Diagnostics\LoggerType;
+use Monolog\Handler\StreamHandler;
+
+use QuickBooksOnline\API\Data\IPPCustomer;
+use QuickBooksOnline\API\Data\IPPInvoice;
+use QuickBooksOnline\API\Data\IPPPayment;
+use QuickBooksOnline\API\Data\IPPLinkedTxn;
+
+// To Renew Access Token
+use QuickBooksOnline\API\Data\OAuth2\OAuth2LoginHelper;
+use QuickBooksOnline\API\Data\OAuth2\OAuth2AccessToken;
+use QuickBooksOnline\API\Core\OAuth\OAuth2\OAuth2AccessTokenEntity;
+
+
 class QuotesController extends Controller
 {
     
@@ -52,7 +82,9 @@ class QuotesController extends Controller
         $this->files= new files;
         $this->quote_prices= new quote_prices;
         $this->invoices= new invoices;
+        $this->cardknox_transactions= new cardknox_transactions;
         $this->pickup_dropoff_address= new pickup_dropoff_address;
+        $this->quickbook_credentials= new quickbook_credentials;
       }
 
       public function delete_quotes_without_po_number(){
@@ -75,25 +107,299 @@ class QuotesController extends Controller
 		
 
       }
+      public function get_po_numbers($quote_ids=[]){
+        $quotes=$this->quotes->wherein('id',$quote_ids)->get(['id','po_number','qb_invoice_no','qb_invoice_id','qb_service_id'])->toArray();
+        $invoice_id=$invoice_no=$po_numbers_arr=$quotes_data=[];
+        
+        foreach($quotes as $data){
+            $po_numbers_arr[$data['id']]=$data['po_number'];
+            $invoice_no[$data['id']]=$data['qb_invoice_no'];
+            $invoice_id[$data['id']]=$data['qb_invoice_id'];
+            
+
+            $quotes_data[$data['id']]['id']=$data['id'];
+            $quotes_data[$data['id']]['po_number']=$data['po_number'];
+            $quotes_data[$data['id']]['qb_invoice_no']=$data['qb_invoice_no'];
+            $quotes_data[$data['id']]['qb_invoice_id']=$data['qb_invoice_id'];
+            $quotes_data[$data['id']]['qb_service_id']=$data['qb_service_id'];
+        }
+
+        return ['po_number'=>$po_numbers_arr,'invoices_id_data'=>$invoice_id,'invoices_no_data'=>$invoice_no,'quote_data'=>$quotes_data];
+      }
+        public function make_deliveries_payments($customer_id,Request $req){
+            
+            $user=Auth::user();
+            $customer=$this->users->where(['id'=>$customer_id])->get()->toArray();
+            $userData=[];
+            if(isset($customer[0]))
+            $userData=$customer[0];
+            $payment_type=''; 
+
+            $quotes_data_arr=$this->get_po_numbers($req->open_balance_quote_id);
+            
+            $po_numbers_arr=$quotes_data_arr['po_number'];
+            $invoices_no_arr=$quotes_data_arr['invoices_no_data'];
+            $invoices_id_arr=$quotes_data_arr['invoices_id_data'];
+            
+            
+            $payment_type='credit_card'; 
+               
+           
+                // For Payments
+             if($req->action=='makepayment'){
+                
+                $validatorArray=[
+                    'firstname'=>'required',
+                    'lastname'=>'required',
+                    'mobileno'=>'required',
+                    'billing_email'=>'required',
+                    'business_name'=>'required',
+                    'business_phone'=>'required',
+                    'zipcode'=>'required',
+                    'business_address'=>'required',
+                    
+                ];
+                if(isset($req->payment_type)&& $req->payment_type=='ACH'){
+                    $validatorArray['account_no']='required';
+                    $validatorArray['routing']='required';
+                    $payment_type='ACH'; 
+                }
+                else{
+                    $validatorArray['cardnumber']='required';
+                    $validatorArray['expiry_month']='required';
+                    $validatorArray['expiry_year']='required';
+                    $validatorArray['cvv']='required';
+                    $payment_type='credit_card'; 
+                    
+                }
+                $validator=$req->validate($validatorArray);
+              
+
+                $xKey = env('xKEY');
+                $url = env('CARDKNOX_API_URL');
+
+
+                $card_expiry=$req->expiry_month.$req->expiry_year;
+                $customer_name=$req->firstname.' '. $req->lastname;
+                $invoice_no=$transaction_timestamp_id=time();
+                
+
+                if(isset($req->payment_type)&& $req->payment_type=='ACH'){
+                    $post_data = array(
+                        "xCommand" => "check:Sale",
+                        "xRouting" => $req->routing,//"021000021",
+                        "xAccount" => $req->account_no,
+                        "xInvoice" => $invoice_no,
+                        "xName" => $req->account_holder_name
+                        
+                    );
+
+                }
+                else{
+                    $post_data = array(
+                        "xCommand" => "cc:Sale",
+                        "xCardNum" => $req->cardnumber,
+                        "xExp" => $card_expiry,
+                        "xCVV" => $req->cvv,
+                        "xName" => $customer_name
+                    );
+
+                }
+               
+
+                $post_data["xKey"] = $xKey;
+                $post_data["xAmount"] = $req->amount;
+                $post_data["xName"] = $customer_name;
+                $post_data["xZip"] = $req->zipcode;
+                $post_data["xEmail"] = $req->billing_email;
+                $post_data["xPONum"] = implode(',',$po_numbers_arr);
+                $post_data["xDescription"] = 'INVOICES NO['.implode(',',$invoices_no_arr).']. Payment is done by '.$customer_name.' having bussiness name:'.$req->business_name.', Business Address:'.$req->business_address.' and Business Phone:'.$req->business_phone;
+                $post_data["xCustom01"] = $customer_name;
+                $post_data["xSoftwareName"] = "OodlerExpress";
+                $post_data["xSoftwareVersion"] = "0.01";
+                $post_data["xVersion"] = "5.0.0";
+
+                $post_data["xBillFirstName"] = $req->firstname;
+                $post_data["xBillLastName"] = $req->lastname;
+                $post_data["xBillCompany"] = $req->business_name;
+                $post_data["xBillStreet"] = $req->business_address;
+                $post_data["xBillZip"] = $req->zipcode;
+                $post_data["xBillPhone"] = $req->business_phone;
+                $post_data["xBillMobile"] = $req->business_phone;
+                 //p($post_data); 
+                 $output= _curl($url, $post_data);
+                 $tmp = explode("\n",$output); 
+                $result_string = $tmp[count($tmp)-1]; 
+                parse_str($result_string, $result_array); 
+                // p($post_data);
+                // p($result_array); die;
+                if($result_array['xResult']=='A' && $result_array['xStatus']=='Approved'){
+                    $req->session()->flash('alert-success', 'Transaction completed successfully !');
+                   
+                    $xcardnumber=$req->cardnumber;
+                    if(isset($req->payment_type) && $req->payment_type=='ACH'){
+                        $result_array['xCardType']='ACH';
+                        $xcardnumber=$req->account_no;
+                    }
+                    
+                    
+                    foreach($req->open_balance_quote_id as $quote_id){
+                        $invoice_no=$invoices_no_arr[$quote_id];
+                        $invoice_id=$invoices_id_arr[$quote_id];
+
+                        $to_update_quote_status=[];
+                        $to_update_quote_status['payment_status']=1;
+                        $this->quotes->where('id',$quote_id)->update($to_update_quote_status);
+                        
+                        $qb_payment_status=0;
+                        $qb_payment=$this->quickbook_payment_status($invoice_id);
+                        if($qb_payment['error']=='NO')
+                        $qb_payment_status=1;
+                        else{
+                            $req->session()->flash('alert-danger', 'Invoice No:'.$invoice_no.' '.$result_array['message']);
+                        }
+
+                        DB::table('cardknox_transactions')->insert([
+                            'xcardnum' => $xcardnumber,
+                            'xcardexp' => $card_expiry,
+                            'xcardcvv' => $req->cvv,
+                            'xcardtype' =>$result_array['xCardType'],
+                            'payee_name' =>$customer_name,
+                            'billing_email' =>$req->billing_email,
+                            'xdate' =>$result_array['xDate'],
+                            'xrefnum' =>$result_array['xRefNum'],
+                            'paid_amount' =>$req->amount,
+                            'invoice_no' =>$invoice_no,
+                            'invoice_id' =>$invoice_id,
+                            'qb_payment_status' =>$qb_payment_status,
+                            'transaction_timestamp_id' =>$transaction_timestamp_id,
+                            'quote_id' =>$quote_id,
+                            'customer_id' =>$customer_id,
+                        ]);
+
+                        $cardknox_transactions_id = DB::getPdo()->lastInsertId();
+
+                        DB::table('invoices')->insert([
+                            'invoice_no' => $invoice_no,
+                            'payee_name' => $customer_name,
+                            'payee_phone' => $req->mobileno,
+                            'description' =>$req->billing_email,
+                            'paid_amount' =>$req->amount,
+                            'tax_amount' =>$req->billing_email,
+                            'other' =>$result_array['xRefNum'],
+                            'slug' =>$cardknox_transactions_id,
+                            'quote_id' =>$quote_id,
+                            'created_by' =>$user->id,
+                        ]);
+
+                    }
+
+                    return view('adminpanel.transaction_completed',get_defined_vars());
+                }
+                else if($result_array['xResult']=='E' && $result_array['xStatus']=='Error'){
+                    $req->session()->flash('alert-danger', $result_array['xError']);
+                   
+                }
+                
+             }
+            
+            
+            
+            $amount=0;
+            if(isset($req->amount) && $req->amount>0)
+            $amount=$req->amount;
+
+          
+
+            return view('adminpanel.make_deliveries_payments',get_defined_vars()); 
+        }
+        public function quickbook_payment_status( $invoice_id){
+            $config = config('quickbooks');
+        
+            $tokenData=$this->updated_access_token();
+            $config['access_token']=$tokenData['access_token'];
+            $config['refresh_token']=$tokenData['refresh_token'];
+        
+            $dataService = DataService::Configure([
+                'auth_mode' => 'oauth2',
+                'ClientID' => $config['client_id'],
+                'ClientSecret' => $config['client_secret'],
+                'RedirectURI' => $config['redirect_uri'],
+                'accessTokenKey' => $config['access_token'],
+                'refreshTokenKey' => $config['refresh_token'],
+                'QBORealmID' => $config['realm_id'],
+                'baseUrl' => $config['base_url']
+            ]);
+
+            $invoice = $dataService->FindById('Invoice', $invoice_id);
+            
+                    // Create a new payment object
+                    $payment = new IPPPayment();
+                    $payment->PaymentType = 'Check';
+                    $payment->TotalAmt = $invoice->TotalAmt;
+                    $payment->TxnDate = date('Y-m-d');
+
+                    // Link the payment to the invoice
+                    $linkedTxn = new IPPLinkedTxn();
+                    $linkedTxn->TxnId = $invoice->Id;
+                    $linkedTxn->TxnType = 'Invoice';
+                    $linkedTxn->Amount = $invoice->TotalAmt;
+                    $payment->Line = array($linkedTxn);
+
+                    // Save the payment to QuickBooks Online
+                    $payment = $dataService->Add($payment);
+
+                    // Update the invoice to mark it as paid
+                    $invoice->Balance = 0.0;
+                    $invoice->Deposit = $invoice->TotalAmt;
+                    $invoice->PaymentStatus = 'Paid';
+                    
+                    $retData=[];
+                    try{
+                        $result = $dataService->Update($invoice);
+                        $retData['error']='NO';
+                        $retData['message']='Quickbook Payment Status updated Successfully';
+
+                    } catch (ServiceException $ex) {
+                        $retData['error']='YES';
+                        $retData['message']='QUICKBOOK:'.$ex->getMessage();
+                        //$error = $dataService->getLastError();
+                       
+                    }
+                    return $retData;
+                    
+
+        }
         public function open_balance_deliveries(Request $req){
             $user=Auth::user();
 
+            $route=$customer_id=NULL;
+            
+             if($user->group_id==config('constants.groups.customer'))
+            $customer_id =$user->id;
+            
+            
 
-            $customer_id=NULL;
             if($req->customer_id>0)
             $customer_id=$req->customer_id;
            
+            if($customer_id>0)
+            $route=route('make_deliveries_payments',$customer_id);
+
             $where_clause=[
-            ['status', '>=', config('constants.quote_status.quote_submitted')],
+            ['status', '>=', config('constants.quote_status.delivery')],
             ['is_active', '=', 1],
+            ['payment_status', '=', 0],
+            
         ];
 
             $quotesData=$this->quotes
             ->with(['quote_agreed_cost','invoices','customer','driver','sub'])
             ->where('customer_id', $customer_id)
             ->where($where_clause)
+             //->orderBy('created_at', 'desc')->toSql();die;
             ->orderBy('created_at', 'desc')->paginate(config('constants.per_page'));
-            //->orderBy('created_at', 'desc')->get()->toArray();p($quotesData); die;
+            //->orderBy('created_at', 'desc')->get()->toArray();echo count($quotesData); p($quotesData);  die;
 
             return view('adminpanel.open_balance_deliveries',get_defined_vars()); 
         }
@@ -524,16 +830,20 @@ class QuotesController extends Controller
 // share data to view
 if(!empty($delivery['invoices']))
 $invoice_no=$delivery['invoices'][0]['invoice_no'];
-else
-$invoice_no=date('dmy',time()).'-'.$id;
-$pdf_blade_path='adminpanel/pdf';
-$pdf_blade_path='adminpanel/invoice_pdf';
+else{
+    
+    $invoice_no=date('dmy',time()).'-'.$id;
+    $invoice_no=generateInvoiceNumber();//date('dmy',time()).'-'.$id;
+}
+
+        $pdf_blade_path='adminpanel/pdf';
+        $pdf_blade_path='adminpanel/invoice_pdf';
         $fileName='customer-'.$invoice_no.'-'.date(config('constants.date_formate'),time());
         view()->share($pdf_blade_path,get_defined_vars());
         
         $PDFOptions = ['defaultFont' => 'sans-serif'];
 
-        return view($pdf_blade_path,get_defined_vars());
+        //return view($pdf_blade_path,get_defined_vars());
 
         $pdf = PDF::loadView($pdf_blade_path, get_defined_vars())->setOptions($PDFOptions);
         $pdf->getDomPDF()->setHttpContext(
@@ -816,7 +1126,7 @@ $pdf_blade_path='adminpanel/invoice_pdf';
        ->orderBy('created_at', 'desc')->get()->toArray();
        $quotesData=$quotesData[0];
       
-        return view('adminpanel/add_to_delivery',get_defined_vars());
+        return view('adminpanel.add_to_delivery',get_defined_vars());
     }
     public function save_add_to_delivery($id,Request $request){
        
@@ -1033,7 +1343,7 @@ $pdf_blade_path='adminpanel/invoice_pdf';
        $this->pickup_dropoff_address->where('quote_id',$id)->delete();
 
        
-
+        if(isset($request['product_details1']))
        foreach($request['product_details1'] as $key=>$productData){
             
         if(isset($productData['product_name']) && count($productData['product_name'])>0){
@@ -1088,7 +1398,7 @@ $pdf_blade_path='adminpanel/invoice_pdf';
     }
 
     // If New Pick Up address is added 2
-    if(isset($request['pickup_date2']) && ($request['pickup_date2'])!='')
+    if(isset($request['pickup_date2']) && ($request['pickup_date2'])!='' && $request['product_details2'])
     foreach($request['product_details2'] as $key=>$productData){
             
         if(isset($productData['product_name']) && count($productData['product_name'])>0){
@@ -1142,7 +1452,7 @@ $pdf_blade_path='adminpanel/invoice_pdf';
     }
 
     // If New Pick Up address is added 3
-    if(isset($request['pickup_date3']) && ($request['pickup_date3'])!='')
+    if(isset($request['pickup_date3']) && ($request['pickup_date3'])!='' && $request['product_details3'])
     foreach($request['product_details3'] as $key=>$productData){
             
         if(isset($productData['product_name']) && count($productData['product_name'])>0){
@@ -1316,7 +1626,7 @@ $pdf_blade_path='adminpanel/invoice_pdf';
        $this->pickup_dropoff_address->where('quote_id',$id)->delete();
 
        
-
+        if(isset($request['product_details1']))
        foreach($request['product_details1'] as $key=>$productData){
             
         if(isset($productData['product_name']) && count($productData['product_name'])>0){
@@ -1515,7 +1825,7 @@ $pdf_blade_path='adminpanel/invoice_pdf';
         
        }
        
-        return view('adminpanel/add_new_delivery',get_defined_vars());
+        return view('adminpanel.add_new_delivery',get_defined_vars());
     }
     public function save_new_delivery_data($customer_id,Request $request){
        
@@ -1601,7 +1911,7 @@ $pdf_blade_path='adminpanel/invoice_pdf';
                 ]);
 
        }
-
+       if(isset($request['product_details1']))
        foreach($request['product_details1'] as $key=>$productData){
             
         if(isset($productData['product_name']) && count($productData['product_name'])>0){
@@ -1790,6 +2100,19 @@ $pdf_blade_path='adminpanel/invoice_pdf';
         $dataArray['emailMsg']='Email Sent Successfully';
     }
 
+    }elseif(isset($request['assign_to']) && $request['assign_to']==1){
+        $driverData=$this->users->where(['id'=>$request['driver_id']])->get(['name','business_email','email'])->first();
+
+        $assign_to='Driver';
+        $mailData['body_message']='You are assigned a new delivery, having PO Number:'.$request['po_number'].'. Please login to the CRM and look for details';
+        $mailData['subject']='New Delivery Assigned';
+        $emailAdd=[
+                    //config('constants.admin_email'),
+                    $driverData->email,
+                ];
+                if(Mail::to($emailAdd)->send(new EmailTemplate($mailData))){
+                    $dataArray['emailMsg']='Email Sent Successfully';
+                }
     }
         
         $mailData['body_message']='you have received a new request for a quote from customer '.quote_data_for_mail($this->quotes->id);
@@ -1842,7 +2165,7 @@ $pdf_blade_path='adminpanel/invoice_pdf';
         
        }
   
-        return view('adminpanel/request_quote',get_defined_vars());
+        return view('adminpanel.request_quote',get_defined_vars());
     }
     public function save_quote_data(Request $request){
        
@@ -1898,7 +2221,7 @@ $pdf_blade_path='adminpanel/invoice_pdf';
        $this->quotes->save();
        
 
-
+        if(isset($request['product_details1']))
        foreach($request['product_details1'] as $key=>$productData){
             
         if(isset($productData['product_name']) && count($productData['product_name'])>0){
@@ -2102,7 +2425,7 @@ $pdf_blade_path='adminpanel/invoice_pdf';
        ->orderBy('created_at', 'desc')->get()->toArray();
        $quotesData=$quotesData[0];
        //p($quotesData);die;
-        return view('adminpanel/send_quote',get_defined_vars());
+        return view('adminpanel.send_quote',get_defined_vars());
     }
 
     public function send_quote_data($id,Request $request){
@@ -2323,7 +2646,7 @@ $pdf_blade_path='adminpanel/invoice_pdf';
         $user=Auth::user();
             $image = $request->file('file');
             $imageExt=$image->extension();
-            $imageName = time().'.'.$imageExt;
+            $imageName = time().rand(100,10000).'.'.$imageExt;
 
      
              //$uploadingPath=public_path('uploads');
@@ -2486,6 +2809,174 @@ $pdf_blade_path='adminpanel/invoice_pdf';
             exit;
 
         }
+        public function add_quickbooks_item($itemdata=[]){
+            $config = config('quickbooks');
+        
+            $tokenData=$this->updated_access_token();
+            $config['access_token']=$tokenData['access_token'];
+            $config['refresh_token']=$tokenData['refresh_token'];
+        
+            $dataService = DataService::Configure([
+                'auth_mode' => 'oauth2',
+                'ClientID' => $config['client_id'],
+                'ClientSecret' => $config['client_secret'],
+                'RedirectURI' => $config['redirect_uri'],
+                'accessTokenKey' => $config['access_token'],
+                'refreshTokenKey' => $config['refresh_token'],
+                'QBORealmID' => $config['realm_id'],
+                'baseUrl' => $config['base_url']
+            ]);
+            // Create the product or service item
+            $product = Item::create([
+                "Name" =>$itemdata['name'],// "PO-NUmber",
+                "Description" => $itemdata['description'],//"An example product for demonstration purposes",
+                "UnitPrice" => $itemdata['unit_price'],//9.99,
+                "Type" => "Service",
+                "IncomeAccountRef" => [
+                    "value" => "91"
+                ]
+            ]);
+    
+            // Add the item to QuickBooks
+            $resultingItemObj = $dataService->Add($product);
+    
+            $error = $dataService->getLastError();
+                        if ($error) {
+                            return false;
+                            p($error);
+                            echo "The Status code is: " . $error->getHttpStatusCode() . "<br>";
+                            echo "The Helper message is: " . $error->getOAuthHelperError() . "<br>";
+                            echo "The Response message is: " . $error->getResponseBody() . "<br>";
+                        }
+                        else {
+                            return $resultingItemObj->Id;
+                            echo "Created Service Id={$resultingItemObj->Id}. Reconstructed response body:<br>";
+                            $xmlBody = XmlObjectSerializer::getPostXmlFromArbitraryEntity($resultingItemObj, $urlResource);
+                            echo $xmlBody . "<br>";
+                        }
+    
+        } 
+        // Update QUICKBOOK ACCESS TOKEN
+    public function updated_access_token(){
+
+        $config = config('quickbooks');
+        
+        $qb_credentials=$this->quickbook_credentials->where('id',1)->get()->first();
+
+        $retData=$to_update_data=[];
+
+        if($qb_credentials->status==1){
+            $to_update_data['client_id']=$config['client_id']=$qb_credentials->client_id;
+            $to_update_data['client_secret']=$config['client_secret']=$qb_credentials->client_secret;
+            $to_update_data['redirect_uri']=$config['redirect_uri']=$qb_credentials->redirect_uri;
+            $to_update_data['access_token']=$config['access_token']=$qb_credentials->access_token;
+            $to_update_data['refresh_token']=$config['refresh_token']=$qb_credentials->refresh_token;
+            $to_update_data['realm_id']=$config['realm_id']=$qb_credentials->realm_id;
+            $to_update_data['base_url']=$config['base_url']=$qb_credentials->base_url;
+        }
+        
+        $dataService = DataService::Configure([
+            'auth_mode' => 'oauth2',
+            'ClientID' => $config['client_id'],
+            'ClientSecret' => $config['client_secret'],
+            'RedirectURI' => $config['redirect_uri'],
+            'accessTokenKey' => $config['access_token'],
+            'refreshTokenKey' => $config['refresh_token'],
+            'QBORealmID' => $config['realm_id'],
+            'baseUrl' => $config['base_url'],
+            'token_refresh_interval_before_expiry' => $config['token_refresh_interval_before_expiry']
+        ]);
+                   
+            $OAuth2LoginHelper = $dataService->getOAuth2LoginHelper();
+            $accessTokenObj = $OAuth2LoginHelper->
+            refreshAccessTokenWithRefreshToken($config['refresh_token']);
+            $accessTokenValue = $accessTokenObj->getAccessToken();
+            $refreshTokenValue = $accessTokenObj->getRefreshToken();
+
+            $to_update_data['client_id']=$qb_credentials->client_id;
+            $to_update_data['client_secret']=$qb_credentials->client_secret;
+            $to_update_data['redirect_uri']=$qb_credentials->redirect_uri;
+            $to_update_data['access_token']=$accessTokenValue;
+            $to_update_data['refresh_token']=$refreshTokenValue;
+            $to_update_data['realm_id']=$qb_credentials->realm_id;
+            $to_update_data['base_url']=$qb_credentials->base_url;
+            $to_update_data['updating_time']=time();
+            $to_update_data['status']=1;
+            $this->quickbook_credentials->where('id',1)->update($to_update_data);
+
+         $retData['access_token']=$accessTokenValue;
+         $retData['refresh_token']=$refreshTokenValue;
+
+         return $retData;
+
+    } 
+        public function add_quickbooks_sales($invoice_data=[]){
+            // Connect to QuickBooks
+            $config = config('quickbooks');
+
+            $tokenData=$this->updated_access_token();
+            $config['access_token']=$tokenData['access_token'];
+            $config['refresh_token']=$tokenData['refresh_token'];
+            
+            $dataService = DataService::Configure([
+                'auth_mode' => 'oauth2',
+                'ClientID' => $config['client_id'],
+                'ClientSecret' => $config['client_secret'],
+                'RedirectURI' => $config['redirect_uri'],
+                'accessTokenKey' => $config['access_token'],
+                'refreshTokenKey' => $config['refresh_token'],
+                'QBORealmID' => $config['realm_id'],
+                'baseUrl' => $config['base_url']
+            ]);
+        
+                       
+                $invoice = Invoice::create([
+                    "Line" => [
+                        [
+                            "Amount" => $invoice_data['amount'],//100.00,
+                            "Description" => 'Delivery PO#:'.$invoice_data['po_number'],
+                            "DetailType" => "SalesItemLineDetail",
+                            "SalesItemLineDetail" => [
+                                "ItemRef" => [
+                                    "value" => 11,//$invoice_data['qb_service_id'],//1
+                                    "name" =>"Services",// $invoice_data['po_number']//"Services"
+                                ],
+                                "UnitPrice" => $invoice_data['amount'],
+                                "Qty" => 1
+                            ]
+                        ]
+                    ],
+                    "CustomerRef" => [
+                        "value" => $invoice_data['qb_customer_id']
+                    ],
+                    "PrivateNote" => 'Delivery PO#:'.$invoice_data['po_number'],
+                    "TxnDate" => date('Y-m-d')//"2023-02-06"
+                ]);
+                $invoice->DocNumber =generateInvoiceNumber() ;
+                //$invoice->DueDate ="2023-02-27";
+
+                $retData=[];
+                $retData['error']='NO';
+
+                try{
+                    $resultingInvoiceObj = $dataService->Add($invoice);
+                    $retData['qb_invoice_id']=$resultingInvoiceObj->Id;
+                    $retData['qb_invoice_no']=$resultingInvoiceObj->DocNumber;
+                    $retData['message']='QUICKBOOK: Added Successfully !';
+                }
+                catch (ServiceException $ex) {
+                    $retData['qb_invoice_id']=0;
+                    $retData['qb_invoice_no']=0;
+                    $retData['error']='YES';
+                    
+                    $retData['message']='QUICKBOOK:'.$ex->getMessage();
+                    //$error = $dataService->getLastError();
+                   
+                }
+                
+                return $retData;
+
+        }      
     public function customer_action($quote_id,$action){
         
         $action=base64_decode($action);
@@ -2506,7 +2997,7 @@ $pdf_blade_path='adminpanel/invoice_pdf';
         }
         
 
-        $quoteData=$this->quotes->with('customer')
+        $quoteData=$this->quotes->with(['customer','quote_agreed_cost'])
             ->where('id',$quote_id)
             ->get()
             ->toArray();
@@ -2514,7 +3005,24 @@ $pdf_blade_path='adminpanel/invoice_pdf';
         
             
             $updated=$this->quotes->where('id',$quote_id)->where('status',config('constants.quote_status.quote_submitted'))->update(array('status'=>$status));
-          
+            
+            // This section is to add product in quickBook
+            $quote_price=(isset($quoteData['quote_agreed_cost']['quoted_price']) && $quoteData['quote_agreed_cost']['quoted_price']>0)?$quoteData['quote_agreed_cost']['quoted_price']:0;
+            $extra_charge=(isset($quoteData['quote_agreed_cost']['extra_charges']) && $quoteData['quote_agreed_cost']['extra_charges']>0)?$quoteData['quote_agreed_cost']['extra_charges']:0;
+            $agreed_amount=$quote_price+$extra_charge;
+
+            $item_data['name']=$quoteData['po_number'];
+            $item_data['description']='Customer: '.$quoteData['customer']['name'].', PICK-UP:'.$quoteData['pickup_street_address'].', DROP-OFF:'.$quoteData['drop_off_street_address'];
+            $item_data['unit_price']=$agreed_amount;
+            
+            // $qb_service_id=$this->add_quickbooks_item($item_data);
+            // if($qb_service_id>0){
+            //     $qb_service_added=$this->quotes->where('id',$quote_id)->update(['qb_service_id'=>$qb_service_id]);
+            // }
+            // else{
+            //     echo '<br><h4>There is some error to add this quote in quickbook service!</h4><br>';
+            // }
+
             $activityData=array(
                 'user_id'=>$quoteData['customer']['id'],
                 'action_taken_on_id'=>$quote_id,
@@ -2969,7 +3477,7 @@ $pdf_blade_path='adminpanel/invoice_pdf';
             $quoteData=$quoteData[0];
             $receiverNumber = "+923007731712";
 
-            if(isset($req['key']) && $req['key']=='reached_at_pickup'){
+            if(isset($req['key']) && $req['key']=='reached_at_pickup'){// For now this section is not working
                 $to_update_data['reached_at_pickup']=$current_time;
                 $to_update_data['arrived_at_pickup']=$selected_time;
                 
@@ -3000,19 +3508,21 @@ $pdf_blade_path='adminpanel/invoice_pdf';
 
                 $result=$this->quotes->where('id','=',$id)->update($to_update_data); 
                
-                $message='Hello, This message is to inform you that a delivery from '.$quoteData['customer']['name'].' just got picked up and is on the way to it\'s delivery location. 
-                Carrier Name: Oodler Express
-                the drivers estimated time of arrival is '.$selected_time.'. For any questions you can contact us at 845-325-4892';
+                $message='Hello, This message is to inform you that a delivery from '.$quoteData['customer']['business_name'].' just got picked up and is on the way to it\'s delivery location.
+                 Carrier Name: Oodler Express
+                the drivers estimated time of arrival is '.$selected_time.'.
+                ** PLEASE MAKE SURE THAT OUR DRIVER HAS ACCESS TO THE DELIVERY SITE!
+                For any questions you can contact us at 845-325-4892';
                  
                  if(isset($quoteData['drop_off_contact_number']) && !empty($quoteData['drop_off_contact_number']))
                  $receiverNumber=$quoteData['drop_off_contact_number'];
-                 //$receiverNumber = "+923007731712";
+                 //$receiverNumber = "+9203007731712";
                 if(!$this->sendSMS($receiverNumber,$message))
                 $dataArray['title']='There is some issue in sending SMS to Drop Off Contact Number';
                  
                 if(isset($quoteData['pickup_contact_number']) && !empty($quoteData['pickup_contact_number']))
                  $receiverNumber=$quoteData['pickup_contact_number'];
-                 //$receiverNumber = "+923007731712";
+                 //$receiverNumber = "+9203007731712";
                 if(!$this->sendSMS($receiverNumber,$message))
                 $dataArray['title']='There is some issue in sending SMS to Pick up Contact Number';
 
@@ -3038,7 +3548,7 @@ $pdf_blade_path='adminpanel/invoice_pdf';
 
             $dataArray['title']='Driver Activity';
             
-            $quoteData=$this->quotes->where('id',$id)->with(array('customer','driver'))->get()->toArray();
+            $quoteData=$this->quotes->where('id',$id)->with(['customer','driver','quote_agreed_cost'])->get()->toArray();
             $quoteData=$quoteData[0];
 
             $current_time=time();
@@ -3070,14 +3580,14 @@ $pdf_blade_path='adminpanel/invoice_pdf';
                 if(isset($quoteData['pickup_contact_number']) && !empty($quoteData['pickup_contact_number']))
                 $receiverNumber=$quoteData['pickup_contact_number'];
                 
-                $receiverNumber = "+923007731712";
+                //$receiverNumber = "+923007731712";
                if(!$this->sendSMS($receiverNumber,$pick_up_contact_message))
                $dataArray['title']='There is some issue in sending SMS to Pick Up Contact Number';
            
               if(isset($quoteData['drop_off_contact_number']) && !empty($quoteData['drop_off_contact_number']))
               $receiverNumber=$quoteData['drop_off_contact_number'];
               
-              $receiverNumber = "+923007731712";
+              //$receiverNumber = "+923007731712";
               if(!$this->sendSMS($receiverNumber,$drop_off_contact_message))
               $dataArray['title']='There is some issue in sending SMS to Drop Off Contact Number';
 
@@ -3133,16 +3643,11 @@ $pdf_blade_path='adminpanel/invoice_pdf';
                     echo json_encode($dataArray); exit;
                 }
                 else{
-                    $driverName='Driver';
-                    if(isset($quoteData['driver']['name']))
-                    $driverName='Mr.'.$quoteData['driver']['name'];
 
                     $result=$this->quotes->where('id','=',$id)->update(array('delivered'=>$current_time,'status'=>config('constants.quote_status.complete')));             
-                    $mailData['subject']=$driverName.' delivered the delivery having PO#:'.$quoteData['po_number'];  
-                    $mailData['body_message']=$driverName.' delivered the delivery at address <strong>'.$quoteData['drop_off_street_address'].'</strong> having PO Number'.$quoteData['po_number'].' on '.date(config('constants.date_and_time'),$current_time);  
+                    $mailData['subject']='Oodler Express delivered the delivery having PO#:'.$quoteData['po_number'];  
+                    $mailData['body_message']='Oodler Express delivered the delivery at address <strong>'.$quoteData['drop_off_street_address'].'</strong> having PO Number'.$quoteData['po_number'].' on '.date(config('constants.date_and_time'),$current_time);  
                     
-                 
-
                     $uploadingPath=base_path().'/public/uploads';
                     if(base_path()!='/Users/waximarshad/office.oodlerexpress.com')
                     $uploadingPath=base_path().'/public_html/uploads';
@@ -3163,6 +3668,41 @@ $pdf_blade_path='adminpanel/invoice_pdf';
                         $message->attach($file);
                         }            
                         });
+
+
+                        // This section is to add product in quickBook
+                        $quote_price=(isset($quoteData['quote_agreed_cost']['quoted_price']) && $quoteData['quote_agreed_cost']['quoted_price']>0)?$quoteData['quote_agreed_cost']['quoted_price']:0;
+                        $extra_charge=(isset($quoteData['quote_agreed_cost']['extra_charges']) && $quoteData['quote_agreed_cost']['extra_charges']>0)?$quoteData['quote_agreed_cost']['extra_charges']:0;
+                        $agreed_amount=$quote_price+$extra_charge;
+
+                        $item_data['name']=$quoteData['po_number'];
+                        $item_data['description']='Customer: '.$quoteData['customer']['name'].', PICK-UP:'.$quoteData['pickup_street_address'].', DROP-OFF:'.$quoteData['drop_off_street_address'];
+                        $item_data['unit_price']=$agreed_amount;
+                        
+                        //$qb_service_id=$this->add_quickbooks_item($item_data);
+                        $qb_service_id=1;
+                        if($qb_service_id>0){
+                            $qb_service_added=$this->quotes->where('id',$id)->update(['qb_service_id'=>$qb_service_id]);
+                            
+                            $invoice_data['amount']=$agreed_amount;
+                            $invoice_data['qb_service_id']=$qb_service_id;
+                            $invoice_data['po_number']=$quoteData['po_number'];
+                            $invoice_data['qb_customer_id']=$quoteData['customer']['quickbooks_customer_id'];
+                            
+                            $invoiceData=$this->add_quickbooks_sales($invoice_data);
+                            if(isset($invoiceData) && $invoiceData['qb_invoice_id']>0 && $invoiceData['qb_invoice_no']>1){
+                                $update_quote_rec=[];
+                                $update_quote_rec['qb_invoice_id']=$invoiceData['qb_invoice_id'];
+                                $update_quote_rec['qb_invoice_no']=$invoiceData['qb_invoice_no'];
+                                $result=$this->quotes->where('id','=',$id)->update($update_quote_rec);
+                            }else{
+                                $dataArray['qb_error']=$invoiceData['message']; 
+                            }
+                            
+                        }
+                        else{
+                            $dataArray['qb_error']='There is some error to add this quote in quickbook service!';
+                        }
 
                         $dataArray['error']='No'; 
                         echo json_encode($dataArray); exit;
@@ -3639,6 +4179,57 @@ $pdf_blade_path='adminpanel/invoice_pdf';
                 'action_taken_on_id'=>$id,
                 'action_slug'=>'quote_driver_changed',
                 'comments'=>'Mr.'.get_session_value('name').' changed the driver',
+                'others'=>'quotes',
+                'created_at'=>date('Y-m-d H:I:s',time()),
+            ));
+            }
+            
+            else{
+                $dataArray['error']='Yes';
+                $dataArray['msg']='There is some error ! Please fill all the required fields.';
+            }
+        }
+        elseif(isset($req['action']) && $req['action']=='remove_quote_driver'){ 
+            
+            $driverData=$this->quotes->where('id','=',$id)->get('driver_id')->first();
+            $to_update_data['driver_id']=NULL;//$req['data']['driver_id'];
+            
+            $dataArray['title']='Driver Removed';
+            $result=$this->quotes->where('id','=',$id)->update($to_update_data);             
+            if($result){
+                    $dataArray['reload']='yes';
+                    // Email Section
+                    $driver_id=$driverData->driver_id;
+                    $driverData=$this->users->where('id',$driver_id)->get('email')->toArray();
+                    $driverData=$driverData[0];
+            
+                        
+                    $quoteData=$this->quotes->where('id',$id)->get('po_number')->toArray();
+                    $quoteData=$quoteData[0];
+        
+        
+                    $mailData['body_message']='You are cancelled from the delivery, having PO Number:'.$quoteData['po_number'].'. Please login to the CRM and look for details';
+                    $mailData['subject']='Assigned Delivery Cancelled for driver';
+        
+                    $emailAdd=[
+                                config('constants.admin_email'),
+                                $driverData['email'],
+                                
+                            ];
+                        
+                        
+        
+                    if(Mail::to($emailAdd)->send(new EmailTemplate($mailData))){
+                        $dataArray['emailMsg']='Email Sent Successfully';
+                    }
+
+                $dataArray['msg']='Mr.'.get_session_value('name').', Driver Removed successfully!';
+                // Activity Logged
+             $activityID=log_activity(array(
+                'user_id'=>get_session_value('id'),
+                'action_taken_on_id'=>$id,
+                'action_slug'=>'quote_driver_removed',
+                'comments'=>'Mr.'.get_session_value('name').' removed the driver of quote having PO Number:'.$quoteData['po_number'],
                 'others'=>'quotes',
                 'created_at'=>date('Y-m-d H:I:s',time()),
             ));

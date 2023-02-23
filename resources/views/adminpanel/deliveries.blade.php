@@ -197,9 +197,9 @@
                                             </td> --}}
                                             <td>
                                                 @php
-                                                    if($data['driver_id']>0){
+                                                    if(isset($data['driver_id']) && $data['driver_id']>0){
                                                         echo 'Driver :'.$data['driver']['name'];
-                                                    }else{
+                                                    }else if(isset($data['sub']) && !empty($data['sub'])){
                                                         echo 'Sub :'.$data['sub']['business_name'] .'<br> Status:'.sub_status_msg($data['sub_status']);
                                                     }
                                                 @endphp

@@ -24,6 +24,48 @@ if(!function_exists('sub_status_msg')){
         return $msg;
     }
 }
+if(!function_exists('days_option')){
+    function days_option($selected_day=''){
+        $options='';
+        for($i=1;$i<32; $i++){
+            $selected='';
+            if($selected_day==$i){
+                $selected='selected';
+            }
+            $options .='<option '.$selected.' value="'.$i.'">'.$i.'</option>';
+        }
+     return $options; 
+    }
+}
+if(!function_exists('months_option')){
+    function months_option($selected_day=''){
+        $options='';
+        for($i=1;$i<13; $i++){
+            $selected='';
+            if($selected_day==$i){
+                $selected='selected';
+            }
+            $options .='<option '.$selected.' value="'.$i.'">'.$i.'</option>';
+        }
+     return $options; 
+    }
+}
+if(!function_exists('years_option')){
+    function years_option($selected_day=''){
+        $options='';
+        $years=date('y', time());
+        $endyear=$years+50;
+
+        for($i=$years;$i<$endyear; $i++){
+            $selected='';
+            if($selected_day==$i){
+                $selected='selected';
+            }
+            $options .='<option '.$selected.' value="'.$i.'">'.$i.'</option>';
+        }
+     return $options; 
+    }
+}
 
 if(!function_exists('quote_status_msg')){
     function quote_status_msg($status){
@@ -114,6 +156,24 @@ if(!function_exists('getAllGroups')){
         return $userGroups->toArray();
         
         return array();
+    }
+}
+if(!function_exists('generateInvoiceNumber')){
+    function generateInvoiceNumber(){
+        
+        $quotes = App\Models\adminpanel\quotes::orderBy('id', 'desc')->get()->first();
+       // p($quotes);
+         $today=date('mdy');
+        if($quotes->id>0){
+            $quotes_id=$quotes->id;
+            //$quotes_id=$quotes_id+1;
+           return $invoice_number = sprintf('%07d', $quotes_id);
+           //return $invoice_no=$today.$invoices_id;
+        }
+        
+        return $invoice_number = sprintf('%07d', 1);
+        return $invoice_no=$today.'1';
+        
     }
 }
 
@@ -390,6 +450,9 @@ if(!function_exists('getProductCatOptions')){
          $selectIDs=json_decode($selectIDs,true);
          if(is_null($selectIDs) || $selectIDs=='')
          $selectIDs=array();
+
+         $options .='<option  value="0">None</option>';
+
         foreach($categoryData as $key=>$data){
             $selected='';
             if(in_array($data['id'],$selectIDs))
@@ -404,6 +467,7 @@ if(!function_exists('getProductCatOptions')){
 if(!function_exists('cat_name_by_ids')){
     function cat_name_by_ids($cat_ids=array()){
         $categoryData = App\Models\adminpanel\product_categories::where('is_active',1)->wherein('id',$cat_ids)->orderBy('id', 'asc')->get('name')->toArray();
+        $retData=[];
         foreach($categoryData as $cat){
             $retData[]=$cat['name'];
         }
@@ -836,7 +900,7 @@ if(!function_exists('quote_data_for_mail')){
         $pickup_dropoff_address=array();
 
       if(!empty($quotesData['quote_prices']) && $user_role=='any'){
-        $quote_price='<tr><th colspan="2">Quoted Price</th></tr>
+        $quote_price='<tr><th colspan="2">Delivery Price</th></tr>
         <tr><td colspan="2"><table width="100%" border="1">
         <tr>
             <td>Price</td>
@@ -893,6 +957,28 @@ $bodymsg='<table width="100%" border=1>
        <tr><td colspan="2">
            <table border="1" width="100%">
                <tbody>';
+               if (isset($quotesData['quote_products']) && empty($quotesData['quote_products'])){ // if no product added then show only the pickup dropoff address
+                $bodymsg .=' <tr>
+                        <td colspan="2">
+                            <strong>Pick Up Detail </strong> <br>
+                            Date : '.$quotesData['pickup_date'].'<br>
+                            Street Address
+                            :'.$quotesData['pickup_street_address'].'<br>
+                            Unit :'.$quotesData['pickup_unit'].'<br>
+                            Contact No. :'.$quotesData['pickup_contact_number'].'<br>
+                        </td>
+                        <td colspan="2">
+                            <strong>Drop-Off Detail </strong> <br>
+                            Date :'.$quotesData['drop_off_date'].'<br>
+                            Street Address
+                            :'.$quotesData['drop_off_street_address'].'<br>
+                            Unit :'.$quotesData['drop_off_unit'].'<br>
+                            Contact No.
+                            :'.$quotesData['drop_off_contact_number'].'<br>
+                        </td>
+                        
+                    </tr> ';
+               }
                    foreach ($quotesData['quote_products'] as $quote_product){
                     
                     if (!in_array($quote_product['pickup_dropoff_order_number'],$pickup_dropoff_address)){
@@ -941,8 +1027,10 @@ $bodymsg='<table width="100%" border=1>
             $bodymsg .='</tbody>
            </table>    
        </td></tr>
-       '.$quote_price.'
-       <tr><th colspan="2">Customer Information</th></tr>
+       '.$quote_price;
+
+       if($user_role!==config('constants.groups.sub')){ // If it is sub then Customer info will not be listed
+       $bodymsg .='<tr><th colspan="2">Customer Information</th></tr>
        <tr><td colspan="2">
            <table width="100%" border="1">
                
@@ -994,14 +1082,35 @@ $bodymsg='<table width="100%" border=1>
                        </tr>
 
                    </tbody>
-               
-
            </table>    
-       </td></tr>
-      </table>';
+       </td></tr>';
+        }
+
+      $bodymsg .='</table>';
 
       return $bodymsg;
     }
 }
+if(!function_exists('_curl')){
+    function _curl($api_url='', $postData=array()){
+        
 
+        $ch = curl_init();
+        curl_setopt ($ch, CURLOPT_URL, $api_url);
+        curl_setopt ($ch, CURLOPT_CONNECTTIMEOUT, 5);
+        curl_setopt ($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($postData));
+        $result = curl_exec($ch);
+        if (curl_errno($ch)) {
+            $result="curlError=Y&xCurlMsg=".curl_error($ch);
+        } else {
+        curl_close($ch);
+        }
+        if (!is_string($result) || !strlen($result)) {
+        //echo "Failed to get result.";
+        $result="curlError=Y&xCurlMsg=Failed to get result.";
+        }
+        return $result;
+    }
+}
 ?>

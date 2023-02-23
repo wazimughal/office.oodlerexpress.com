@@ -12,12 +12,12 @@
                     <div class="col-sm-6">
                         <h1>Edit Delivery </h1>
                     </div>
-                    <div class="col-sm-6">
+                    {{-- <div class="col-sm-6">
                         <ol class="breadcrumb float-sm-right">
                             <li class="breadcrumb-item"><a href="#">Home</a></li>
                             <li class="breadcrumb-item active">Edit Delivery </li>
                         </ol>
-                    </div>
+                    </div> --}}
                 </div>
             </div><!-- /.container-fluid -->
         </section>
@@ -122,9 +122,9 @@
                                                         {{ $message }}
                                                     </div>
                                                 @enderror
-                                                <span style="margin-top: 15px;" for="PO"> <strong>NOTE<sup>*</sup>
+                                                {{-- <span style="margin-top: 15px;" for="PO"> <strong>NOTE<sup>*</sup>
                                                         :</strong> If you have multiple pickup addresses and delivery
-                                                    addresses, please submit them as separate POs.</span>
+                                                    addresses, please submit them as separate POs.</span> --}}
                                             </div>
                                         </div>
                                         <div class="col-3">&nbsp;</div>

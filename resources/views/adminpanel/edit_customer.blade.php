@@ -154,6 +154,24 @@
                                     <div class="row form-group">
                                         <div class="offset-md-1">&nbsp;</div>
                                         <div class="col-md-5">
+                                            <span>Billing Email Address</span>
+                                            <div class="input-group mb-3">
+                                                <input type="text" name="billing_email"
+                                                    class="form-control @error('billing_email') is-invalid @enderror"
+                                                    placeholder="Billing Email Address" value="{{ $userData['billing_email'] }}">
+                                                <div class="input-group-append">
+                                                    <div class="input-group-text">
+                                                        <span class="fas fa-address-card"></span>
+                                                    </div>
+                                                </div>
+                                                @error('billing_email')
+                                                    <div class="invalid-feedback">
+                                                        {{ $message }}
+                                                    </div>
+                                                @enderror
+                                            </div>
+                                        </div>
+                                        <div class="col-md-5">
                                             <span>Cell No.</span>
                                             <div class="input-group mb-3">
                                                 <input type="text" name="mobileno"
@@ -171,6 +189,10 @@
                                                 @enderror
                                             </div>
                                         </div>
+                                        
+                                    </div>
+                                    <div class="row form-group">
+                                        <div class="offset-md-1">&nbsp;</div>
                                         <div class="col-md-5">
                                             <span>Position in Business</span>
                                             <div class="input-group mb-3">
@@ -189,9 +211,7 @@
                                                 @enderror
                                             </div>
                                         </div>
-                                        
                                     </div>
-
                                     {{-- Business Information --}}
                                     <div class="row form-group">
                                         <div class="offset-md-1">&nbsp;</div>

@@ -38,7 +38,7 @@
                                         <!-- flash-message -->
                                         <div class="flash-message">
                                             @if($errors->any())
-                                                {{ implode('', $errors->all('<div>:message</div>')) }}
+                                                {!! implode('', $errors->all('<div style="padding:5px" class="alert-danger mb-3">:message</div>')) !!}
                                             @endif
 
                                             @foreach (['danger', 'warning', 'success', 'info'] as $msg)
@@ -52,7 +52,7 @@
                                     </div>
                                     <div class="col-3">&nbsp;</div>
                                 </div>
-                                <form method="POST" action="{{ route('delivery.save_delivery_data',$customer_id) }}">
+                                <form method="POST" id="add_delivery_form" action="{{ route('delivery.save_delivery_data',$customer_id) }}">
                                     @csrf
                                     <input type="hidden" name="quote_type" value="single" id="quote_type">
 
@@ -148,33 +148,7 @@
                                         </div>
                                         
                                     </div>
-                                    {{-- <div class="row form-group">
-                                        <div class="offset-md-1">&nbsp;</div>
-                                        <div class="col-md-5">
-                                            <div class="input-group mb-3">
-                                                <input required value="{{ old('pickup_city1') }}" placeholder="City Name"  type="text" name="pickup_city1"
-                                                    class=" form-control @error('pickup_city1') is-invalid @enderror">
-                                                @error('pickup_city1')
-                                                    <div class="invalid-feedback">
-                                                        {{ $message }}
-                                                    </div>
-                                                @enderror
-                                            </div>
-                                        </div>
-                                        <div class="col-md-5">
-                                            <div class="input-group mb-3">
-                                                <input required value="{{ old('pickup_state1') }}" placeholder="State Name"  type="text" name="pickup_state1"
-                                                    class=" form-control @error('pickup_state1') is-invalid @enderror">
-                                                @error('pickup_state1')
-                                                    <div class="invalid-feedback">
-                                                        {{ $message }}
-                                                    </div>
-                                                @enderror
-                                            </div>
-
-                                        </div>
-                                        
-                                    </div> --}}
+                                    
                                     <div class="row form-group">
                                         <div class="offset-md-1">&nbsp;</div>
                                         <div class="col-md-5">
@@ -203,17 +177,7 @@
                                     </div>
                                     <div class="row form-group">
                                         <div class="offset-md-1">&nbsp;</div>
-                                        {{-- <div class="col-md-5">
-                                            <div class="input-group mb-3">
-                                                <input required value="{{ old('pickup_email1') }}" placeholder="Email"  type="text" name="pickup_email1"
-                                                    class=" form-control @error('pickup_email1') is-invalid @enderror">
-                                                @error('pickup_email1')
-                                                    <div class="invalid-feedback">
-                                                        {{ $message }}
-                                                    </div>
-                                                @enderror
-                                            </div>
-                                        </div> --}}
+                                        
                                         <div class="col-md-5">
                                             <div class="input-group date" id="pick_up_reservationdate1" data-target-input="nearest">
                                                 <input type="text" id="pickup_date1" value="{{ old('pickup_date1') }}" required name="pickup_date1" placeholder="Pick Up date" class="form-control datetimepicker-input" data-target="#reservationdate"/>
@@ -492,33 +456,7 @@
                                         </div>
                                         
                                     </div>
-                                    {{-- <div class="row form-group">
-                                        <div class="offset-md-1">&nbsp;</div>
-                                        <div class="col-md-5">
-                                            <div class="input-group mb-3">
-                                                <input required placeholder="City Name" type="text" name="drop_off_city" value="{{ old('drop_off_city') }}"
-                                                class=" form-control @error('drop_off_city') is-invalid @enderror">
-                                                @error('drop_off_city')
-                                                    <div class="invalid-feedback">
-                                                        {{ $message }}
-                                                    </div>
-                                                @enderror
-                                            </div>
-                                        </div>
-                                        <div class="col-md-5">
-                                            <div class="input-group mb-3">
-                                                <input required placeholder="State" type="text" name="drop_off_state" value="{{ old('drop_off_state') }}"
-                                                class=" form-control @error('drop_off_state') is-invalid @enderror">
-                                                @error('drop_off_state')
-                                                    <div class="invalid-feedback">
-                                                        {{ $message }}
-                                                    </div>
-                                                @enderror
-                                            </div>
-
-                                        </div>
-                                        
-                                    </div> --}}
+                                   
                                     <div class="row form-group">
                                         <div class="offset-md-1">&nbsp;</div>
                                         <div class="col-md-5">
@@ -644,7 +582,7 @@
                                             <label>Delivery Cost</label>
                                             <input type="number" name="quoted_price" required
                                                 value="{{ old('quoted_price') }}"
-                                                placeholder="Total Cost in USD" class="form-control">
+                                                placeholder="Total Cost in USD" class="form-control @error('quoted_price') is-invalid @enderror"">
                                             @error('quoted_price')
                                                 <div class="invalid-feedback">
                                                     {{ $message }}
@@ -677,7 +615,7 @@
                                     <div class="row form-group">
                                         <div class="offset-md-4">&nbsp;</div>
                                         <div class="col-md-4">
-                                            <button type="submit" class="btn btn-outline-success btn-block btn-lg"><i class="fa fa-save"></i> Save</button>
+                                            <button type="submit" onclick="$('#add_delivery_form').submit()" class="btn btn-outline-success btn-block btn-lg"><i class="fa fa-save"></i> Save</button>
                                         </div>
                                         
 
@@ -773,6 +711,7 @@
         });
             // Select Quote Type Single/Multi
             function select_quote_type(is_type){
+                
                 if(is_type=='single'){
                     $('#multi_unit_data').hide('slow');
                     $('#multi_unit_data').html('');
@@ -780,8 +719,8 @@
                 }else{
                     
                     multi_unit_html ='<div class="row form-group"><div class="offset-md-3"></div><div class="col-md-5"><div class="input-group mb-2"><div class="form-group clearfix"><label>Is there an elevator? </label>&nbsp;<div class="icheck-primary d-inline"><input type="radio" id="elevator1" value="1" name="elevator" checked><label for="elevator1">Yes </label></div> &nbsp;<div class="icheck-primary d-inline"><input type="radio" value="0" id="elevator2" name="elevator"><label for="elevator2">No</label></div></div></div></div></div>';
-                    multi_unit_html +='<div class="row form-group"><div class="offset-md-3">&nbsp;</div><div class="col-md-6"><label>How Many Appartments?</label><div class="input-group mb-2"><input type="number" name="no_of_appartments" value="0" required class="form-control"></div></div></div>';
-                    multi_unit_html +='<div class="row form-group"><div class="offset-md-3">&nbsp;</div><div class="col-md-6"><div id="listof_floors"><label>List All Floors</label><div class="input-group mb-2"><input type="text" name="list_of_floors[]" placeholder="Floor?" required class="form-control"></div></div><div style="width: 90px; float:right;" onclick="addmore_floors()" class="btn btn-success btn-block btn-sm"><i class="fas fa-plus"></i> Add more</div></div> </div>';
+                    multi_unit_html +='<div class="row form-group"><div class="offset-md-3">&nbsp;</div><div class="col-md-6"><label>How Many Appartments?</label><div class="input-group mb-2"><input type="number" name="no_of_appartments" value="0" class="form-control"></div></div></div>';
+                    multi_unit_html +='<div class="row form-group"><div class="offset-md-3">&nbsp;</div><div class="col-md-6"><div id="listof_floors"><label>List All Floors</label><div class="input-group mb-2"><input type="text" name="list_of_floors[]" placeholder="Floor?" class="form-control"></div></div><div style="width: 90px; float:right;" onclick="addmore_floors()" class="btn btn-success btn-block btn-sm"><i class="fas fa-plus"></i> Add more</div></div> </div>';
                     
                     $('#multi_unit_data').html(multi_unit_html);
                     $('#multi_unit_data').show('slow');
@@ -797,7 +736,7 @@
             var removeBtn = '<div onclick=$("#floorinput_' + ctr +
                 '").remove()  style="width:20px; cursor:pointer; padding:10px; color:red;"><i class="fas fa-minus"></i></div>';
             var listof_floors = '<div id="floorinput_' + ctr +
-                '" class="input-group mb-2"><input type="text" required name="list_of_floors[]" placeholder="Floor?" class="form-control">' +
+                '" class="input-group mb-2"><input type="text" name="list_of_floors[]" placeholder="Floor?" class="form-control">' +
                 removeBtn + '</div>';
             $('#listof_floors').append(listof_floors);
         }

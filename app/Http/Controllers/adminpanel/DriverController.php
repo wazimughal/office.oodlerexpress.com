@@ -16,6 +16,7 @@ use DateTime;
 
 // Import/Export Excelsheet
 use App\Exports\ExportDriverDeliveries;
+use App\Exports\ExportSubDeliveries;
 
 
 // Used for Email Section
@@ -246,7 +247,7 @@ class DriverController extends Controller
    
      }
     public function add_documents($id){
-        
+        $user=Auth::user();
         $userData=$this->users->where('id',$id)->with('files','driver_documents')->with('getGroups')->get()->toArray();
        
          return view('adminpanel/uploadform',get_defined_vars());
@@ -475,6 +476,30 @@ class DriverController extends Controller
        
         return view('adminpanel.subs',get_defined_vars());
     }
+    public function report_subs(Request $req){
+        $user=Auth::user();
+
+        $where_in_clause=$customer_ids=$driver_ids=$quote_status=array();
+
+        $where_clasue=[
+            'group_id'=> config('constants.groups.sub'),
+            'is_active'=> 1,
+        ];
+        
+        if(isset($req->driver_id) && !empty($req->driver_id)){
+            $driver_ids=$req->driver_id;
+            $where_in_clause['driver_id']=$driver_ids;
+            }
+        // if($user->group_id!=config('constants.groups.admin'))
+        // $where_clasue['id']=get_session_value('id');
+
+        
+            $driversData=$this->users->with('City')->with('ZipCode')
+            ->where($where_clasue)
+            ->orderBy('created_at', 'desc')->paginate(config('constants.per_page'));
+       
+        return view('adminpanel.reports.subs',get_defined_vars());
+    }
     public function report_drivers(Request $req){
         $user=Auth::user();
 
@@ -626,6 +651,95 @@ class DriverController extends Controller
                 ];
 
                 return Excel::download(new ExportDriverDeliveries($exportData), 'driver-working-hours-for-delivery.xlsx');
+
+            }
+       
+        return view('adminpanel.reports.drivers',get_defined_vars());
+    }
+    public function report_sub_delivery_balance(Request $req){
+        $user=Auth::user();
+
+        $where_in_clause=$customer_ids=$driver_ids=$quote_status=array();
+
+        $where_clasue=[
+            'group_id'=> config('constants.groups.sub'),
+            'is_active'=> 1,
+        ];
+        
+        // if(isset($req->sub_id) && !empty($req->sub_id)){
+        //     $sub_ids=$req->sub_id;
+        //     $where_in_clause['sub_id']=$sub_ids;
+        //     }
+        //     $subsData=$this->users->with(['City','ZipCode'])
+        //     ->where($where_clasue)
+        //     ->orderBy('created_at', 'desc')->paginate(config('constants.per_page'));
+            
+            if(isset($req->action) && $req->action=='download_sub_blance_excel'){ // Download Excelsheed
+
+                $where_clause=[
+                    ['status','=',config('constants.quote_status.complete')],
+                    ['is_active','=',1],
+                    ['sub_id','=',$req->sub_id],
+                ];
+             
+               
+                $quotes=$this->quotes
+                        ->with(array('quote_agreed_cost','customer','sub'))
+                        ->where($where_clause)
+                        ->orderBy('created_at', 'desc');
+                if(
+                    isset($req->from_date) &&
+                    !empty($req->from_date) &&
+                    isset($req->to_date) &&
+                    !empty($req->to_date)
+                 )   
+                {
+                 $from=($req->from_date);
+                 $to=($req->to_date);
+                $quotes=$quotes->WhereBetween('drop_off_date', [$from, $to]);
+                 }
+                //  p($req->all());
+                // echo $quotesData=$quotes->toSql(); 
+                 $quotesData=$quotes->get()->toArray();
+                //  p($where_clause);
+                //  p($quotesData); die;
+                $exportData=array();
+                $total_delivery_cost=$total_quoted_price_for_sub=0;
+                $k=1;
+                foreach($quotesData as $key=>$data){
+                    $delivery_cost=$data['quote_agreed_cost']['quoted_price'];
+                    if(isset($data['quote_agreed_cost']['extra_charges']) && $data['quote_agreed_cost']['extra_charges']>0)
+                    $delivery_cost=$data['quote_agreed_cost']['quoted_price']+$data['quote_agreed_cost']['extra_charges'];
+                    $exportData[]=[
+                        'no'=>$k++,
+                        'po_number'=>$data['po_number'],
+                        'pickup_street_address'=>$data['pickup_street_address'],
+                        'pickup_date'=>$data['pickup_date'],
+                        'drop_off_street_address'=>$data['drop_off_street_address'],
+                        'drop_off_date'=>$data['drop_off_date'],
+                        'sub_business_name'=>(isset($data['sub']['business_name']) && !empty($data['sub']['business_name']))?$data['sub']['business_name']:'',
+                        'delivery_cost'=>'$'.$delivery_cost,
+                        'sales_price'=>'$'.$data['quoted_price_for_sub'],
+                        
+                    ];
+                    $total_delivery_cost=$total_delivery_cost+$delivery_cost;
+                    $total_quoted_price_for_sub=$total_quoted_price_for_sub+$data['quoted_price_for_sub'];
+                    
+                }
+                $exportData[]=[
+                    'no'=>'',
+                    'po_number'=>'',
+                    'pickup_street_address'=>'',
+                    'pickup_date'=>'',
+                    'drop_off_street_address'=>'',
+                    'drop_off_date'=>'',
+                    'sub_business_name'=>'Grand TOTAL',
+                    'delivery_cost'=>'$'.$total_delivery_cost,
+                    'sales_price'=>'$'.$total_quoted_price_for_sub
+                    
+                ];
+
+                return Excel::download(new ExportSubDeliveries($exportData), 'Sub Delivery Balance Sheet.xlsx');
 
             }
        
@@ -898,6 +1012,110 @@ class DriverController extends Controller
                                         <th>Phone</th>
                                         <th>Address</th>
                                         <th>License No.</th>
+                                        <th>From Date</th>
+                                        <th>To Date</th>
+                                        <th>Action</th>
+                                        </tr>
+                                        
+                                    </tfoot>';
+
+                                $dataArray['drivers_id']= implode(',',$driver_id_array)  ;
+                                $dataArray['response']=  $response;
+        }
+        elseif(isset($req['action']) && $req['action']=='qsearch_subs')
+        {
+            $user=Auth::user();
+            $dataArray['title']='Search Result';
+            $where_clause=[
+                ['group_id', '=', config('constants.groups.sub')],
+                ['is_active', '=', 1],
+            ];
+           
+            $query=$this->users
+                ->where($where_clause)
+                
+                ->orderBy('created_at', 'desc');
+
+                $search_val=$req->qsearch;
+                $leads=$query->where(function($query) use ($search_val){
+                    $query->orwhere('name', 'like', '%' . $search_val . '%')
+                        ->orwhere('email', 'like', '%' . $search_val . '%')
+                        ->orwhere('business_name', 'like', '%' . $search_val . '%');
+
+                });
+                //$dataArray['sql']=$leads->toSql();
+                $driverData=$leads->get()->toArray();
+                // p($driverData);
+                // die;
+                //$response='<table id="example1" class="table table-bordered table-striped">
+                $response= ' <thead>
+                                        <tr>
+                                        <th>Business Name</th>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>Phone</th>
+                                        <th>Address</th>
+                                        <th>From Date</th>
+                                        <th>To Date</th>
+                                        <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>';
+                                        
+                                            $counter = 1;
+                                            
+                                            $driver_id_array=array();
+                                            foreach ($driverData as $data){
+                                                $driver_id_array[]=$data['id'];
+                                            
+                                                $response .='<tr id="row_'.$data['id'].'">
+                                                <td id="business_name_'.$data['id'].'">'.$data['business_name'].'</td>
+                                                <td><strong id="name_'.$data['id'].'">'.$data['name'].'</strong>
+                                                </td>
+                                                <td id="email_'.$data['id'].'">'.$data['email'].'</td>
+                                                <td id="mobileno_'.$data['id'].'">
+                                                    '.$data['mobileno'].'</td>
+                                                <td id="address_'.$data['id'].'">
+                                                    '.$data['address'].'</td>
+                                                <td id="row_from_date_'.$data['id'].'">
+                                                <div class="input-group date" id="from_date_'.$data['id'].'" data-target-input="nearest">
+                                                    <input id="input_from_date_'.$data['id'].'"  type="text"  name="from_date" placeholder="From date" class="form-control datetimepicker-input" data-target="#from_date_'.$data['id'].'"/>
+                                                    <div class="input-group-append" data-target="#from_date_'.$data['id'].'" data-toggle="datetimepicker">
+                                                        <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                                                    </div>
+                                                </div>  
+                                            </td>
+                                            <td id="row_to_date_'.$data['id'].'">
+                                                <div class="input-group date" id="to_date_'.$data['id'].'" data-target-input="nearest">
+                                                    <input id="input_to_date_'.$data['id'].'" type="text"  name="to_date" placeholder="To Date" class="form-control datetimepicker-input" data-target="#to_date_'.$data['id'].'"/>
+                                                    <div class="input-group-append" data-target="#to_date_'.$data['id'].'" data-toggle="datetimepicker">
+                                                        <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                                                    </div>
+                                                </div> 
+                                            </td>
+                                                <td>';
+                                                
+                                                    
+                                                        $response .='<button onclick="$(\'#download_sub_balance_'.$data['id'].'\').submit()" type="button" class="btn btn-block btn-primary"><i class="fa fa-download"></i> Balance Excel</button>';
+                                                    
+                                                        
+                                                $response .='</td>
+    
+                                                </td>
+    
+                                            </tr>';
+                                        
+                                                $counter ++;
+                                        }
+                                        
+                                        $response .='</tbody>
+                                    <tfoot>
+                                        <tr>
+                                        <th>Business Name</th>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>Phone</th>
+                                        <th>Address</th>
                                         <th>From Date</th>
                                         <th>To Date</th>
                                         <th>Action</th>

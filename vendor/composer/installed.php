@@ -5,7 +5,7 @@
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
-        'reference' => 'ae15b412b7addfe4708eb4f06256c79e4c07495d',
+        'reference' => '17343063df8569d6ac9a13945f926e7add02fa82',
         'name' => 'laravel/laravel',
         'dev' => true,
     ),
@@ -385,6 +385,15 @@
                 0 => 'v9.48.0',
             ),
         ),
+        'intervention/image' => array(
+            'pretty_version' => '2.7.2',
+            'version' => '2.7.2.0',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../intervention/image',
+            'aliases' => array(),
+            'reference' => '04be355f8d6734c826045d02a1079ad658322dad',
+            'dev_requirement' => false,
+        ),
         'kodova/hamcrest-php' => array(
             'dev_requirement' => true,
             'replaced' => array(
@@ -406,7 +415,7 @@
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
-            'reference' => 'ae15b412b7addfe4708eb4f06256c79e4c07495d',
+            'reference' => '17343063df8569d6ac9a13945f926e7add02fa82',
             'dev_requirement' => false,
         ),
         'laravel/sail' => array(
@@ -533,6 +542,15 @@
             'install_path' => __DIR__ . '/../masterminds/html5',
             'aliases' => array(),
             'reference' => '897eb517a343a2281f11bc5556d6548db7d93947',
+            'dev_requirement' => false,
+        ),
+        'mews/captcha' => array(
+            'pretty_version' => '3.2.10',
+            'version' => '3.2.10.0',
+            'type' => 'package',
+            'install_path' => __DIR__ . '/../mews/captcha',
+            'aliases' => array(),
+            'reference' => '9aa77b818d46df8f46be16c2aea61a8fe77cb5e6',
             'dev_requirement' => false,
         ),
         'mockery/mockery' => array(
